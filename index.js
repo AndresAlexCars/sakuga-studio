@@ -2,7 +2,7 @@ import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 import { config } from './config.js';
-import { apiRouter } from './routes/api.js';
+import { apiRouter } from './api.js';
 
 const app = express();
 app.set('trust proxy', config.trustProxy);
