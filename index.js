@@ -2,7 +2,7 @@ import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 import { config } from './config.js';
-import { apiRouter } from './api.js';
+import { api } from './api.js';
 
 const app = express();
 app.set('trust proxy', config.trustProxy);
@@ -43,7 +43,7 @@ app.use(
   }),
 );
 
-app.use('/api', apiRouter);
+app.use('/api', api);
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // eslint-disable-next-line no-unused-vars
