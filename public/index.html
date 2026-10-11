@@ -6,6 +6,7 @@
   <title>Sakuga: ilustraciones anime con IA</title>
   <meta name="description" content="Crea ilustraciones de anime a partir de una descripción.">
   <meta name="theme-color" content="#0d0c15">
+  <meta name="color-scheme" content="dark light">
   <script src="/js/theme.js"></script>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -21,13 +22,16 @@
       <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 38 26 58 32 38 38 32 58 26 38 6 32 26 26Z" fill="currentColor"/></svg>
       <span id="brand-name">Sakuga</span>
     </div>
-    <p class="tagline">Ilustraciones anime a partir de una frase</p>
+    <p class="tagline" data-i18n="tagline">Ilustraciones anime a partir de una frase</p>
     <div class="themes" role="radiogroup" aria-label="Color de la app">
       <button type="button" class="swatch" role="radio" aria-checked="true" data-theme-choice="sakura" aria-label="Sakura"></button>
       <button type="button" class="swatch" role="radio" aria-checked="false" data-theme-choice="jade" aria-label="Jade"></button>
       <button type="button" class="swatch" role="radio" aria-checked="false" data-theme-choice="oro" aria-label="Oro"></button>
       <button type="button" class="swatch" role="radio" aria-checked="false" data-theme-choice="medianoche" aria-label="Medianoche"></button>
     </div>
+    <button type="button" class="gear" data-open-settings aria-label="Ajustes" data-i18n-aria="nav.settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
   </header>
 
   <main class="app">
@@ -36,8 +40,8 @@
         <div class="stage">
           <div class="frame" id="frame" data-state="empty" aria-busy="false">
             <div class="frame__empty">
-              <p class="frame__title">Tu lienzo está vacío</p>
-              <p class="muted">Describe una escena y pulsa Generar.</p>
+              <p class="frame__title" data-i18n="canvas.empty.title">Tu lienzo está vacío</p>
+              <p class="muted" data-i18n="canvas.empty.sub">Describe una escena y pulsa Generar.</p>
             </div>
             <div class="frame__loading" role="status">
               <p class="frame__title" id="stage-text">Interpretando tu prompt</p>
@@ -45,9 +49,9 @@
               <p class="muted" id="elapsed">0 s</p>
             </div>
             <div class="frame__error" role="alert">
-              <p class="frame__title">No se pudo generar</p>
+              <p class="frame__title" data-i18n="error.title">No se pudo generar</p>
               <p class="muted" id="error-text"></p>
-              <button type="button" class="btn" id="retry">Reintentar</button>
+              <button type="button" class="btn" id="retry" data-i18n="retry">Reintentar</button>
             </div>
             <img class="frame__img" id="result" alt="">
           </div>
@@ -60,13 +64,13 @@
           <div class="actions" id="actions" hidden>
             <a class="btn btn--primary-soft" id="download" href="#" download>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 20h16"/></svg>
-              Guardar
+              <span data-i18n="download">Guardar</span>
             </a>
             <button type="button" class="btn" id="regenerate">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
-              Volver a generar
+              <span data-i18n="regenerate">Volver a generar</span>
             </button>
-            <button type="button" class="btn btn--danger" id="remove" aria-label="Eliminar esta imagen">
+            <button type="button" class="btn btn--danger" id="remove" aria-label="Eliminar esta imagen" data-i18n-aria="remove.aria">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
             </button>
           </div>
@@ -75,38 +79,38 @@
 
       <form class="controls" id="form" novalidate>
         <div class="field">
-          <label class="field__label" for="prompt">Describe tu ilustración</label>
+          <label class="field__label" for="prompt" data-i18n="prompt.label">Describe tu ilustración</label>
           <div class="prompt-box">
-            <textarea id="prompt" rows="4" maxlength="800" placeholder="Una guerrera de pelo plateado bajo un cerezo en flor, al atardecer" autocomplete="off"></textarea>
+            <textarea id="prompt" data-i18n-placeholder="prompt.placeholder" rows="4" maxlength="800" placeholder="Una guerrera de pelo plateado bajo un cerezo en flor, al atardecer" autocomplete="off"></textarea>
             <div class="prompt-box__bar">
-              <button type="button" class="btn btn--text" id="idea">Dame una idea</button>
+              <button type="button" class="btn btn--text" id="idea" data-i18n="idea">Dame una idea</button>
               <span class="muted" id="count">0/800</span>
             </div>
           </div>
         </div>
 
         <fieldset class="field">
-          <legend class="field__label">Estilo</legend>
+          <legend class="field__label" data-i18n="legend.style">Estilo</legend>
           <div class="choices" id="styles"></div>
         </fieldset>
 
         <fieldset class="field field--fal">
-          <legend class="field__label">Proporción</legend>
+          <legend class="field__label" data-i18n="legend.ratio">Proporción</legend>
           <div class="choices" id="ratios"></div>
         </fieldset>
 
         <fieldset class="field field--fal">
-          <legend class="field__label">Resolución</legend>
+          <legend class="field__label" data-i18n="legend.resolution">Resolución</legend>
           <div class="choices choices--seg" id="resolutions"></div>
         </fieldset>
 
         <fieldset class="field field--fal">
-          <legend class="field__label">Modelo</legend>
+          <legend class="field__label" data-i18n="legend.model">Modelo</legend>
           <div class="choices choices--seg" id="qualities"></div>
         </fieldset>
 
         <div class="generate-bar">
-          <button class="btn btn--primary" id="generate" type="submit">Generar</button>
+          <button class="btn btn--primary" id="generate" type="submit" data-i18n="generate">Generar</button>
           <p class="muted estimate" id="estimate"></p>
         </div>
       </form>
@@ -115,49 +119,61 @@
     <section id="view-history" class="history" aria-label="Historial">
       <div class="history__head">
         <div>
-          <h2>Historial</h2>
+          <h2 data-i18n="history.title">Historial</h2>
           <p class="muted" id="history-count"></p>
         </div>
-        <button type="button" class="btn btn--danger btn--sm" id="clear" hidden>Borrar historial</button>
+        <button type="button" class="btn btn--danger btn--sm" id="clear" data-i18n="history.clear" hidden>Borrar historial</button>
       </div>
       <div class="grid" id="grid"></div>
-      <p class="empty muted" id="history-empty">Aún no hay imágenes. Escribe una idea y pulsa Generar.</p>
+      <p class="empty muted" id="history-empty" data-i18n="history.empty">Aún no hay imágenes. Escribe una idea y pulsa Generar.</p>
     </section>
   </main>
 
   <nav class="nav" aria-label="Secciones">
     <button type="button" data-view-target="create" aria-current="page">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 6.3L21 12l-6.8 2.7L12 21l-2.2-6.3L3 12l6.8-2.7z"/></svg>
-      Crear
+      <span data-i18n="nav.create">Crear</span>
     </button>
     <button type="button" data-view-target="history">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
-      Historial
+      <span data-i18n="nav.history">Historial</span>
+    </button>
+    <button type="button" data-open-settings>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      <span data-i18n="nav.settings">Ajustes</span>
     </button>
   </nav>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <dialog id="settings" class="sheet" aria-label="Ajustes">
+    <div class="sheet__head">
+      <h3>Ajustes</h3>
+      <button type="button" class="btn btn--text" data-close>Cerrar</button>
+    </div>
+    <div class="sheet__body" id="settings-body"></div>
+  </dialog>
+
   <dialog id="confirm">
     <form method="dialog">
-      <h3>¿Borrar todo el historial?</h3>
-      <p class="muted">Se eliminarán todas tus imágenes de este dispositivo. No se puede deshacer.</p>
+      <h3 data-i18n="confirm.title">¿Borrar todo el historial?</h3>
+      <p class="muted" data-i18n="confirm.text">Se eliminarán todas tus imágenes de este dispositivo. No se puede deshacer.</p>
       <div class="dialog__actions">
-        <button class="btn" value="cancel">Cancelar</button>
-        <button class="btn btn--danger-solid" value="ok">Borrar todo</button>
+        <button class="btn" value="cancel" data-i18n="confirm.cancel">Cancelar</button>
+        <button class="btn btn--danger-solid" value="ok" data-i18n="confirm.ok">Borrar todo</button>
       </div>
     </form>
   </dialog>
 
   <dialog id="gate">
     <form id="gate-form">
-      <h3>Código de acceso</h3>
-      <p class="muted">Esta app es privada. Introduce el código para continuar.</p>
-      <label class="sr-only" for="gate-input">Código de acceso</label>
+      <h3 data-i18n="gate.title">Código de acceso</h3>
+      <p class="muted" data-i18n="gate.text">Esta app es privada. Introduce el código para continuar.</p>
+      <label class="sr-only" for="gate-input" data-i18n="gate.title">Código de acceso</label>
       <input id="gate-input" type="password" autocomplete="current-password" required>
       <p class="gate-error" id="gate-error" role="alert"></p>
       <div class="dialog__actions">
-        <button class="btn btn--primary" type="submit">Entrar</button>
+        <button class="btn btn--primary" type="submit" data-i18n="gate.enter">Entrar</button>
       </div>
     </form>
   </dialog>

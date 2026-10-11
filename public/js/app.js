@@ -1,4 +1,7 @@
 import { api, ApiError, hasAccessCode, setAccessCode } from './api.js';
+import { ideas, setLanguage, t, tl } from './i18n.js';
+import { applyAppearance, loadDraft, loadSettings, resetSettings, saveDraft, saveSettings } from './settings.js';
+import { initSettingsPanel } from './settingsPanel.js';
 
 const $ = (selector) => document.querySelector(selector);
 const PREFS_KEY = 'sakuga.prefs';
@@ -15,6 +18,9 @@ const IDEAS = [
 ];
 
 const STAGES = ['Interpretando tu prompt', 'Dibujando líneas y formas', 'Aplicando color y luz', 'Últimos detalles'];
+
+let settings = loadSettings();
+let panel = null;
 
 const state = {
   config: null,
@@ -34,7 +40,7 @@ const els = {
   info: $('#result-info'), caption: $('#caption'), meta: $('#meta'),
   actions: $('#actions'), download: $('#download'), regenerate: $('#regenerate'), remove: $('#remove'),
   grid: $('#grid'), historyEmpty: $('#history-empty'), historyCount: $('#history-count'), clear: $('#clear'),
-  toast: $('#toast'), confirm: $('#confirm'),
+  toast: $('#toast'), confirm: $('#confirm'), settingsDialog: $('#settings'),
   gate: $('#gate'), gateForm: $('#gate-form'), gateInput: $('#gate-input'), gateError: $('#gate-error'),
 };
 
@@ -123,14 +129,14 @@ function setFrameRatio(width, height) {
 
 function updateEstimate() {
   if (state.config.provider === 'cloudflare') {
-    els.estimate.textContent = 'Gratis dentro del cupo diario de Cloudflare';
+    els.estimate.textContent = t('estimate.free');
     return;
   }
   const { width, height } = currentSize();
   const quality = state.config.qualities.find((q) => q.id === state.prefs.quality);
   const cost = ((width * height) / 1e6) * quality.pricePerMP;
   const price = cost < 0.01 ? cost.toFixed(3) : cost.toFixed(2);
-  els.estimate.textContent = `${width}×${height} px, costo aprox. US$${price}`;
+  els.estimate.textContent = t('estimate.paid', { w: width, h: height, price });
 }
 
 function onPrefsChanged() {
@@ -170,10 +176,10 @@ function showResult(item) {
 
   els.caption.textContent = item.prompt;
   els.meta.replaceChildren(
-    chip(labelOf(state.config.styles, item.style)),
+    chip(tl('style', item.style, labelOf(state.config.styles, item.style))),
     chip(item.ratio),
     chip(`${item.width}×${item.height}`),
-    chip(labelOf(state.config.qualities, item.quality)),
+    chip(tl('quality', item.quality, labelOf(state.config.qualities, item.quality))),
   );
   els.download.href = item.url;
   els.download.download = `sakuga-${item.id.slice(0, 8)}.${item.url.split('.').pop()}`;
@@ -202,12 +208,12 @@ function showError(message) {
 
 function startProgress() {
   const t0 = Date.now();
-  els.stageText.textContent = STAGES[0];
+  els.stageText.textContent = t('stage.0');
   els.elapsed.textContent = '0 s';
   state.timer = setInterval(() => {
     const s = Math.floor((Date.now() - t0) / 1000);
     els.elapsed.textContent = `${s} s`;
-    els.stageText.textContent = STAGES[Math.min(Math.floor(s / 4), STAGES.length - 1)];
+    els.stageText.textContent = t(`stage.${Math.min(Math.floor(s / 4), STAGES.length - 1)}`);
   }, 500);
 }
 function stopProgress() {
@@ -218,7 +224,7 @@ function stopProgress() {
 function setBusy(busy) {
   state.busy = busy;
   els.generate.disabled = busy;
-  els.generate.textContent = busy ? 'Generando…' : 'Generar';
+  els.generate.textContent = busy ? t('generating') : t('generate');
   els.regenerate.disabled = busy;
   els.remove.disabled = busy;
 }
@@ -228,7 +234,7 @@ async function generate() {
   if (state.busy) return;
   const prompt = els.prompt.value.trim();
   if (prompt.length < 3) {
-    toast('Describe tu imagen con al menos 3 caracteres.');
+    toast(t('toast.shortPrompt'));
     els.prompt.focus();
     return;
   }
@@ -247,7 +253,8 @@ async function generate() {
     const item = await api.generate({ prompt, ...state.prefs });
     state.history.unshift(item);
     showResult(item);
-    toast('Imagen lista');
+    toast(t('toast.ready'));
+    if (settings.vibrate && navigator.vibrate) navigator.vibrate(60);
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       setFrameState(state.current ? 'ready' : 'empty');
@@ -280,7 +287,7 @@ async function removeCurrent() {
     await api.remove(item.id);
     state.history = state.history.filter((h) => h.id !== item.id);
     clearStage();
-    toast('Imagen eliminada');
+    toast(t('toast.removed'));
   } catch (err) {
     toast(err.message);
   }
@@ -313,7 +320,7 @@ function thumb(item) {
 function renderHistory() {
   const n = state.history.length;
   els.grid.replaceChildren(...state.history.map(thumb));
-  els.historyCount.textContent = n ? `${n} ${n === 1 ? 'imagen' : 'imágenes'}` : '';
+  els.historyCount.textContent = n ? t(n === 1 ? 'history.count.one' : 'history.count.many', { n }) : '';
   els.historyEmpty.hidden = n > 0;
   els.clear.hidden = n === 0;
 }
@@ -365,7 +372,10 @@ function updateCount() {
   els.count.textContent = `${els.prompt.value.length}/${els.prompt.maxLength}`;
 }
 
-els.prompt.addEventListener('input', updateCount);
+els.prompt.addEventListener('input', () => {
+  updateCount();
+  if (settings.saveDraft) saveDraft(els.prompt.value);
+});
 els.prompt.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
@@ -373,7 +383,8 @@ els.prompt.addEventListener('keydown', (event) => {
   }
 });
 els.idea.addEventListener('click', () => {
-  els.prompt.value = IDEAS[Math.floor(Math.random() * IDEAS.length)];
+  const list = ideas();
+  els.prompt.value = list[Math.floor(Math.random() * list.length)];
   updateCount();
   els.prompt.focus();
 });
@@ -395,7 +406,7 @@ els.confirm.addEventListener('close', async () => {
     await api.clear();
     state.history = [];
     clearStage();
-    toast('Historial borrado');
+    toast(t('toast.cleared'));
   } catch (err) {
     toast(err.message);
   }
@@ -408,28 +419,74 @@ for (const button of document.querySelectorAll('[data-view-target]')) {
   });
 }
 
-/* ── Tema de color ──────────────────────────── */
-const THEME_KEY = 'sakuga.theme';
-const THEME_BG = { sakura: '#0d0c15', jade: '#09110e', oro: '#0d0c0a', medianoche: '#080c18' };
+/* ── Ajustes (guardados en este dispositivo) ── */
+function localized(list, group) {
+  return list.map((option) => ({
+    ...option,
+    label: tl(group, option.id, option.label),
+    hint: option.hint ? tl(`${group}.hint`, option.id, option.hint) : option.hint,
+  }));
+}
 
-function applyTheme(name) {
-  const theme = THEME_BG[name] ? name : 'sakura';
-  document.documentElement.dataset.theme = theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_BG[theme]);
-  for (const swatch of document.querySelectorAll('[data-theme-choice]')) {
-    swatch.setAttribute('aria-checked', String(swatch.dataset.themeChoice === theme));
+function renderAllChoices() {
+  renderChoices(els.styles, 'style', localized(state.config.styles, 'style'));
+  renderChoices(els.ratios, 'ratio', state.config.ratios, (r) => ratioGlyph(r.w, r.h));
+  renderChoices(els.resolutions, 'resolution', localized(state.config.resolutions, 'res'));
+  renderChoices(els.qualities, 'quality', localized(state.config.qualities, 'quality'));
+}
+
+function applyLanguage() {
+  setLanguage(settings.lang);
+  if (!state.config) return;
+  document.title = `${state.config.appName}: ${t('title')}`;
+  renderAllChoices();
+  updateEstimate();
+  els.generate.textContent = state.busy ? t('generating') : t('generate');
+  renderHistory();
+  panel?.rebuild();
+}
+
+function updateSettings(partial) {
+  settings = { ...settings, ...partial };
+  saveSettings(settings);
+  applyAppearance(settings);
+  if ('lang' in partial) applyLanguage();
+  panel?.sync();
+}
+
+async function exportSettings() {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(settings, null, 2));
+    toast(t('settings.copied'));
+  } catch {
+    toast(t('settings.copyFail'));
   }
-  try { localStorage.setItem(THEME_KEY, theme); } catch { /* modo privado */ }
+}
+
+function restoreDefaults() {
+  if (!window.confirm(t('settings.resetAsk'))) return;
+  settings = resetSettings();
+  applyAppearance(settings);
+  applyLanguage();
+  toast(t('settings.resetDone'));
 }
 
 for (const swatch of document.querySelectorAll('[data-theme-choice]')) {
-  swatch.addEventListener('click', () => applyTheme(swatch.dataset.themeChoice));
+  swatch.addEventListener('click', () => updateSettings({ palette: swatch.dataset.themeChoice }));
 }
-applyTheme(document.documentElement.dataset.theme);
+for (const opener of document.querySelectorAll('[data-open-settings]')) {
+  opener.addEventListener('click', () => panel?.open());
+}
+// En modo "Sistema" el tema cambia solo cuando cambia el del teléfono.
+matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+  if (settings.mode === 'auto') applyAppearance(settings);
+});
+applyAppearance(settings);
 
 /* ── Arranque ───────────────────────────────── */
 async function init() {
   loadPrefs();
+  setLanguage(settings.lang);
   try {
     state.config = await api.config();
   } catch (err) {
@@ -438,15 +495,23 @@ async function init() {
   }
   document.body.dataset.provider = state.config.provider;
   $('#brand-name').textContent = state.config.appName;
-  document.title = `${state.config.appName}: ilustraciones anime con IA`;
+  document.title = `${state.config.appName}: ${t('title')}`;
   sanitizePrefs();
   els.prompt.maxLength = state.config.maxPromptLength;
+  if (settings.saveDraft && !els.prompt.value) els.prompt.value = loadDraft();
   updateCount();
 
-  renderChoices(els.styles, 'style', state.config.styles);
-  renderChoices(els.ratios, 'ratio', state.config.ratios, (r) => ratioGlyph(r.w, r.h));
-  renderChoices(els.resolutions, 'resolution', state.config.resolutions);
-  renderChoices(els.qualities, 'quality', state.config.qualities);
+  renderAllChoices();
+  panel = initSettingsPanel({
+    dialog: els.settingsDialog,
+    getSettings: () => settings,
+    update: updateSettings,
+    onReset: restoreDefaults,
+    onExport: exportSettings,
+    onClearHistory: () => els.clear.click(),
+    provider: state.config.provider,
+    appName: state.config.appName,
+  });
   onPrefsChanged();
   const { width, height } = currentSize();
   setFrameRatio(width, height);
