@@ -15,6 +15,11 @@ const IDEAS = [
   'Una piloto de mechas en la cabina, casco bajo el brazo, ciudad en ruinas al fondo',
   'Una pastelera con delantal rosa sacando un pastel de un horno de leña, cocina acogedora',
   'Un tren nocturno flotando sobre un lago de estrellas, pasajeros mirando por la ventana',
+  'Montañas nevadas al amanecer con niebla suave y cielo rosado, composición vertical limpia',
+  'Ciudad futurista de noche con luces de neón y lluvia, vista amplia panorámica',
+  'Retrato realista de una mujer joven con pecas y pelo ondulado, luz natural suave',
+  'Valle amplio con un río serpenteante al atardecer, montañas al fondo y cielo dramático',
+  'Logo minimalista de un zorro geométrico, colores naranja y negro, estilo moderno',
 ];
 
 const STAGES = ['Interpretando tu prompt', 'Dibujando líneas y formas', 'Aplicando color y luz', 'Últimos detalles'];
@@ -37,7 +42,7 @@ const els = {
   generate: $('#generate'), estimate: $('#estimate'),
   frame: $('#frame'), img: $('#result'), stageText: $('#stage-text'), elapsed: $('#elapsed'),
   errorText: $('#error-text'), retry: $('#retry'),
-  info: $('#result-info'), caption: $('#caption'), meta: $('#meta'),
+ info: $('#result-info'), caption: $('#caption'), meta: $('#meta'),
   actions: $('#actions'), download: $('#download'), regenerate: $('#regenerate'), remove: $('#remove'),
   grid: $('#grid'), historyEmpty: $('#history-empty'), historyCount: $('#history-count'), clear: $('#clear'),
   toast: $('#toast'), confirm: $('#confirm'), settingsDialog: $('#settings'),
@@ -73,7 +78,6 @@ function sanitizePrefs() {
   state.prefs.resolution = pick(resolutions, state.prefs.resolution);
   state.prefs.quality = pick(qualities, state.prefs.quality);
 }
-
 /* ── Opciones ───────────────────────────────── */
 function ratioGlyph(w, h) {
   const glyph = document.createElement('i');
@@ -96,9 +100,21 @@ function renderChoices(container, key, options, decorate) {
     input.name = key;
     input.value = option.id;
     input.checked = state.prefs[key] === option.id;
+
     input.addEventListener('change', () => {
       state.prefs[key] = option.id;
+
+      // Auto-selección de ratio para fondos de pantalla
+      if (key === 'style') {
+        if (option.id === 'wallpaper_mobile') {
+          state.prefs.ratio = '9:16';
+        } else if (option.id === 'wallpaper_pc') {
+          state.prefs.ratio = '16:9';
+        }
+      }
+
       savePrefs();
+      applyPrefsToUi();
       onPrefsChanged();
     });
 
@@ -178,11 +194,11 @@ function showResult(item) {
   els.meta.replaceChildren(
     chip(tl('style', item.style, labelOf(state.config.styles, item.style))),
     chip(item.ratio),
-    chip(`${item.width}×${item.height}`),
+    chip(`\( {item.width}× \){item.height}`),
     chip(tl('quality', item.quality, labelOf(state.config.qualities, item.quality))),
   );
   els.download.href = item.url;
-  els.download.download = `sakuga-${item.id.slice(0, 8)}.${item.url.split('.').pop()}`;
+  els.download.download = `sakuga-\( {item.id.slice(0, 8)}. \){item.url.split('.').pop()}`;
   els.info.hidden = false;
   els.actions.hidden = false;
   renderHistory();
@@ -228,7 +244,6 @@ function setBusy(busy) {
   els.regenerate.disabled = busy;
   els.remove.disabled = busy;
 }
-
 /* ── Generar ────────────────────────────────── */
 async function generate() {
   if (state.busy) return;
@@ -369,8 +384,9 @@ els.gateForm.addEventListener('submit', async (event) => {
 
 /* ── Eventos ────────────────────────────────── */
 function updateCount() {
-  els.count.textContent = `${els.prompt.value.length}/${els.prompt.maxLength}`;
+  els.count.textContent = `${els.prompt.value.length} / ${els.prompt.maxLength}`;
 }
+
 
 els.prompt.addEventListener('input', () => {
   updateCount();
@@ -419,7 +435,7 @@ for (const button of document.querySelectorAll('[data-view-target]')) {
   });
 }
 
-/* ── Ajustes (guardados en este dispositivo) ── */
+/* ── Ajustes ────────────────────────────────── */
 function localized(list, group) {
   return list.map((option) => ({
     ...option,
@@ -477,7 +493,6 @@ for (const swatch of document.querySelectorAll('[data-theme-choice]')) {
 for (const opener of document.querySelectorAll('[data-open-settings]')) {
   opener.addEventListener('click', () => panel?.open());
 }
-// En modo "Sistema" el tema cambia solo cuando cambia el del teléfono.
 matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
   if (settings.mode === 'auto') applyAppearance(settings);
 });

@@ -1,8 +1,9 @@
-// Fuente única de verdad: estilos, proporciones, resoluciones y modelos.
+// Fuente única de verdad: estilos/modos, proporciones, resoluciones y modelos.
 // El frontend recibe esto desde /api/config, así nunca se desincroniza.
 import { config } from './config.js';
 
 export const STYLES = {
+  // ── Ilustraciones y Anime ──────────────────────────────
   anime: {
     label: 'Anime',
     prompt:
@@ -33,6 +34,38 @@ export const STYLES = {
     prompt:
       'adorable chibi anime illustration, super-deformed proportions, big head and tiny body, huge sparkling eyes, soft pastel colors, thick clean outlines, kawaii, cheerful simple background, cute accessories, sticker-like finish',
   },
+
+  // ── Nuevos modos (Etapa 1) ─────────────────────────────
+  wallpaper_mobile: {
+    label: 'Fondo de móvil',
+    prompt:
+      'stunning phone wallpaper, vertical composition, high detail, beautiful lighting, no text, no watermark, optimized for mobile lock screen, clean elegant design, high resolution',
+  },
+  wallpaper_pc: {
+    label: 'Fondo de PC',
+    prompt:
+      'stunning desktop wallpaper, wide cinematic composition, ultra detailed, beautiful atmospheric lighting, no text, no watermark, high resolution, professional quality',
+  },
+  realistic: {
+    label: 'Realista',
+    prompt:
+      'photorealistic image, ultra detailed, natural lighting, high dynamic range, sharp focus, realistic textures and materials, professional photography, 8k quality',
+  },
+  character: {
+    label: 'Personaje / Avatar',
+    prompt:
+      'character portrait, highly detailed face, expressive eyes, clean background or soft bokeh, professional character design, sharp focus on the subject, high quality',
+  },
+  landscape: {
+    label: 'Paisaje cinematográfico',
+    prompt:
+      'epic cinematic landscape, dramatic lighting, atmospheric perspective, rich colors, highly detailed environment, sense of scale and depth, professional matte painting quality',
+  },
+  logo: {
+    label: 'Logo / Diseño',
+    prompt:
+      'professional logo design, clean vector style, minimalist, bold shapes, high contrast, suitable for branding, centered composition, white or transparent background feel, sharp edges',
+  },
 };
 
 export const RATIOS = {
@@ -40,6 +73,7 @@ export const RATIOS = {
   '16:9': { w: 16, h: 9 },
   '9:16': { w: 9, h: 16 },
   '4:3': { w: 4, h: 3 },
+  '3:4': { w: 3, h: 4 },
 };
 
 export const RESOLUTIONS = {
@@ -84,7 +118,9 @@ export const SIZES = Object.fromEntries(
 );
 
 export function buildPrompt(styleId, userPrompt) {
-  return `${userPrompt}. Style: ${STYLES[styleId].prompt}`;
+  const style = STYLES[styleId];
+  if (!style) return userPrompt;
+  return `${userPrompt}. Style: ${style.prompt}`;
 }
 
 export function publicCatalog() {
@@ -105,3 +141,4 @@ export function publicCatalog() {
     sizes: SIZES,
   };
 }
+
