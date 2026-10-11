@@ -408,6 +408,25 @@ for (const button of document.querySelectorAll('[data-view-target]')) {
   });
 }
 
+/* ── Tema de color ──────────────────────────── */
+const THEME_KEY = 'sakuga.theme';
+const THEME_BG = { sakura: '#0d0c15', jade: '#09110e', oro: '#0d0c0a', medianoche: '#080c18' };
+
+function applyTheme(name) {
+  const theme = THEME_BG[name] ? name : 'sakura';
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_BG[theme]);
+  for (const swatch of document.querySelectorAll('[data-theme-choice]')) {
+    swatch.setAttribute('aria-checked', String(swatch.dataset.themeChoice === theme));
+  }
+  try { localStorage.setItem(THEME_KEY, theme); } catch { /* modo privado */ }
+}
+
+for (const swatch of document.querySelectorAll('[data-theme-choice]')) {
+  swatch.addEventListener('click', () => applyTheme(swatch.dataset.themeChoice));
+}
+applyTheme(document.documentElement.dataset.theme);
+
 /* ── Arranque ───────────────────────────────── */
 async function init() {
   loadPrefs();
@@ -418,6 +437,8 @@ async function init() {
     return;
   }
   document.body.dataset.provider = state.config.provider;
+  $('#brand-name').textContent = state.config.appName;
+  document.title = `${state.config.appName}: ilustraciones anime con IA`;
   sanitizePrefs();
   els.prompt.maxLength = state.config.maxPromptLength;
   updateCount();

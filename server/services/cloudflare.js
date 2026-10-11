@@ -16,7 +16,7 @@ export async function runCloudflare(prompt) {
         Authorization: `Bearer ${config.cfApiToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ prompt: prompt.slice(0, 2048), steps: 4 }),
+      body: JSON.stringify({ prompt: prompt.slice(0, 2048), steps: config.cfSteps }),
       signal: AbortSignal.timeout(config.requestTimeoutMs),
     });
   } catch (err) {

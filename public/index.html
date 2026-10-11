@@ -6,6 +6,7 @@
   <title>Sakuga: ilustraciones anime con IA</title>
   <meta name="description" content="Crea ilustraciones de anime a partir de una descripción.">
   <meta name="theme-color" content="#0d0c15">
+  <script src="/js/theme.js"></script>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,9 +19,15 @@
   <header class="topbar">
     <div class="brand">
       <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 38 26 58 32 38 38 32 58 26 38 6 32 26 26Z" fill="currentColor"/></svg>
-      <span>Sakuga</span>
+      <span id="brand-name">Sakuga</span>
     </div>
     <p class="tagline">Ilustraciones anime a partir de una frase</p>
+    <div class="themes" role="radiogroup" aria-label="Color de la app">
+      <button type="button" class="swatch" role="radio" aria-checked="true" data-theme-choice="sakura" aria-label="Sakura"></button>
+      <button type="button" class="swatch" role="radio" aria-checked="false" data-theme-choice="jade" aria-label="Jade"></button>
+      <button type="button" class="swatch" role="radio" aria-checked="false" data-theme-choice="oro" aria-label="Oro"></button>
+      <button type="button" class="swatch" role="radio" aria-checked="false" data-theme-choice="medianoche" aria-label="Medianoche"></button>
+    </div>
   </header>
 
   <main class="app">

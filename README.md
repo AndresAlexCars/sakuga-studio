@@ -79,6 +79,17 @@ Necesita un servidor Node (no sirve un hosting estático). Opciones: Render, Rai
 - Monta un **disco persistente** y apunta `DATA_DIR` a él; si no, las imágenes se pierden en cada reinicio.
 - Comando de inicio: `npm start`.
 
+## Publicar en internet (sin Termux)
+
+Hace falta un servidor Node que se mantenga encendido (Render, Railway, Fly.io o un VPS). Pasos generales:
+1. Sube la carpeta del proyecto a un repositorio de GitHub (el `.gitignore` ya excluye `.env` y `data/`).
+2. Crea un servicio web Node en el proveedor, conectado a ese repositorio.
+3. Comando de build: `npm install`. Comando de inicio: `npm start`.
+4. En el panel de variables de entorno añade: `PROVIDER`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`,
+   **`ACCESS_CODE`** (obligatorio al publicar), `TRUST_PROXY=1` y `APP_NAME`.
+5. Para conservar el historial entre reinicios, monta un disco persistente y apunta `DATA_DIR` a él.
+   Los planes gratuitos suelen no incluir disco, así que allí el historial se pierde al reiniciar.
+
 ## Instalar en Android
 
 En Chrome: menú ⋮ → "Añadir a pantalla de inicio". Para que Chrome lo ofrezca como app instalable completa,

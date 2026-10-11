@@ -6,32 +6,32 @@ export const STYLES = {
   anime: {
     label: 'Anime',
     prompt:
-      'high-quality modern anime illustration, clean line art, vibrant cel shading, expressive detailed eyes, polished digital coloring, detailed background',
+      'masterpiece anime illustration, high quality key visual, clean confident line art, vibrant cel shading with soft gradients, large expressive detailed eyes, intricate hair strands, polished digital coloring, richly detailed background, balanced composition, sharp focus',
   },
   manga: {
     label: 'Manga',
     prompt:
-      'black and white manga illustration, confident ink linework, screentone shading, cross-hatching, dynamic composition, high contrast, no color',
+      'black and white manga illustration, professional mangaka inking, crisp varied-weight linework, screentone shading, cross-hatching, dramatic contrast between deep blacks and clean whites, dynamic panel composition, detailed backgrounds, no color',
   },
   cinematic: {
     label: 'Anime cinematográfico',
     prompt:
-      'cinematic anime film still, dramatic lighting, volumetric light rays, shallow depth of field, richly painted background, widescreen composition, high-budget animated movie look',
+      'cinematic anime film still, high-budget animated movie, dramatic lighting, volumetric light rays, atmospheric depth, shallow depth of field, richly painted background art, subtle film grain, widescreen composition, emotional mood',
   },
   fantasy: {
     label: 'Fantasía',
     prompt:
-      'fantasy anime illustration, magical atmosphere, ornate costume details, glowing particles, lush painterly environment, epic sense of scale',
+      'epic fantasy anime illustration, magical atmosphere, glowing particles and runes, ornate detailed costume and armor, lush painterly environment, dramatic sky, rich saturated colors, sense of grand scale, highly detailed',
   },
   cyberpunk: {
     label: 'Cyberpunk',
     prompt:
-      'cyberpunk anime illustration, neon-lit rainy city at night, holographic signs, magenta and cyan lighting, futuristic fashion, detailed mechanical elements',
+      'cyberpunk anime illustration, neon-lit rainy city at night, holographic signs, wet reflective streets, magenta and cyan rim lighting, futuristic fashion, intricate mechanical details, moody atmosphere, high contrast, highly detailed',
   },
   chibi: {
     label: 'Chibi',
     prompt:
-      'cute chibi anime illustration, super-deformed proportions, big head and small body, soft pastel colors, thick clean outlines, kawaii, cheerful simple background',
+      'adorable chibi anime illustration, super-deformed proportions, big head and tiny body, huge sparkling eyes, soft pastel colors, thick clean outlines, kawaii, cheerful simple background, cute accessories, sticker-like finish',
   },
 };
 
@@ -84,12 +84,13 @@ export const SIZES = Object.fromEntries(
 );
 
 export function buildPrompt(styleId, userPrompt) {
-  return `${STYLES[styleId].prompt}. Subject: ${userPrompt}`;
+  return `${userPrompt}. Style: ${STYLES[styleId].prompt}`;
 }
 
 export function publicCatalog() {
   return {
     provider: config.provider,
+    appName: config.appName,
     requiresAccessCode: Boolean(config.accessCode),
     maxPromptLength: config.maxPromptLength,
     styles: Object.entries(STYLES).map(([id, s]) => ({ id, label: s.label })),
