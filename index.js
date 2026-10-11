@@ -43,7 +43,24 @@ app.use(
   }),
 );
 
-app.use('/api', api);
+// Rutas de la API
+app.get('/api/config', (req, res) => {
+  res.json({
+    hasAccessCode: !!req.app.locals.accessCode,
+    clientId: true
+  });
+});
+
+app.post('/api/generate', async (req, res) => {
+  try {
+    const apiModule = await import('./api.js');
+const result = await apiModule.api.generate(req.body);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Algo salió mal' });
+  }
+});
+
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // eslint-disable-next-line no-unused-vars
