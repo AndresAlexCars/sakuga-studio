@@ -71,9 +71,13 @@ app.use((err, _req, res, _next) => {
   console.error('[server]', err);
   res.status(500).json({ error: 'Error interno del servidor.' });
 });
+// Página principal
+app.get('/', (req, res) => {
+  res.sendFile('index.html', { root: '.' });
+});
 
 app.listen(config.port, () => {
   console.log(`Sakuga Studio escuchando en http://localhost:${config.port}`);
-  if (!config.falKey) console.warn('Aviso: falta FAL_KEY. La app abrirá, pero no podrá generar imágenes.');
-  if (!config.accessCode) console.warn('Aviso: sin ACCESS_CODE, cualquiera con tu URL podrá gastar tu saldo.');
+  if (!config.falKey) console.warn('Aviso: falta FAL_KEY...');
+  if (!config.accessCode) console.warn('Aviso: sin ACCESS_CODE...');
 });
