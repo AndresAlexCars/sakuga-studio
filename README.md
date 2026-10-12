@@ -1,4 +1,4 @@
-# Sakuga Studio
+# JORDVEX
 
 Aplicación web (y PWA para Android) que genera ilustraciones de anime con **FLUX** a través de la API de **fal.ai**.
 Frontend sin frameworks, backend en Node.js + Express. La clave del proveedor vive solo en el servidor.

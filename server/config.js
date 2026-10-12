@@ -23,7 +23,7 @@ const steps = Number.parseInt(process.env.CF_STEPS ?? '', 10);
 export const config = {
   port: int(process.env.PORT, 3000),
   // Secretos: viven solo en el servidor y jamás se envían al navegador.
-  appName: (process.env.APP_NAME || 'Sakuga').trim().slice(0, 24) || 'Sakuga',
+  appName: (process.env.APP_NAME || 'JORDVEX').trim().slice(0, 24) || 'JORDVEX',
   // Pasos de difusión en Cloudflare (1-8). Más pasos = más detalle, pero gasta más cupo.
   cfSteps: Number.isFinite(steps) ? Math.min(8, Math.max(1, steps)) : 6,
   provider,

@@ -56,7 +56,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(config.port, () => {
-  console.log(`Sakuga Studio escuchando en http://localhost:${config.port}`);
+  console.log(`JORDVEX escuchando en http://localhost:${config.port}`);
   console.log(`Proveedor de imágenes: ${config.provider}`);
   if (!config.providerReady) console.warn('Aviso: faltan las claves del proveedor en .env. La app abrirá, pero no podrá generar imágenes.');
   if (!config.accessCode) console.warn('Aviso: sin ACCESS_CODE, cualquiera con tu URL podrá gastar tu saldo.');
