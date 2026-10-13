@@ -194,11 +194,11 @@ function showResult(item) {
   els.meta.replaceChildren(
     chip(tl('style', item.style, labelOf(state.config.styles, item.style))),
     chip(item.ratio),
-    chip(`\( {item.width}× \){item.height}`),
-    chip(tl('quality', item.quality, labelOf(state.config.qualities, item.quality))),
+    chip(`${item.width}×${item.height}`),
+   chip(tl('quality', item.quality, labelOf(state.config.qualities, item.quality))),
   );
   els.download.href = item.url;
-  els.download.download = `sakuga-\( {item.id.slice(0, 8)}. \){item.url.split('.').pop()}`;
+  els.download.download = `jordvex-${item.id.slice(0, 8)}.${item.url.split('.').pop()}`;
   els.info.hidden = false;
   els.actions.hidden = false;
   renderHistory();
