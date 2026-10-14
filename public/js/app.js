@@ -144,7 +144,8 @@ function setFrameRatio(width, height) {
 }
 
 function updateEstimate() {
-  if (state.config.provider === 'cloudflare') {
+  if (state.config.provider === 'cloudflare' || state.config.provider === 'pollinations') {
+    
     els.estimate.textContent = t('estimate.free');
     return;
   }
