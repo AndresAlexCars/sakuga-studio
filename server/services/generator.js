@@ -4,6 +4,7 @@ import { config } from '../config.js';
 import { imageKind, imageSize } from '../utils/imageSize.js';
 import { runCloudflare } from './cloudflare.js';
 import { UpstreamError, downloadImage, runModel } from './fal.js';
+import { toEnglish } from './translate.js';
 import { addItem, saveImageFile, toPublic } from './store.js';
 
 const gcd = (a, b) => (b ? gcd(b, a % b) : a);
@@ -43,12 +44,22 @@ async function viaFal({ prompt, style, ratio, resolution, quality }) {
 
 // Cloudflare no permite elegir tamaño: se lee el real de la imagen devuelta.
 async function viaCloudflare({ prompt, style }) {
-  const buffer = await runCloudflare(buildPrompt(style, prompt));
+  const english = await toEnglish(prompt);
+  const buffer = await runCloudflare(buildPrompt(style, english.text));
   const kind = imageKind(buffer);
   if (!kind) throw new UpstreamError('Cloudflare devolvió un archivo que no es una imagen.');
   const { width, height } = imageSize(buffer) ?? { width: 1024, height: 1024 };
   const d = gcd(width, height);
-  return { buffer, ext: kind, width, height, ratio: `${width / d}:${height / d}`, resolution: 'md', quality: 'fast' };
+  return { 
+    buffer, 
+    ext: kind, 
+    width, 
+    height, 
+    ratio: `${width / d}:${height / d}`, 
+    resolution: 'md', 
+    quality: 'fast',
+    originalPrompt: english.original
+  };
 }
 
 export async function generate({ clientId, prompt, style, ratio, resolution, quality }) {
