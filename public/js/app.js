@@ -2,6 +2,8 @@ import { api, ApiError, hasAccessCode, setAccessCode } from './api.js';
 import { ideas, setLanguage, t, tl } from './i18n.js';
 import { applyAppearance, loadDraft, loadSettings, resetSettings, saveDraft, saveSettings } from './settings.js';
 import { initSettingsPanel } from './settingsPanel.js';
+import { filterHistory, shortDate } from './history.js';
+import { getLanguage } from './i18n.js';
 
 const $ = (selector) => document.querySelector(selector);
 const PREFS_KEY = 'sakuga.prefs';
@@ -44,7 +46,7 @@ const els = {
   errorText: $('#error-text'), retry: $('#retry'),
  info: $('#result-info'), caption: $('#caption'), meta: $('#meta'),
   actions: $('#actions'), download: $('#download'), regenerate: $('#regenerate'), remove: $('#remove'),
-  grid: $('#grid'), historyEmpty: $('#history-empty'), historyCount: $('#history-count'), clear: $('#clear'),
+  search: $('#history-search'), grid: $('#grid'), historyEmpty: $('#history-empty'), historyCount: $('#history-count'), clear: $('#clear'),
   toast: $('#toast'), confirm: $('#confirm'), settingsDialog: $('#settings'),
   gate: $('#gate'), gateForm: $('#gate-form'), gateInput: $('#gate-input'), gateError: $('#gate-error'),
 };
@@ -324,6 +326,12 @@ function thumb(item) {
   img.loading = 'lazy';
   img.decoding = 'async';
   button.append(img);
+    // Pie con estilo y fecha
+  const caption = document.createElement('span');
+  caption.className = 'thumb__meta';
+  const styleName = tl('style', item.style, labelOf(state.config.styles, item.style));
+  caption.textContent = [styleName, shortDate(item.createdAt, getLanguage() === 'en' ? 'en' : 'es')].filter(Boolean).join(' · ');
+  button.append(caption);
 
   button.addEventListener('click', () => {
     showResult(item);
@@ -333,13 +341,17 @@ function thumb(item) {
   return button;
 }
 
-function renderHistory() {
+ function renderHistory() {
   const n = state.history.length;
-  els.grid.replaceChildren(...state.history.map(thumb));
+  const visible = filterHistory(state.history, els.search?.value ?? '');
+  els.grid.replaceChildren(...visible.map(thumb));
+  if (els.search) els.search.hidden = n === 0;
+  const empty = n > 0 && visible.length === 0;
+  els.historyEmpty.textContent = empty ? t('history.noResults') : t('history.empty');
   els.historyCount.textContent = n ? t(n === 1 ? 'history.count.one' : 'history.count.many', { n }) : '';
-  els.historyEmpty.hidden = n > 0;
+  els.historyEmpty.hidden = visible.length > 0;
   els.clear.hidden = n === 0;
-}
+  }
 
 async function loadHistory() {
   try {
