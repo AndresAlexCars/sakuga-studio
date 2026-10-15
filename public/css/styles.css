@@ -464,3 +464,17 @@ html:not([data-motion="reduced"]) .bar i {
   background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
   box-shadow: 0 0 12px rgba(var(--accent-rgb), .6);
 }
+/* ═══ Historial mejorado: búsqueda y pie de cada miniatura ═══ */
+.history__search {
+  display: block; width: 100%; min-height: 46px; margin: 0 0 12px; padding: 0 14px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 12px; font-size: 16px;
+}
+.history__search:focus { outline: none; border-color: rgba(var(--accent-rgb), .7); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12); }
+.thumb { position: relative; }
+.thumb__meta {
+  position: absolute; left: 8px; right: 8px; bottom: 8px; padding: 3px 9px;
+  border-radius: 999px; background: rgba(0, 0, 0, .55); color: #fff;
+  font-size: 12px; line-height: 1.4; text-align: left;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
