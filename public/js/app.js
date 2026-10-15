@@ -2,7 +2,7 @@ import { api, ApiError, hasAccessCode, setAccessCode } from './api.js';
 import { ideas, setLanguage, t, tl } from './i18n.js';
 import { applyAppearance, loadDraft, loadSettings, resetSettings, saveDraft, saveSettings } from './settings.js';
 import { initSettingsPanel } from './settingsPanel.js';
-import { filterHistory, shortDate } from './history.js';
+import { filterHistory, shortDate, loadFavIds, saveFavIds, onlyFavorites } from './history.js';
 import { getLanguage } from './i18n.js';
 
 const $ = (selector) => document.querySelector(selector);
@@ -26,9 +26,11 @@ const IDEAS = [
 
 const STAGES = ['Interpretando tu prompt', 'Dibujando líneas y formas', 'Aplicando color y luz', 'Últimos detalles'];
 
-let settings = loadSettings();
-let panel = null;
+const favs = loadFavIds();
+let favOnly = false;
 
+const SHARE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>';
+const SAVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 20h16"/></svg>';
 const state = {
   config: null,
   history: [],
@@ -47,6 +49,7 @@ const els = {
  info: $('#result-info'), caption: $('#caption'), meta: $('#meta'),
   actions: $('#actions'), download: $('#download'), regenerate: $('#regenerate'), remove: $('#remove'),
   search: $('#history-search'), grid: $('#grid'), historyEmpty: $('#history-empty'), historyCount: $('#history-count'), clear: $('#clear'),
+   favFilter: $('#history-fav-filter'),
   toast: $('#toast'), confirm: $('#confirm'), settingsDialog: $('#settings'),
   gate: $('#gate'), gateForm: $('#gate-form'), gateInput: $('#gate-input'), gateError: $('#gate-error'),
 };
@@ -343,7 +346,7 @@ function thumb(item) {
 
  function renderHistory() {
   const n = state.history.length;
-  const visible = filterHistory(state.history, els.search?.value ?? '');
+   const visible = filterHistory(state.history, els.search?.value ?? '', favOnly);
   els.grid.replaceChildren(...visible.map(thumb));
   if (els.search) els.search.hidden = n === 0;
   const empty = n > 0 && visible.length === 0;
