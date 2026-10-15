@@ -478,3 +478,20 @@ html:not([data-motion="reduced"]) .bar i {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   pointer-events: none;
 }
+/* ═══ Favoritos y acciones en cada miniatura ═══ */
+.thumb-wrap { position: relative; margin: 0 0 10px; break-inside: avoid; }
+.thumb-wrap .thumb { margin: 0; }
+.thumb__tools { position: absolute; top: 8px; right: 8px; z-index: 4; display: flex; gap: 6px; }
+.thumb__btn {
+  display: grid; place-items: center; width: 34px; height: 34px; padding: 0;
+  border: 0; border-radius: 50%; background: rgba(0, 0, 0, .55); color: #fff;
+  font-size: 17px; line-height: 1; cursor: pointer;
+  transition: transform .15s var(--ease), background-color .2s, color .2s;
+}
+.thumb__btn:hover { background: rgba(0, 0, 0, .75); }
+.thumb__btn:active { transform: scale(.9); }
+.thumb__btn[aria-pressed="true"] { color: var(--accent); }
+.thumb__btn svg { width: 16px; height: 16px; }
+.thumb__btn:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+.history__fav { margin: 0 0 12px; min-height: 40px; }
+.history__fav[aria-pressed="true"] { border-color: var(--accent); background: rgba(var(--accent-rgb), .13); color: var(--text); }
