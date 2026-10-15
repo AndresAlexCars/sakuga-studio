@@ -432,6 +432,7 @@ html[data-motion="reduced"] .bar i { transform: none; width: 60%; }
   .sheet { width: 100%; max-width: none; margin: auto 0 0; border-radius: 24px 24px 0 0; border-bottom: 0; }
   .sheet[open] { animation: sheet-up .3s var(--ease); }
 }
+
 /* ═══ Pase de diseño: profundidad, microinteracciones y galería ═══
    Solo CSS. Usa las variables de cada tema y respeta "reducir animaciones". */
 
