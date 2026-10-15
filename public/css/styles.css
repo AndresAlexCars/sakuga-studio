@@ -432,3 +432,35 @@ html[data-motion="reduced"] .bar i { transform: none; width: 60%; }
   .sheet { width: 100%; max-width: none; margin: auto 0 0; border-radius: 24px 24px 0 0; border-bottom: 0; }
   .sheet[open] { animation: sheet-up .3s var(--ease); }
 }
+/* ═══ Carga nueva: pulso de luz, trama en movimiento y barra que brilla ═══ */
+@keyframes carga-pulso {
+  0%, 100% { opacity: .35; transform: scale(.92); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+@keyframes carga-trama {
+  to { background-position: 24px 24px; }
+}
+@keyframes carga-brillo {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(320%); }
+}
+
+html:not([data-motion="reduced"]) .frame__loading::after {
+  display: block;
+  background: radial-gradient(circle at 50% 42%, rgba(var(--accent-rgb), .22), transparent 62%);
+  transform: none;
+  animation: carga-pulso 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+html:not([data-motion="reduced"]) .frame__loading::before {
+  animation: carga-trama 1.6s linear infinite;
+}
+html:not([data-motion="reduced"]) .bar {
+  position: relative;
+}
+html:not([data-motion="reduced"]) .bar i {
+  width: 36%;
+  animation: carga-brillo 1.3s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), .6);
+}
