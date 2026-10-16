@@ -614,3 +614,53 @@ html:not([data-motion="reduced"]) .bar i {
     0 30px 70px -28px rgba(var(--accent-rgb), .6);
 }
 .frame[data-state="ready"]::before { display: block; inset: 10px; }
+
+/* ═══ Pase visual: aurora de fondo, brillo de navegación y marca con degradado ═══ */
+@keyframes aurora-girar { to { transform: rotate(360deg); } }
+@keyframes brillo-boton {
+  0%, 100% { box-shadow: 0 10px 28px -10px rgba(var(--accent-rgb), .7); }
+  50% { box-shadow: 0 12px 40px -6px rgba(var(--accent-rgb), .95), 0 0 0 4px rgba(var(--accent-rgb), .12); }
+}
+@keyframes marca-brillo {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Aurora de fondo: un halo de color que gira muy despacio */
+body { position: relative; overflow-x: hidden; }
+body::before {
+  content: ""; position: fixed; z-index: -1; left: 50%; top: 40%;
+  width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax;
+  background: conic-gradient(from 0deg, transparent 0 25%, rgba(var(--accent-rgb), .16), transparent 45% 70%, rgba(var(--accent-rgb), .10), transparent);
+  filter: blur(40px); pointer-events: none;
+}
+html:not([data-motion="reduced"]) body::before { animation: aurora-girar 60s linear infinite; }
+@media (prefers-reduced-motion: reduce) { body::before { animation: none !important; } }
+
+/* Botón Generar con brillo que respira */
+html:not([data-motion="reduced"]) .btn--primary:not(:disabled) { animation: brillo-boton 3.2s ease-in-out infinite; }
+
+/* Marca con degradado animado */
+.brand span {
+  background: linear-gradient(90deg, var(--text) 0%, var(--accent) 45%, var(--accent-2) 70%, var(--text) 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+html:not([data-motion="reduced"]) .brand span { animation: marca-brillo 9s ease-in-out infinite; }
+
+/* Navegación: la pestaña activa brilla y el icono sube */
+.nav button { transition: color .25s, transform .2s var(--ease); }
+.nav button:active { transform: scale(.94); }
+.nav button[aria-current="page"] svg { filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), .75)); }
+.nav button[aria-current="page"]::before { width: 46px; height: 3px; box-shadow: 0 0 12px rgba(var(--accent-rgb), .9); }
+
+/* Miniaturas: aro de luz al pasar el dedo o el cursor */
+.thumb-wrap:hover .thumb { box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .55), 0 16px 34px -16px rgba(var(--accent-rgb), .7); }
+
+/* Tarjetas de controles: filete superior de color */
+.controls { position: relative; }
+.controls::before {
+  content: ""; position: absolute; left: 22px; right: 22px; top: 0; height: 2px; border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), .9), transparent);
+  pointer-events: none;
+}
