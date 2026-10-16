@@ -1,6 +1,6 @@
 import { api, ApiError, hasAccessCode, setAccessCode } from './api.js';
 import { ideas, setLanguage, t, tl } from './i18n.js';
-import { applyAppearance, loadDraft, loadSettings, resetSettings, saveDraft, saveSettings } from './settings.js';
+import { applyAppearance, loadDraft, loadSettings, normalize, resetSettings, saveDraft, saveSettings } from './settings.js';
 import { initSettingsPanel } from './settingsPanel.js';
 import { filterHistory, shortDate, loadFavIds, saveFavIds, onlyFavorites } from './history.js';
 import { getLanguage } from './i18n.js';
@@ -31,6 +31,7 @@ let panel = null;
 const favs = loadFavIds();
 let favOnly = false;
 
+const THUMB_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.3a2 2 0 0 0 2-1.7l1.4-9A2 2 0 0 0 19.7 9H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>';
 const SHARE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>';
 const SAVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 20h16"/></svg>';
 
@@ -336,7 +337,7 @@ function thumbButton(item) {
   caption.className = 'thumb__meta';
   const styleName = tl('style', item.style, labelOf(state.config.styles, item.style));
   caption.textContent = [styleName, shortDate(item.createdAt, getLanguage() === 'en' ? 'en' : 'es')].filter(Boolean).join(' · ');
-  button.append(caption);
+  if (settings.showCaptions) button.append(caption);
 
   button.addEventListener('click', () => {
     showResult(item);
@@ -356,7 +357,7 @@ function thumbTools(item) {
   star.className = 'thumb__btn';
   star.setAttribute('aria-pressed', String(isFav));
   star.setAttribute('aria-label', t(isFav ? 'history.unfav' : 'history.fav'));
-  star.textContent = isFav ? '★' : '☆';
+  star.innerHTML = THUMB_ICON;
   star.addEventListener('click', (event) => {
     event.stopPropagation();
     toggleFav(item.id);
@@ -432,7 +433,8 @@ async function shareItem(item) {
 function renderHistory() {
   const n = state.history.length;
   const visible = onlyFavorites(filterHistory(state.history, els.search?.value ?? ''), favs, favOnly);
-  els.grid.replaceChildren(...visible.map(thumb));
+  const ordered = settings.sort === 'old' ? [...visible].reverse() : visible;
+  els.grid.replaceChildren(...ordered.map(thumb));
   if (els.search) els.search.hidden = n === 0;
   const empty = n > 0 && visible.length === 0;
   if (els.favFilter) els.favFilter.hidden = n === 0;
@@ -440,7 +442,49 @@ function renderHistory() {
   els.historyCount.textContent = n ? t(n === 1 ? 'history.count.one' : 'history.count.many', { n }) : '';
   els.historyEmpty.hidden = visible.length > 0;
   els.clear.hidden = n === 0;
+  syncLikeCurrent();
 }
+
+function syncLikeCurrent() {
+  const btn = $('#like-current');
+  if (!btn) return;
+  const on = Boolean(state.current && favs.has(state.current.id));
+  btn.setAttribute('aria-pressed', String(on));
+  btn.classList.toggle('is-liked', on);
+  btn.disabled = !state.current;
+}
+
+function downloadSettings() {
+  const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'jordvex-ajustes.json';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function importSettings(file) {
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('formato');
+    settings = normalize(data);
+    saveSettings(settings);
+    applyAppearance(settings);
+    applyLanguage();
+    renderHistory();
+    panel?.sync();
+    toast(t('settings.loaded'));
+  } catch {
+    toast(t('settings.badFile'));
+  }
+}
+
+$('#like-current')?.addEventListener('click', () => {
+  if (state.current) toggleFav(state.current.id);
+});
 
 async function loadHistory() {
   try {
@@ -644,6 +688,7 @@ function updateSettings(partial) {
   saveSettings(settings);
   applyAppearance(settings);
   if ('lang' in partial) applyLanguage();
+  if ('sort' in partial || 'showCaptions' in partial) renderHistory();
   panel?.sync();
 }
 
@@ -704,6 +749,8 @@ async function init() {
     provider: state.config.provider,
     appName: state.config.appName,
     count: () => state.history.length,
+    onDownload: downloadSettings,
+    onImport: importSettings,
   });
   onPrefsChanged();
   const { width, height } = currentSize();

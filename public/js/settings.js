@@ -19,6 +19,8 @@ export const DEFAULTS = Object.freeze({
   lang: 'es',
   vibrate: true,
   saveDraft: true,
+  showCaptions: true,
+  sort: 'new',
 });
 
 const RULES = {
@@ -30,6 +32,8 @@ const RULES = {
   lang: (v) => (v === 'en' ? 'en' : 'es'),
   vibrate: (v) => v !== false,
   saveDraft: (v) => v !== false,
+  showCaptions: (v) => v !== false,
+  sort: (v) => (v === 'old' ? 'old' : 'new'),
 };
 
 export function normalize(raw) {

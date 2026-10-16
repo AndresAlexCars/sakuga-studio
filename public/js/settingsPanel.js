@@ -13,7 +13,7 @@ function el(tag, props = {}, ...children) {
   return node;
 }
 
-export function initSettingsPanel({ dialog, getSettings, update, onReset, onExport, onClearHistory, provider, appName, count = () => 0 }) {
+export function initSettingsPanel({ dialog, getSettings, update, onReset, onExport, onClearHistory, onDownload = () => {}, onImport = () => {}, provider, appName, count = () => 0 }) {
   const body = dialog.querySelector('#settings-body');
   let refs = [];
   let accentInput = null;
@@ -77,7 +77,17 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
       dialog.close();
       onClearHistory();
     });
-    actions.append(copy, reset, clear);
+    const download = el('button', { type: 'button', class: 'btn btn--sm', text: t('settings.download') });
+    const load = el('button', { type: 'button', class: 'btn btn--sm', text: t('settings.load') });
+    const fileInput = el('input', { type: 'file', accept: 'application/json,.json', hidden: '' });
+    download.addEventListener('click', onDownload);
+    load.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) onImport(file);
+      fileInput.value = '';
+    });
+    actions.append(copy, download, load, reset, clear, fileInput);
 
     body.replaceChildren(
       section(
@@ -111,6 +121,14 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
         t('settings.behavior'),
         toggle('vibrate', t('settings.vibrate')),
         toggle('saveDraft', t('settings.draft')),
+        toggle('showCaptions', t('settings.showCaptions')),
+        choice({
+          key: 'sort', label: t('settings.order'), seg: true,
+          options: [
+            { value: 'new', label: t('settings.order.new') },
+            { value: 'old', label: t('settings.order.old') },
+          ],
+        }),
       ),
       section(t('settings.data'), actions),
       section(
