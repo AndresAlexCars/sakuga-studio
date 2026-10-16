@@ -26,11 +26,14 @@ const IDEAS = [
 
 const STAGES = ['Interpretando tu prompt', 'Dibujando líneas y formas', 'Aplicando color y luz', 'Últimos detalles'];
 
+let settings = loadSettings();
+let panel = null;
 const favs = loadFavIds();
 let favOnly = false;
 
 const SHARE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>';
 const SAVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 20h16"/></svg>';
+
 const state = {
   config: null,
   history: [],
@@ -48,8 +51,7 @@ const els = {
   errorText: $('#error-text'), retry: $('#retry'),
  info: $('#result-info'), caption: $('#caption'), meta: $('#meta'),
   actions: $('#actions'), download: $('#download'), regenerate: $('#regenerate'), remove: $('#remove'),
-  search: $('#history-search'), grid: $('#grid'), historyEmpty: $('#history-empty'), historyCount: $('#history-count'), clear: $('#clear'),
-   favFilter: $('#history-fav-filter'),
+  search: $('#history-search'), favFilter: $('#history-fav-filter'), grid: $('#grid'), historyEmpty: $('#history-empty'), historyCount: $('#history-count'), clear: $('#clear'),
   toast: $('#toast'), confirm: $('#confirm'), settingsDialog: $('#settings'),
   gate: $('#gate'), gateForm: $('#gate-form'), gateInput: $('#gate-input'), gateError: $('#gate-error'),
 };
@@ -149,8 +151,7 @@ function setFrameRatio(width, height) {
 }
 
 function updateEstimate() {
-  if (state.config.provider === 'cloudflare' || state.config.provider === 'pollinations') {
-    
+  if (state.config.provider === 'cloudflare') {
     els.estimate.textContent = t('estimate.free');
     return;
   }
@@ -201,7 +202,7 @@ function showResult(item) {
     chip(tl('style', item.style, labelOf(state.config.styles, item.style))),
     chip(item.ratio),
     chip(`${item.width}×${item.height}`),
-   chip(tl('quality', item.quality, labelOf(state.config.qualities, item.quality))),
+    chip(tl('quality', item.quality, labelOf(state.config.qualities, item.quality))),
   );
   els.download.href = item.url;
   els.download.download = `jordvex-${item.id.slice(0, 8)}.${item.url.split('.').pop()}`;
@@ -315,7 +316,7 @@ async function removeCurrent() {
 }
 
 /* ── Historial ──────────────────────────────── */
-function thumb(item) {
+function thumbButton(item) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'thumb';
@@ -329,7 +330,8 @@ function thumb(item) {
   img.loading = 'lazy';
   img.decoding = 'async';
   button.append(img);
-    // Pie con estilo y fecha
+
+  // Pie con estilo y fecha: así cada miniatura se identifica sin abrirla.
   const caption = document.createElement('span');
   caption.className = 'thumb__meta';
   const styleName = tl('style', item.style, labelOf(state.config.styles, item.style));
@@ -344,17 +346,101 @@ function thumb(item) {
   return button;
 }
 
- function renderHistory() {
+function thumbTools(item) {
+  const tools = document.createElement('div');
+  tools.className = 'thumb__tools';
+
+  const isFav = favs.has(item.id);
+  const star = document.createElement('button');
+  star.type = 'button';
+  star.className = 'thumb__btn';
+  star.setAttribute('aria-pressed', String(isFav));
+  star.setAttribute('aria-label', t(isFav ? 'history.unfav' : 'history.fav'));
+  star.textContent = isFav ? '★' : '☆';
+  star.addEventListener('click', (event) => {
+    event.stopPropagation();
+    toggleFav(item.id);
+  });
+
+  const share = document.createElement('button');
+  share.type = 'button';
+  share.className = 'thumb__btn';
+  share.setAttribute('aria-label', t('history.share'));
+  share.innerHTML = SHARE_ICON;
+  share.addEventListener('click', (event) => {
+    event.stopPropagation();
+    shareItem(item);
+  });
+
+  const save = document.createElement('button');
+  save.type = 'button';
+  save.className = 'thumb__btn';
+  save.setAttribute('aria-label', t('history.save'));
+  save.innerHTML = SAVE_ICON;
+  save.addEventListener('click', (event) => {
+    event.stopPropagation();
+    saveItem(item);
+  });
+
+  tools.append(star, share, save);
+  return tools;
+}
+
+function thumb(item) {
+  const wrap = document.createElement('div');
+  wrap.className = 'thumb-wrap';
+  wrap.append(thumbButton(item), thumbTools(item));
+  return wrap;
+}
+
+function toggleFav(id) {
+  if (favs.has(id)) favs.delete(id);
+  else favs.add(id);
+  saveFavIds(favs);
+  renderHistory();
+}
+
+function saveItem(item) {
+  const link = document.createElement('a');
+  link.href = item.url;
+  link.download = `jordvex-${item.id.slice(0, 8)}.${item.url.split('.').pop()}`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+async function shareItem(item) {
+  const name = `jordvex-${item.id.slice(0, 8)}.${item.url.split('.').pop()}`;
+  try {
+    const blob = await (await fetch(item.url)).blob();
+    const file = new File([blob], name, { type: blob.type || 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: state.config.appName, text: item.prompt });
+      return;
+    }
+  } catch (err) {
+    if (err?.name === 'AbortError') return;
+  }
+  try {
+    await navigator.clipboard.writeText(new URL(item.url, location.origin).href);
+    toast(t('history.linkCopied'));
+  } catch {
+    toast(t('history.shareFail'));
+  }
+}
+
+function renderHistory() {
   const n = state.history.length;
-   const visible = filterHistory(state.history, els.search?.value ?? '', favOnly);
+  const visible = onlyFavorites(filterHistory(state.history, els.search?.value ?? ''), favs, favOnly);
   els.grid.replaceChildren(...visible.map(thumb));
   if (els.search) els.search.hidden = n === 0;
   const empty = n > 0 && visible.length === 0;
-  els.historyEmpty.textContent = empty ? t('history.noResults') : t('history.empty');
+  if (els.favFilter) els.favFilter.hidden = n === 0;
+  els.historyEmpty.textContent = !empty ? t('history.empty') : favOnly ? t('history.noFavs') : t('history.noResults');
   els.historyCount.textContent = n ? t(n === 1 ? 'history.count.one' : 'history.count.many', { n }) : '';
   els.historyEmpty.hidden = visible.length > 0;
   els.clear.hidden = n === 0;
-  }
+}
 
 async function loadHistory() {
   try {
@@ -425,6 +511,12 @@ els.form.addEventListener('submit', (event) => {
   generate();
 });
 els.retry.addEventListener('click', generate);
+els.search?.addEventListener('input', renderHistory);
+els.favFilter?.addEventListener('click', () => {
+  favOnly = !favOnly;
+  els.favFilter.setAttribute('aria-pressed', String(favOnly));
+  renderHistory();
+});
 els.regenerate.addEventListener('click', regenerate);
 els.remove.addEventListener('click', removeCurrent);
 
