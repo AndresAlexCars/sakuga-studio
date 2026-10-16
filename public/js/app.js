@@ -512,6 +512,18 @@ els.form.addEventListener('submit', (event) => {
 });
 els.retry.addEventListener('click', generate);
 els.search?.addEventListener('input', renderHistory);
+$('#nav-fav')?.addEventListener('click', () => {
+  favOnly = true;
+  els.favFilter?.setAttribute('aria-pressed', 'true');
+  setView('history');
+  renderHistory();
+  scrollToTop();
+});
+$('#nav-idea')?.addEventListener('click', () => {
+  els.idea.click();
+  setView('create');
+  scrollToTop();
+});
 els.favFilter?.addEventListener('click', () => {
   favOnly = !favOnly;
   els.favFilter.setAttribute('aria-pressed', String(favOnly));
