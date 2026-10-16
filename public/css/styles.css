@@ -731,3 +731,19 @@ html[data-motion="reduced"] .brand-star.girar { animation: none; }
 .info-row__label { color: var(--muted); font-size: 14px; }
 .info-row__value { font-weight: 600; font-size: 14px; text-align: right; }
 .info-note { font-size: 13px; line-height: 1.45; }
+
+/* ═══ Explosión de destellos al tocar el logo ═══ */
+.brand { cursor: pointer; user-select: none; -webkit-user-select: none; }
+.destello {
+  position: fixed; z-index: 60; width: 12px; height: 12px; pointer-events: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), .9));
+  transform: translate(-50%, -50%) scale(.2);
+  animation: destello-explota var(--d, .8s) cubic-bezier(.15, .8, .3, 1) forwards;
+}
+@keyframes destello-explota {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(.2) rotate(0deg); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(200deg); }
+}
