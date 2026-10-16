@@ -844,3 +844,13 @@ html[data-motion="reduced"] .brand-star.girar { animation: none; }
   margin-top: 4px; padding: 14px 12px 4px; text-align: center; font-size: 12px; letter-spacing: .04em;
   border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
 }
+
+/* ═══ Me gusta (pulgar), botón de inicio y ajustes de cargar/descargar ═══ */
+.thumb__btn[aria-pressed="true"] svg { fill: currentColor; }
+.thumb__btn[aria-pressed="true"] { color: var(--accent); }
+#like-current.is-liked { color: var(--accent); border-color: rgba(var(--accent-rgb), .6); background: rgba(var(--accent-rgb), .14); }
+#like-current.is-liked svg { fill: currentColor; }
+#like-current:disabled { opacity: .45; }
+.sheet .sheet__actions { grid-template-columns: 1fr 1fr; }
+.sheet .sheet__actions input[type="file"] { display: none; }
+.sheet .sheet__actions .btn--danger { grid-column: 1 / -1; }
