@@ -12,6 +12,7 @@ export function shortDate(iso, locale = 'es') {
   if (Number.isNaN(d.getTime())) return '';
   return d.toLocaleDateString(locale, { day: '2-digit', month: 'short' });
 }
+
 // Favoritos: ids guardados en este dispositivo (localStorage). Nunca lanzan error.
 const FAV_KEY = 'sakuga.favs';
 
