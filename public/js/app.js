@@ -519,10 +519,9 @@ $('#nav-fav')?.addEventListener('click', () => {
   renderHistory();
   scrollToTop();
 });
-$('#nav-idea')?.addEventListener('click', () => {
-  els.idea.click();
-  setView('create');
-  scrollToTop();
+document.querySelector('[data-view-target="history"]')?.addEventListener('click', () => {
+  favOnly = false;
+  renderHistory();
 });
 els.favFilter?.addEventListener('click', () => {
   favOnly = !favOnly;
