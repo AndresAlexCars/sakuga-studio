@@ -90,6 +90,11 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
             { value: 'dark', label: t('settings.mode.dark') },
           ],
         }),
+        toggle('oled', t('settings.oled')),
+        toggle('reduceMotion', t('settings.motion')),
+      ),
+      section(
+        t('settings.colorSection'),
         choice({
           key: 'palette', label: t('settings.palette'),
           options: Object.entries(PALETTES).map(([value, p]) => ({
@@ -97,8 +102,6 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
           })),
         }),
         accent(),
-        toggle('oled', t('settings.oled')),
-        toggle('reduceMotion', t('settings.motion')),
       ),
       section(
         t('settings.language'),

@@ -551,13 +551,32 @@ $('#view-full')?.addEventListener('click', () => {
 $('#viewer')?.addEventListener('click', (event) => {
   if (event.target === event.currentTarget || event.target.closest('[data-close-viewer]')) event.currentTarget.close();
 });
-const brandStar = $('#brand-star');
-brandStar?.addEventListener('click', () => {
-  brandStar.classList.remove('girar');
-  void brandStar.getBoundingClientRect();
-  brandStar.classList.add('girar');
+const brandEl = document.querySelector('.brand');
+brandEl?.addEventListener('click', () => {
+  const star = $('#brand-star');
+  if (star) {
+    star.classList.remove('girar');
+    void star.getBoundingClientRect();
+    star.classList.add('girar');
+    star.addEventListener('animationend', () => star.classList.remove('girar'), { once: true });
+  }
+  if (prefersReducedMotion() || document.documentElement.dataset.motion === 'reduced') return;
+  const rect = brandEl.getBoundingClientRect();
+  const count = 16;
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('span');
+    piece.className = 'destello';
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.35;
+    const dist = 60 + Math.random() * 70;
+    piece.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+    piece.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+    piece.style.setProperty('--d', `${0.6 + Math.random() * 0.4}s`);
+    piece.style.left = `${rect.left + 26}px`;
+    piece.style.top = `${rect.top + rect.height / 2}px`;
+    document.body.append(piece);
+    piece.addEventListener('animationend', () => piece.remove(), { once: true });
+  }
 });
-brandStar?.addEventListener('animationend', () => brandStar.classList.remove('girar'));
 document.querySelector('[data-view-target="history"]')?.addEventListener('click', () => {
   favOnly = false;
   renderHistory();
