@@ -13,7 +13,7 @@ function el(tag, props = {}, ...children) {
   return node;
 }
 
-export function initSettingsPanel({ dialog, getSettings, update, onReset, onExport, onClearHistory, provider, appName }) {
+export function initSettingsPanel({ dialog, getSettings, update, onReset, onExport, onClearHistory, provider, appName, count = () => 0 }) {
   const body = dialog.querySelector('#settings-body');
   let refs = [];
   let accentInput = null;
@@ -55,6 +55,10 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
       el('legend', { class: 'field__label', text: t('settings.accent') }),
       el('div', { class: 'accent-row' }, accentInput, reset),
     );
+  }
+
+  function infoRow(label, value) {
+    return el('div', { class: 'info-row' }, el('span', { class: 'info-row__label', text: label }), el('span', { class: 'info-row__value', text: value }));
   }
 
   function section(title, ...items) {
@@ -106,7 +110,16 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
         toggle('saveDraft', t('settings.draft')),
       ),
       section(t('settings.data'), actions),
-      el('p', { class: 'muted about', text: t('settings.about', { app: appName, provider }) }),
+      section(
+      t('settings.info'),
+      infoRow(t('settings.info.provider'), provider === 'cloudflare' ? 'Cloudflare Workers AI' : 'fal.ai'),
+      infoRow(t('settings.info.model'), provider === 'cloudflare' ? 'FLUX.1 schnell' : 'FLUX'),
+      infoRow(t('settings.info.count'), String(count())),
+      infoRow(t('settings.info.quota'), provider === 'cloudflare' ? t('settings.info.quotaValue') : '—'),
+      el('p', { class: 'muted info-note', text: t('settings.info.privacy') }),
+      el('p', { class: 'muted info-note', text: t('settings.info.tip') }),
+    ),
+    el('p', { class: 'muted about', text: t('settings.about', { app: appName, provider }) }),
     );
 
     // Textos fijos del marco del panel
@@ -138,7 +151,7 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
     sync,
     rebuild: build,
     open() {
-      sync();
+      build();
       dialog.showModal();
     },
   };

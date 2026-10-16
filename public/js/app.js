@@ -519,6 +519,45 @@ $('#nav-fav')?.addEventListener('click', () => {
   renderHistory();
   scrollToTop();
 });
+$('#prompt-clear')?.addEventListener('click', () => {
+  els.prompt.value = '';
+  updateCount();
+  if (settings.saveDraft) saveDraft('');
+  els.prompt.focus();
+});
+$('#copy-prompt')?.addEventListener('click', async () => {
+  if (!state.current) return;
+  try {
+    await navigator.clipboard.writeText(state.current.prompt);
+    toast(t('toast.promptCopied'));
+  } catch {
+    toast(t('settings.copyFail'));
+  }
+});
+$('#use-prompt')?.addEventListener('click', () => {
+  if (!state.current) return;
+  els.prompt.value = state.current.prompt;
+  updateCount();
+  setView('create');
+  scrollToTop();
+  toast(t('toast.promptUsed'));
+});
+$('#view-full')?.addEventListener('click', () => {
+  if (!state.current) return;
+  $('#viewer-img').src = state.current.url;
+  $('#viewer-img').alt = state.current.prompt;
+  $('#viewer').showModal();
+});
+$('#viewer')?.addEventListener('click', (event) => {
+  if (event.target === event.currentTarget || event.target.closest('[data-close-viewer]')) event.currentTarget.close();
+});
+const brandStar = $('#brand-star');
+brandStar?.addEventListener('click', () => {
+  brandStar.classList.remove('girar');
+  void brandStar.getBoundingClientRect();
+  brandStar.classList.add('girar');
+});
+brandStar?.addEventListener('animationend', () => brandStar.classList.remove('girar'));
 document.querySelector('[data-view-target="history"]')?.addEventListener('click', () => {
   favOnly = false;
   renderHistory();
@@ -645,6 +684,7 @@ async function init() {
     onClearHistory: () => els.clear.click(),
     provider: state.config.provider,
     appName: state.config.appName,
+    count: () => state.history.length,
   });
   onPrefsChanged();
   const { width, height } = currentSize();
