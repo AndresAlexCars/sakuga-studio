@@ -144,7 +144,7 @@ function renderChoices(container, key, options, decorate) {
 }
 
 function currentSize() {
-  if (state.config.provider === 'cloudflare') return { width: 1024, height: 1024 };
+  if (state.config.provider === 'cloudflare' && state.prefs.imageProvider !== 'pollinations') return { width: 1024, height: 1024 };
   return state.config.sizes[state.prefs.ratio][state.prefs.resolution];
 }
 
@@ -169,6 +169,7 @@ function updateEstimate() {
 }
 
 function onPrefsChanged() {
+  document.body.dataset.image = state.prefs.imageProvider;
   updateEstimate();
   const s = els.frame.dataset.state;
   if (s === 'empty' || s === 'error') {
