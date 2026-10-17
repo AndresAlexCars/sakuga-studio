@@ -896,3 +896,11 @@ html:not([data-motion="reduced"]) .stage::before { animation: girar-borde 7s lin
 }
 .chat__form input:focus { outline: none; border-color: rgba(var(--accent-rgb), .7); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12); }
 .chat__form .btn { min-height: 46px; }
+
+/* ═══ Selector de proveedor del asistente ═══ */
+.chat__head-tools { display: flex; align-items: center; gap: 8px; }
+.chat__select {
+  min-height: 36px; max-width: 190px; padding: 0 10px; border-radius: 10px;
+  background: var(--bg); border: 1px solid var(--line); color: var(--text); font-size: 13px;
+}
+.chat__select:focus { outline: none; border-color: rgba(var(--accent-rgb), .7); }
