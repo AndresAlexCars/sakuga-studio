@@ -47,7 +47,7 @@ const state = {
 const els = {
   form: $('#form'), prompt: $('#prompt'), count: $('#count'), idea: $('#idea'),
   styles: $('#styles'), ratios: $('#ratios'), resolutions: $('#resolutions'), qualities: $('#qualities'),
-  generate: $('#generate'), estimate: $('#estimate'),
+  generate: $('#generate'), estimate: $('#estimate'), imageProviders: $('#image-providers'),
   frame: $('#frame'), img: $('#result'), stageText: $('#stage-text'), elapsed: $('#elapsed'),
   errorText: $('#error-text'), retry: $('#retry'),
  info: $('#result-info'), caption: $('#caption'), meta: $('#meta'),
@@ -85,6 +85,7 @@ function sanitizePrefs() {
   state.prefs.ratio = pick(ratios, state.prefs.ratio);
   state.prefs.resolution = pick(resolutions, state.prefs.resolution);
   state.prefs.quality = pick(qualities, state.prefs.quality);
+  state.prefs.imageProvider = state.prefs.imageProvider === 'pollinations' ? 'pollinations' : 'default';
 }
 /* ── Opciones ───────────────────────────────── */
 function ratioGlyph(w, h) {
@@ -152,6 +153,10 @@ function setFrameRatio(width, height) {
 }
 
 function updateEstimate() {
+  if (state.prefs.imageProvider === 'pollinations') {
+    els.estimate.textContent = t('estimate.pollinations');
+    return;
+  }
   if (state.config.provider === 'cloudflare') {
     els.estimate.textContent = t('estimate.free');
     return;
@@ -724,6 +729,10 @@ function localized(list, group) {
 }
 
 function renderAllChoices() {
+  renderChoices(els.imageProviders, 'imageProvider', [
+    { id: 'default', label: state.config.provider === 'cloudflare' ? 'Cloudflare · FLUX' : 'fal.ai · FLUX' },
+    { id: 'pollinations', label: 'Pollinations · FLUX' },
+  ]);
   renderChoices(els.styles, 'style', localized(state.config.styles, 'style'));
   renderChoices(els.ratios, 'ratio', state.config.ratios, (r) => ratioGlyph(r.w, r.h));
   renderChoices(els.resolutions, 'resolution', localized(state.config.resolutions, 'res'));
