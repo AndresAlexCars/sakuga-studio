@@ -4,6 +4,7 @@ import { config } from '../config.js';
 import { QUALITIES, RATIOS, RESOLUTIONS, STYLES, publicCatalog } from '../catalog.js';
 import { requireAccess, requireClient } from '../middleware/auth.js';
 import { UpstreamError } from '../services/fal.js';
+import { chat, takeChatSlot } from '../services/chat.js';
 import { generate } from '../services/generator.js';
 import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
@@ -99,6 +100,32 @@ apiRouter.delete('/history/:id', async (req, res) => {
 
 apiRouter.delete('/history', async (req, res) => {
   res.json({ ok: true, removed: await clearItems(req.clientId) });
+});
+
+const chatLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Demasiados mensajes seguidos. Espera unos minutos.' },
+});
+
+apiRouter.post('/chat', chatLimiter, async (req, res) => {
+  const list = Array.isArray(req.body?.messages) ? req.body.messages.slice(-12) : [];
+  const messages = list
+    .filter((m) => (m?.role === 'user' || m?.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
+  if (!messages.length || messages[messages.length - 1].role !== 'user') {
+    return res.status(400).json({ error: 'Escribe un mensaje.' });
+  }
+  if (!takeChatSlot()) return res.status(429).json({ error: 'Se alcanzó el límite diario del asistente. Vuelve mañana.' });
+  try {
+    res.json({ reply: await chat(messages) });
+  } catch (err) {
+    if (err instanceof UpstreamError) return res.status(err.status).json({ error: err.message });
+    console.error('[chat]', err);
+    res.status(500).json({ error: 'Error interno del asistente.' });
+  }
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
