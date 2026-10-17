@@ -904,3 +904,8 @@ html:not([data-motion="reduced"]) .stage::before { animation: girar-borde 7s lin
   background: var(--bg); border: 1px solid var(--line); color: var(--text); font-size: 13px;
 }
 .chat__select:focus { outline: none; border-color: rgba(var(--accent-rgb), .7); }
+
+/* ═══ Barra de escribir del chat: el campo ocupa el espacio y Enviar tiene su tamaño ═══ */
+.chat__form { align-items: stretch; }
+.chat__form input { width: auto; flex: 1 1 auto; min-width: 0; }
+.chat__form .btn--primary { width: auto; flex: 0 0 auto; min-width: 96px; padding: 0 18px; font-size: 16px; }
