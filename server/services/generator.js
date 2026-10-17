@@ -3,8 +3,9 @@ import { QUALITIES, buildPrompt, sizeFor } from '../catalog.js';
 import { config } from '../config.js';
 import { imageKind, imageSize } from '../utils/imageSize.js';
 import { runCloudflare } from './cloudflare.js';
-import { UpstreamError, downloadImage, runModel } from './fal.js';
 import { toEnglish } from './translate.js';
+import { runPollinations } from './pollinations.js';
+import { UpstreamError, downloadImage, runModel } from './fal.js';
 import { addItem, saveImageFile, toPublic } from './store.js';
 
 const gcd = (a, b) => (b ? gcd(b, a % b) : a);
@@ -44,29 +45,32 @@ async function viaFal({ prompt, style, ratio, resolution, quality }) {
 
 // Cloudflare no permite elegir tamaño: se lee el real de la imagen devuelta.
 async function viaCloudflare({ prompt, style }) {
+  // Se traduce solo para el modelo; el historial guarda el texto original en español.
   const english = await toEnglish(prompt);
   const buffer = await runCloudflare(buildPrompt(style, english.text));
   const kind = imageKind(buffer);
   if (!kind) throw new UpstreamError('Cloudflare devolvió un archivo que no es una imagen.');
   const { width, height } = imageSize(buffer) ?? { width: 1024, height: 1024 };
   const d = gcd(width, height);
-  return { 
-    buffer, 
-    ext: kind, 
-    width, 
-    height, 
-    ratio: `${width / d}:${height / d}`, 
-    resolution: 'md', 
-    quality: 'fast',
-    originalPrompt: english.original
-  };
+  return { buffer, ext: kind, width, height, ratio: `${width / d}:${height / d}`, resolution: 'md', quality: 'fast' };
 }
 
-export async function generate({ clientId, prompt, style, ratio, resolution, quality }) {
+async function viaPollinations({ prompt, style, ratio, resolution }) {
+  const english = await toEnglish(prompt);
+  const { width, height } = sizeFor(ratio, resolution);
+  const buffer = await runPollinations(buildPrompt(style, english.text), width, height);
+  const kind = imageKind(buffer);
+  if (!kind) throw new UpstreamError('Pollinations devolvió un archivo que no es una imagen.', 502);
+  return { buffer, ext: kind, width, height, ratio, resolution, quality: 'fast' };
+}
+
+export async function generate({ clientId, prompt, style, ratio, resolution, quality, imageProvider }) {
   const out =
-    config.provider === 'cloudflare'
-      ? await viaCloudflare({ prompt, style })
-      : await viaFal({ prompt, style, ratio, resolution, quality });
+    imageProvider === 'pollinations'
+      ? await viaPollinations({ prompt, style, ratio, resolution })
+      : config.provider === 'cloudflare'
+        ? await viaCloudflare({ prompt, style })
+        : await viaFal({ prompt, style, ratio, resolution, quality });
 
   const id = crypto.randomUUID();
   const file = `${id}.${out.ext}`;
