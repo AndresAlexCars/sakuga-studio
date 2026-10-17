@@ -484,7 +484,7 @@ async function importSettings(file) {
   }
 }
 
-const chatEls = { dialog: $('#chat'), log: $('#chat-log'), form: $('#chat-form'), input: $('#chat-input'), send: $('#chat-send') };
+const chatEls = { dialog: $('#chat'), log: $('#chat-log'), form: $('#chat-form'), input: $('#chat-input'), send: $('#chat-send'), provider: $('#chat-provider') };
 const chatMessages = [];
 
 function addBubble(role, text) {
@@ -515,7 +515,7 @@ chatEls.form?.addEventListener('submit', async (event) => {
   pending.classList.add('is-typing');
   chatEls.send.disabled = true;
   try {
-    const { reply } = await api.chat(chatMessages.slice(-12));
+    const { reply } = await api.chat(chatMessages.slice(-12), chatEls.provider?.value || 'cloudflare');
     pending.textContent = reply;
     pending.classList.remove('is-typing');
     chatMessages.push({ role: 'assistant', content: reply });
