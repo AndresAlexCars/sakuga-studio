@@ -909,3 +909,7 @@ html:not([data-motion="reduced"]) .stage::before { animation: girar-borde 7s lin
 .chat__form { align-items: stretch; }
 .chat__form input { width: auto; flex: 1 1 auto; min-width: 0; }
 .chat__form .btn--primary { width: auto; flex: 0 0 auto; min-width: 96px; padding: 0 18px; font-size: 16px; }
+
+/* ═══ Pollinations: tamaño elegible (proporción y resolución); el modelo no aplica ═══ */
+body[data-image="pollinations"] .field--fal { display: none; }
+body[data-image="pollinations"] .field--size { display: block; }
