@@ -206,6 +206,8 @@ function showResult(item) {
     chip(tl('quality', item.quality, labelOf(state.config.qualities, item.quality))),
   );
   els.download.href = item.url;
+  const openTab = $('#open-tab');
+  if (openTab) openTab.href = item.url;
   els.download.download = `jordvex-${item.id.slice(0, 8)}.${item.url.split('.').pop()}`;
   els.info.hidden = false;
   els.actions.hidden = false;
@@ -482,6 +484,51 @@ async function importSettings(file) {
   }
 }
 
+const chatEls = { dialog: $('#chat'), log: $('#chat-log'), form: $('#chat-form'), input: $('#chat-input'), send: $('#chat-send') };
+const chatMessages = [];
+
+function addBubble(role, text) {
+  const bubble = document.createElement('div');
+  bubble.className = `chat__msg chat__msg--${role}`;
+  bubble.textContent = text;
+  chatEls.log.append(bubble);
+  chatEls.log.scrollTop = chatEls.log.scrollHeight;
+  return bubble;
+}
+
+$('#nav-chat')?.addEventListener('click', () => {
+  if (!chatEls.dialog.open) chatEls.dialog.showModal();
+  chatEls.input.focus();
+});
+chatEls.dialog?.querySelector('[data-close-chat]')?.addEventListener('click', () => chatEls.dialog.close());
+chatEls.dialog?.addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) event.currentTarget.close();
+});
+chatEls.form?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const text = chatEls.input.value.trim();
+  if (!text || chatEls.send.disabled) return;
+  chatEls.input.value = '';
+  addBubble('user', text);
+  chatMessages.push({ role: 'user', content: text });
+  const pending = addBubble('bot', t('chat.thinking'));
+  pending.classList.add('is-typing');
+  chatEls.send.disabled = true;
+  try {
+    const { reply } = await api.chat(chatMessages.slice(-12));
+    pending.textContent = reply;
+    pending.classList.remove('is-typing');
+    chatMessages.push({ role: 'assistant', content: reply });
+  } catch (err) {
+    pending.remove();
+    chatMessages.pop();
+    toast(err.message);
+  } finally {
+    chatEls.send.disabled = false;
+    chatEls.input.focus();
+  }
+});
+
 $('#like-current')?.addEventListener('click', () => {
   if (state.current) toggleFav(state.current.id);
 });
@@ -562,6 +609,17 @@ $('#nav-fav')?.addEventListener('click', () => {
   setView('history');
   renderHistory();
   scrollToTop();
+});
+$('#prompt-paste')?.addEventListener('click', async () => {
+  try {
+    const text = (await navigator.clipboard.readText()).trim();
+    if (!text) return;
+    els.prompt.value = text.slice(0, els.prompt.maxLength);
+    updateCount();
+    if (settings.saveDraft) saveDraft(els.prompt.value);
+  } catch {
+    toast(t('prompt.pasteFail'));
+  }
 });
 $('#prompt-clear')?.addEventListener('click', () => {
   els.prompt.value = '';

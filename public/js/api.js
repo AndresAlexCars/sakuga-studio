@@ -53,6 +53,7 @@ async function request(path, { method = 'GET', body } = {}) {
 
 export const api = {
   config: () => request('/api/config'),
+  chat: (messages) => request('/api/chat', { method: 'POST', body: { messages } }),
   generate: (params) => request('/api/generate', { method: 'POST', body: params }),
   history: () => request('/api/history'),
   remove: (id) => request(`/api/history/${encodeURIComponent(id)}`, { method: 'DELETE' }),
