@@ -61,7 +61,7 @@ apiRouter.post('/generate', generateLimiter, async (req, res) => {
   const blocked = checkPrompt(prompt);
   if (blocked) return res.status(422).json({ error: blocked });
 
-  if (!config.providerReady) {
+  if (body.imageProvider !== 'pollinations' && !config.providerReady) {
     const missing =
       config.provider === 'cloudflare' ? 'CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_API_TOKEN' : 'FAL_KEY';
     return res.status(503).json({ error: `El servidor aún no tiene configurado el proveedor (${missing}).` });
@@ -78,6 +78,7 @@ apiRouter.post('/generate', generateLimiter, async (req, res) => {
       ratio: body.ratio,
       resolution: body.resolution,
       quality: body.quality,
+      imageProvider: body.imageProvider === 'pollinations' ? 'pollinations' : 'default',
     });
     res.status(201).json(item);
   } catch (err) {
@@ -119,8 +120,9 @@ apiRouter.post('/chat', chatLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Escribe un mensaje.' });
   }
   if (!takeChatSlot()) return res.status(429).json({ error: 'Se alcanzó el límite diario del asistente. Vuelve mañana.' });
+  const provider = req.body?.provider === 'groq' ? 'groq' : 'cloudflare';
   try {
-    res.json({ reply: await chat(messages) });
+    res.json({ reply: await chat(messages, provider) });
   } catch (err) {
     if (err instanceof UpstreamError) return res.status(err.status).json({ error: err.message });
     console.error('[chat]', err);
