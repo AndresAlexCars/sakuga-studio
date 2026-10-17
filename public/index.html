@@ -168,7 +168,13 @@
   <dialog id="chat" class="sheet chat-sheet" aria-label="Asistente">
     <div class="sheet__head">
       <h3 data-i18n="chat.title">Asistente</h3>
-      <button type="button" class="btn btn--text" data-close-chat data-i18n="settings.close">Cerrar</button>
+      <div class="chat__head-tools">
+        <select id="chat-provider" class="chat__select" aria-label="Proveedor">
+          <option value="cloudflare">Cloudflare · Llama 3.1 8B</option>
+          <option value="groq">Groq · Llama 3.1 8B</option>
+        </select>
+        <button type="button" class="btn btn--text" data-close-chat data-i18n="settings.close">Cerrar</button>
+      </div>
     </div>
     <div class="chat__log" id="chat-log" aria-live="polite"></div>
     <form class="chat__form" id="chat-form">
