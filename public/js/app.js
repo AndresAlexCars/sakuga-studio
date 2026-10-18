@@ -833,3 +833,11 @@ async function init() {
 }
 
 init();
+
+// Ayuda con icono: el texto aparece como subtítulo y la ayuda se cierra sola a los 6 s.
+document.addEventListener?.('toggle', (event) => {
+  const info = event.target;
+  if (!(info instanceof HTMLDetailsElement) || !info.classList.contains('info') || !info.open) return;
+  clearTimeout(info._autoClose);
+  info._autoClose = setTimeout(() => { info.open = false; }, 6000);
+}, true);
