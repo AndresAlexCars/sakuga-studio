@@ -948,3 +948,23 @@ html:not([data-motion="reduced"]) .frame[data-state="ready"]::after { animation:
 }
 html[data-motion="reduced"] .frame__loading::after,
 html[data-motion="reduced"] .frame[data-state="loading"]::after { animation: none; }
+
+/* ═══ Nombre JORDVEX: la estrella flota y el nombre respira con un resplandor ═══ */
+@keyframes marca-respira {
+  0%, 100% { letter-spacing: -0.02em; text-shadow: 0 0 0 rgba(var(--accent-rgb), 0); }
+  50% { letter-spacing: .02em; text-shadow: 0 0 18px rgba(var(--accent-rgb), .6), 0 0 36px rgba(var(--accent-rgb), .25); }
+}
+@keyframes estrella-flota {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(8deg); }
+}
+html:not([data-motion="reduced"]) .brand span {
+  animation: marca-brillo 9s ease-in-out infinite, marca-respira 3.6s ease-in-out infinite;
+}
+html:not([data-motion="reduced"]) .brand svg:not(.girar) {
+  animation: estrella-flota 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand span, .brand svg { animation: none !important; }
+}
+html[data-motion="reduced"] .brand span, html[data-motion="reduced"] .brand svg { animation: none; }
