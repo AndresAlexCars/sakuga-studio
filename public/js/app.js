@@ -841,3 +841,16 @@ document.addEventListener?.('toggle', (event) => {
   clearTimeout(info._autoClose);
   info._autoClose = setTimeout(() => { info.open = false; }, 6000);
 }, true);
+
+// Novedades: se muestran cada vez que se entra al sitio (si no hay código de acceso pendiente).
+(() => {
+  const dialog = document.getElementById?.('welcome');
+  if (!dialog) return;
+  dialog.querySelectorAll('[data-close-welcome]').forEach((btn) => btn.addEventListener('click', () => dialog.close()));
+  dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+  setTimeout(() => {
+    const gate = document.getElementById?.('gate');
+    if (!gate?.open && !dialog.open) dialog.showModal();
+  }, 900);
+})();
+
