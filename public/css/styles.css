@@ -913,3 +913,38 @@ html:not([data-motion="reduced"]) .stage::before { animation: girar-borde 7s lin
 /* ═══ Pollinations: tamaño elegible (proporción y resolución); el modelo no aplica ═══ */
 body[data-image="pollinations"] .field--fal { display: none; }
 body[data-image="pollinations"] .field--size { display: block; }
+
+/* ═══ Nueva animación al generar, borde animado y pista de ayuda en cada control ═══ */
+
+/* Carga: anillo orbital de color + haz de escaneo que sube por la imagen */
+.frame__loading::after {
+  inset: auto; left: 50%; top: 50%; width: 220px; height: 220px; margin: -110px 0 0 -110px;
+  border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 55%, rgba(var(--accent-rgb), .75), var(--accent-2), transparent 92%);
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 62%); mask: radial-gradient(circle, transparent 60%, #000 62%);
+  animation: orbita-carga 1.4s linear infinite;
+}
+@keyframes orbita-carga { to { transform: rotate(360deg); } }
+.frame[data-state="loading"]::after {
+  content: ""; position: absolute; left: 0; right: 0; top: -40%; height: 40%; z-index: 2; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(var(--accent-rgb), .28), transparent);
+  animation: haz-escaneo 2.4s ease-in-out infinite;
+}
+@keyframes haz-escaneo { to { top: 100%; } }
+
+/* Imagen lista: borde de luz giratorio alrededor del marco */
+.frame[data-state="ready"]::after {
+  content: ""; position: absolute; inset: -3px; border-radius: 15px; padding: 2px; z-index: 3; pointer-events: none;
+  background: conic-gradient(from var(--ang), rgba(var(--accent-rgb), .9), var(--accent-2), rgba(var(--accent-rgb), .9));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+html:not([data-motion="reduced"]) .frame[data-state="ready"]::after { animation: girar-borde 5s linear infinite; }
+
+/* Pista de ayuda bajo cada control */
+.hint { margin: -4px 0 10px; font-size: 12.5px; line-height: 1.45; }
+
+@media (prefers-reduced-motion: reduce) {
+  .frame__loading::after, .frame[data-state="loading"]::after, .frame[data-state="ready"]::after { animation: none !important; }
+}
+html[data-motion="reduced"] .frame__loading::after,
+html[data-motion="reduced"] .frame[data-state="loading"]::after { animation: none; }
