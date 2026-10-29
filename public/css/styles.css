@@ -1037,3 +1037,81 @@ html[data-motion="reduced"] .thumb__btn svg, html[data-motion="reduced"] #like-c
 }
 html[data-motion="reduced"] .info[open] .hint { animation: none; }
 @media (prefers-reduced-motion: reduce) { .info[open] .hint { animation: none; } }
+
+/* ═══ Ventana de novedades con estilo ═══ */
+.welcome {
+  width: min(94vw, 460px);
+  background:
+    radial-gradient(420px 220px at 50% -40px, rgba(var(--accent-rgb), .28), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-hi) 70%, var(--panel)), var(--panel));
+  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .8), 0 0 0 1px rgba(var(--accent-rgb), .15);
+}
+.welcome[open] { animation: entrada-novedades .5s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes entrada-novedades {
+  from { opacity: 0; transform: translateY(24px) scale(.96); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.welcome .sheet__head h3 {
+  font-size: 22px;
+  background: linear-gradient(90deg, var(--text), var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.welcome .sheet__section {
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+}
+.welcome .sheet__section > h4::before { content: "✦"; background: none; color: var(--accent); min-width: 0; height: auto; padding: 0; font-size: 14px; }
+.welcome .sheet__section > h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.welcome__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.welcome__list li {
+  position: relative; padding: 10px 12px 10px 36px; border-radius: 12px; font-size: 14.5px; line-height: 1.45;
+  background: color-mix(in srgb, var(--panel-hi) 80%, transparent); border: 1px solid var(--line);
+  animation: cascada-entrada .45s var(--ease) both;
+}
+.welcome__list li::before {
+  content: ""; position: absolute; left: 13px; top: 50%; width: 8px; height: 8px; margin-top: -4px;
+  border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px rgba(var(--accent-rgb), .9);
+}
+.welcome__list li:nth-child(2) { animation-delay: .08s; }
+.welcome__list li:nth-child(3) { animation-delay: .16s; }
+.welcome__list li:nth-child(4) { animation-delay: .24s; }
+.welcome__list li:nth-child(5) { animation-delay: .32s; }
+.welcome .about { margin: 0; padding: 0 4px; }
+.welcome .dialog__actions { margin-top: 4px; }
+.welcome .dialog__actions .btn--primary {
+  width: 100%; min-height: 52px; border-radius: 16px; font-size: 17px;
+  animation: brillo-boton 3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome[open], .welcome__list li { animation: none !important; }
+}
+html[data-motion="reduced"] .welcome[open], html[data-motion="reduced"] .welcome__list li { animation: none; }
+
+/* ═══ Fondos para descargar ═══ */
+.nav { grid-template-columns: repeat(5, 1fr); }
+.wallpapers { display: none; margin-top: 26px; }
+body[data-view="wallpapers"] .wallpapers { display: block; }
+body[data-view="wallpapers"] .history { display: none; }
+@media (max-width: 959px) { body[data-view="wallpapers"] .create { display: none; } }
+@media (min-width: 960px) { .wallpapers { grid-area: history; } }
+.wall-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.wall-card {
+  position: relative; overflow: hidden; border-radius: 16px; background: var(--panel-hi);
+  border: 1px solid var(--line); transition: transform .25s var(--ease), box-shadow .3s var(--ease), border-color .2s;
+  animation: cascada-entrada .45s var(--ease) both;
+}
+.wall-card:hover { transform: translateY(-3px); border-color: rgba(var(--accent-rgb), .55); box-shadow: 0 18px 36px -18px rgba(var(--accent-rgb), .7); }
+.wall-card img { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; object-fit: cover; }
+.wall-card--pc img { aspect-ratio: 16 / 10; }
+.wall-card__info { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; }
+.wall-card__info strong { font-size: 14px; line-height: 1.3; }
+.wall-card__tag { font-size: 12px; color: var(--muted); }
+.wall-card__dl { min-height: 40px; font-size: 14px; text-decoration: none; }
+.wall-admin { margin-top: 18px; border: 1px dashed var(--line); border-radius: 16px; padding: 12px 14px; background: var(--panel); }
+.wall-admin > summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--accent); list-style: none; }
+.wall-admin > summary::-webkit-details-marker { display: none; }
+.wall-admin__body { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.wall-admin input, .wall-admin select {
+  min-height: 46px; padding: 0 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); color: var(--text); font-size: 15px;
+}
+.wall-admin input[type="file"] { padding: 10px; min-height: 0; }
+.wall-admin .btn { width: 100%; }
