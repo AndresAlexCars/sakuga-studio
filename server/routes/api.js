@@ -1,4 +1,5 @@
-import { Router } from 'express';
+import crypto from 'node:crypto';
+import express, { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { config } from '../config.js';
 import { QUALITIES, RATIOS, RESOLUTIONS, STYLES, publicCatalog } from '../catalog.js';
@@ -8,6 +9,7 @@ import { chat, takeChatSlot } from '../services/chat.js';
 import { generate } from '../services/generator.js';
 import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
+import { addWallpaper, detectImage, listWallpapers, removeWallpaper } from '../services/wallpapers.js';
 
 export const apiRouter = Router();
 
@@ -128,6 +130,46 @@ apiRouter.post('/chat', chatLimiter, async (req, res) => {
     console.error('[chat]', err);
     res.status(500).json({ error: 'Error interno del asistente.' });
   }
+});
+
+// Solo el administrador (código ADMIN_CODE, comparado de forma segura) puede subir o borrar fondos.
+function checkAdmin(req) {
+  if (!config.adminCode) return 'off';
+  const given = crypto.createHash('sha256').update(req.get('x-admin-code') || '').digest();
+  const real = crypto.createHash('sha256').update(config.adminCode).digest();
+  return crypto.timingSafeEqual(given, real);
+}
+
+apiRouter.get('/wallpapers', async (_req, res) => {
+  res.json({ items: await listWallpapers() });
+});
+
+apiRouter.post('/wallpapers', express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '6mb' }), async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'El panel de fondos no está configurado (falta ADMIN_CODE).' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'No llegó ninguna imagen.' });
+  if (!detectImage(req.body)) return res.status(400).json({ error: 'Solo se permiten imágenes PNG, JPG o WEBP.' });
+  const kind = req.get('x-kind') === 'pc' ? 'pc' : 'movil';
+  let title = '';
+  try { title = decodeURIComponent(req.get('x-title') || '').trim(); } catch { title = ''; }
+  if (!title) title = kind === 'pc' ? 'Fondo para PC' : 'Fondo para móvil';
+  try {
+    const item = await addWallpaper({ buffer: req.body, title, kind });
+    res.status(201).json({ ok: true, id: item.id });
+  } catch (err) {
+    console.error('[wallpapers]', err);
+    res.status(500).json({ error: 'No se pudo guardar el fondo.' });
+  }
+});
+
+apiRouter.delete('/wallpapers/:id', async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'El panel de fondos no está configurado (falta ADMIN_CODE).' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  const removed = await removeWallpaper(req.params.id);
+  if (!removed) return res.status(404).json({ error: 'No se encontró ese fondo.' });
+  res.json({ ok: true });
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
