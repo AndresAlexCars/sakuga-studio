@@ -1,8 +1,12 @@
 import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { getObject, r2Enabled } from './services/r2.js';
 import { config } from './config.js';
 import { apiRouter } from './routes/api.js';
+import { readWallpaperFile } from './services/wallpapers.js';
 
 const app = express();
 app.set('trust proxy', config.trustProxy);
@@ -32,6 +36,29 @@ app.use(express.json({ limit: '10kb' }));
 app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
 // Los nombres de archivo son UUID aleatorios (no adivinables).
+// Si la imagen no está en disco (p. ej. tras reiniciar), se trae de R2 y se guarda como caché.
+app.get('/media/:file', async (req, res, next) => {
+  const name = req.params.file;
+  if (!r2Enabled() || !/^[0-9a-f-]{36}\.(png|jpg)$/.test(name)) return next();
+  const local = path.join(config.imagesDir, name);
+  try {
+    await fs.access(local);
+    return next();
+  } catch { /* no está en disco: se busca en R2 */ }
+  try {
+    const buf = await getObject(name);
+    if (!buf) return res.status(404).end();
+    await fs.mkdir(config.imagesDir, { recursive: true });
+    await fs.writeFile(local, buf);
+    res.type(name.endsWith('.jpg') ? 'image/jpeg' : 'image/png');
+    res.set('Cache-Control', 'public, max-age=2592000, immutable');
+    return res.send(buf);
+  } catch (err) {
+    console.error('[media] R2:', err.message);
+    return res.status(502).end();
+  }
+});
+
 app.use(
   '/media',
   express.static(config.imagesDir, {
@@ -42,6 +69,16 @@ app.use(
     setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
   }),
 );
+
+// Fondos publicados: archivos con nombre UUID, descargables por cualquiera que tenga el enlace.
+app.get('/wallpapers/:file', async (req, res) => {
+  const buf = await readWallpaperFile(req.params.file);
+  if (!buf) return res.status(404).end();
+  const ext = req.params.file.split('.').pop();
+  res.type(ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg');
+  res.set('Cache-Control', 'public, max-age=2592000, immutable');
+  res.send(buf);
+});
 
 app.use('/api', apiRouter);
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
