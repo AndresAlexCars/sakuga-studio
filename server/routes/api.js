@@ -144,7 +144,7 @@ apiRouter.get('/wallpapers', async (_req, res) => {
   res.json({ items: await listWallpapers() });
 });
 
-apiRouter.post('/wallpapers', express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '6mb' }), async (req, res) => {
+apiRouter.post('/wallpapers', express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '25mb' }), async (req, res) => {
   const ok = checkAdmin(req);
   if (ok === 'off') return res.status(503).json({ error: 'El panel de fondos no está configurado (falta ADMIN_CODE).' });
   if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
