@@ -914,7 +914,7 @@ wall.upload?.addEventListener('click', async () => {
   const code = wall.code.value.trim();
   if (!file) return toast('Elige una imagen.');
   if (!code) return toast('Escribe el código de administrador.');
-  if (file.size > 5.5 * 1024 * 1024) return toast('La imagen pasa de 5 MB.');
+  if (file.size > 25 * 1024 * 1024) return toast('La imagen pasa de 25 MB.');
   wall.upload.disabled = true;
   try {
     await api.uploadWallpaper(file, wall.kind.value, wall.title.value.trim(), code);
