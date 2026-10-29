@@ -26,8 +26,20 @@ export const config = {
   appName: (process.env.APP_NAME || 'JORDVEX').trim().slice(0, 24) || 'JORDVEX',
   // Pasos de difusión en Cloudflare (1-8). Más pasos = más detalle, pero gasta más cupo.
   cfSteps: Number.isFinite(steps) ? Math.min(8, Math.max(1, steps)) : 6,
+  r2: {
+    accountId: process.env.R2_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    bucket: process.env.R2_BUCKET || 'jordvex-images',
+    enabled: Boolean(
+      process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY &&
+      (process.env.R2_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID),
+    ),
+  },
   provider,
   falKey,
+  groqKey: process.env.GROQ_API_KEY || '',
+  adminCode: process.env.ADMIN_CODE || '',
   cfAccountId,
   cfApiToken,
   providerReady: provider === 'cloudflare' ? Boolean(cfAccountId && cfApiToken) : Boolean(falKey),
