@@ -50,29 +50,27 @@
             <img class="frame__img" id="result" alt="">
           </div>
 
+          <div class="actions" id="actions" hidden>
+            <div class="actions__bar">
+              <a class="act" id="download" href="#" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 20h16"/></svg><span data-i18n="download">Guardar</span></a>
+              <button type="button" class="act" id="view-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg><span data-i18n="action.view">Ampliar</span></button>
+              <button type="button" class="act" id="like-current" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.3a2 2 0 0 0 2-1.7l1.4-9A2 2 0 0 0 19.7 9H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg><span data-i18n="action.like">Me gusta</span></button>
+              <button type="button" class="act" id="copy-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><span data-i18n="action.copy">Copiar prompt</span></button>
+              <button type="button" class="act act--danger" id="remove" aria-label="Eliminar esta imagen" data-i18n-aria="remove.aria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span data-i18n="action.delete">Eliminar</span></button>
+            </div>
+            <div class="actions__more">
+              <a class="btn" id="open-tab" href="#" target="_blank" rel="noopener" data-i18n="action.open">Abrir en pestaña</a>
+              <button type="button" class="btn" id="use-prompt" data-i18n="action.use">Usar prompt</button>
+              <button type="button" class="btn" id="regenerate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span data-i18n="regenerate">Volver a generar</span></button>
+            </div>
+          </div>
+
           <div class="result-info" id="result-info" hidden>
             <p class="caption" id="caption"></p>
             <div class="meta" id="meta"></div>
           </div>
 
-          <div class="actions" id="actions" hidden>
-            <a class="btn btn--primary-soft" id="download" href="#" download>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 20h16"/></svg>
-              <span data-i18n="download">Guardar</span>
-            </a>
-            <a class="btn" id="open-tab" href="#" target="_blank" rel="noopener" data-i18n="action.open">Abrir en pestaña</a>
-            <button type="button" class="btn" id="view-full" data-i18n="action.view">Ver grande</button>
-            <button type="button" class="btn" id="copy-prompt" data-i18n="action.copy">Copiar prompt</button>
-            <button type="button" class="btn" id="use-prompt" data-i18n="action.use">Usar prompt</button>
-            <button type="button" class="btn" id="like-current" aria-pressed="false" data-i18n="action.like"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.3a2 2 0 0 0 2-1.7l1.4-9A2 2 0 0 0 19.7 9H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>Me gusta</button>
-            <button type="button" class="btn" id="regenerate">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
-              <span data-i18n="regenerate">Volver a generar</span>
-            </button>
-            <button type="button" class="btn btn--danger" id="remove" aria-label="Eliminar esta imagen" data-i18n-aria="remove.aria">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
-            </button>
-          </div>
+
         </div>
       </div>
 
@@ -90,35 +88,30 @@
           </div>
         </div>
 
-        <fieldset class="field">
-          <legend class="field__label" data-i18n="legend.imageProvider">Generador de imagen</legend>
-          <details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Cloudflare: gratis, tamaño fijo cuadrado. Pollinations: gratis, puedes elegir la proporción y la resolución.</p></details>
+        <section class="field gen-group">
+          <div class="sec-title"><span class="field__label" data-i18n="legend.imageProvider">Generador de imagen</span><details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Cloudflare: gratis, tamaño fijo cuadrado. Pollinations: gratis, puedes elegir la proporción y la resolución.</p></details></div>
           <div class="choices choices--seg" id="image-providers"></div>
-        </fieldset>
+        </section>
 
-        <fieldset class="field">
-          <legend class="field__label" data-i18n="legend.style">Estilo</legend>
-          <details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Define el look general. Los estilos de fondo cambian la proporción sugerida.</p></details>
+        <section class="field">
+          <div class="sec-title"><span class="field__label" data-i18n="legend.style">Estilo</span><details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Define el look general. Los estilos de fondo cambian la proporción sugerida.</p></details></div>
           <div class="choices" id="styles"></div>
-        </fieldset>
+        </section>
 
-        <fieldset class="field field--fal field--size">
-          <legend class="field__label" data-i18n="legend.ratio">Proporción</legend>
-          <details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Cuadrada, horizontal (PC) o vertical (móvil). Solo se aplica con Pollinations.</p></details>
+        <section class="field field--fal field--size">
+          <div class="sec-title"><span class="field__label" data-i18n="legend.ratio">Proporción</span><details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Cuadrada, horizontal (PC) o vertical (móvil). Solo se aplica con Pollinations.</p></details></div>
           <div class="choices" id="ratios"></div>
-        </fieldset>
+        </section>
 
-        <fieldset class="field field--fal field--size">
-          <legend class="field__label" data-i18n="legend.resolution">Resolución</legend>
-          <details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Estándar, Alta o Máxima. Más resolución = imagen más detallada y tarda un poco más.</p></details>
+        <section class="field field--fal field--size">
+          <div class="sec-title"><span class="field__label" data-i18n="legend.resolution">Resolución</span><details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Estándar, Alta o Máxima. Más resolución = imagen más detallada y tarda un poco más.</p></details></div>
           <div class="choices choices--seg" id="resolutions"></div>
-        </fieldset>
+        </section>
 
-        <fieldset class="field field--fal">
-          <legend class="field__label" data-i18n="legend.model">Modelo</legend>
-          <details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Rápido: respuesta en segundos. Calidad: más detalle, tarda más (solo Cloudflare).</p></details>
+        <section class="field field--fal">
+          <div class="sec-title"><span class="field__label" data-i18n="legend.model">Modelo</span><details class="info"><summary aria-label="Ver ayuda" title="Ayuda">i</summary><p class="muted hint">Rápido: respuesta en segundos. Calidad: más detalle, tarda más (solo Cloudflare).</p></details></div>
           <div class="choices choices--seg" id="qualities"></div>
-        </fieldset>
+        </section>
 
         <div class="generate-bar">
           <button class="btn btn--primary" id="generate" type="submit" data-i18n="generate">Generar</button>
