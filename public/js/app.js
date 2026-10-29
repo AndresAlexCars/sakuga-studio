@@ -861,7 +861,14 @@ const wall = {
   title: $('#wall-title'), file: $('#wall-file'), upload: $('#wall-upload'),
 };
 const WALL_CODE_KEY = 'sakuga.adminCode';
-try { if (wall.code) wall.code.value = localStorage.getItem(WALL_CODE_KEY) || ''; } catch { /* sin almacenamiento */ }
+// El panel solo aparece en tu dispositivo: entra una vez con ?admin=1 y escribe tu código.
+// Después queda guardado aquí; para los demás, el panel no existe en la página.
+let savedAdminCode = '';
+try { savedAdminCode = localStorage.getItem(WALL_CODE_KEY) || ''; } catch { /* sin almacenamiento */ }
+const isOwnerDevice = Boolean(savedAdminCode) || new URLSearchParams(location.search).has('admin');
+if (wall.code) wall.code.value = savedAdminCode;
+if (!isOwnerDevice) document.getElementById('wall-admin')?.remove();
+else if (new URLSearchParams(location.search).has('admin')) document.getElementById('wall-admin')?.setAttribute('open', '');
 wall.code?.addEventListener('change', () => {
   try { localStorage.setItem(WALL_CODE_KEY, wall.code.value.trim()); } catch { /* modo privado */ }
 });
