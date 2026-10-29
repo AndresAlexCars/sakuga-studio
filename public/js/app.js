@@ -894,6 +894,27 @@ function wallCard(item) {
   download.download = item.downloadName;
   download.textContent = 'Descargar';
   info.append(title, tag, download);
+  if (isOwnerDevice) {
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'btn btn--danger wall-card__del';
+    del.textContent = 'Eliminar';
+    del.addEventListener('click', async () => {
+      const code = wall.code?.value.trim();
+      if (!code) return toast('Escribe el código de administrador.');
+      if (!window.confirm(`¿Eliminar "${item.title}"? No se puede deshacer.`)) return;
+      del.disabled = true;
+      try {
+        await api.deleteWallpaper(item.id, code);
+        toast('Fondo eliminado.');
+        await loadWallpapers();
+      } catch (err) {
+        toast(err.message);
+        del.disabled = false;
+      }
+    });
+    info.append(del);
+  }
   card.append(img, info);
   return card;
 }
