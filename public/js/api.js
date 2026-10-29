@@ -51,7 +51,29 @@ async function request(path, { method = 'GET', body } = {}) {
   return data;
 }
 
+async function raw(path, { method = 'GET', body, headers = {} } = {}) {
+  const h = { 'X-Client-Id': clientId(), ...headers };
+  const code = localStorage.getItem(CODE_KEY);
+  if (code) h['X-Access-Code'] = code;
+  let res;
+  try {
+    res = await fetch(path, { method, headers: h, body });
+  } catch {
+    throw new ApiError('Sin conexión con el servidor. Revisa tu internet.', 0);
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(data.error || 'Algo salió mal. Inténtalo de nuevo.', res.status);
+  return data;
+}
+
 export const api = {
+  wallpapers: () => request('/api/wallpapers'),
+  uploadWallpaper: (blob, kind, title, adminCode) =>
+    raw('/api/wallpapers', {
+      method: 'POST',
+      body: blob,
+      headers: { 'Content-Type': blob.type, 'X-Kind': kind, 'X-Title': encodeURIComponent(title), 'X-Admin-Code': adminCode },
+    }),
   config: () => request('/api/config'),
   chat: (messages, provider) => request('/api/chat', { method: 'POST', body: { messages, provider } }),
   generate: (params) => request('/api/generate', { method: 'POST', body: params }),

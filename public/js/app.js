@@ -553,6 +553,7 @@ async function loadHistory() {
 /* ── Vistas (móvil) ─────────────────────────── */
 function setView(view) {
   document.body.dataset.view = view;
+  if (view === 'wallpapers') loadWallpapers();
   for (const button of document.querySelectorAll('[data-view-target]')) {
     if (button.dataset.viewTarget === view) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
@@ -853,4 +854,71 @@ document.addEventListener?.('toggle', (event) => {
     if (!gate?.open && !dialog.open) dialog.showModal();
   }, 900);
 })();
+
+/* ── Fondos para descargar (solo el administrador puede publicar) ── */
+const wall = {
+  grid: $('#wall-grid'), empty: $('#wall-empty'), code: $('#admin-code'), kind: $('#wall-kind'),
+  title: $('#wall-title'), file: $('#wall-file'), upload: $('#wall-upload'),
+};
+const WALL_CODE_KEY = 'sakuga.adminCode';
+try { if (wall.code) wall.code.value = localStorage.getItem(WALL_CODE_KEY) || ''; } catch { /* sin almacenamiento */ }
+wall.code?.addEventListener('change', () => {
+  try { localStorage.setItem(WALL_CODE_KEY, wall.code.value.trim()); } catch { /* modo privado */ }
+});
+
+function wallCard(item) {
+  const card = document.createElement('article');
+  card.className = `wall-card wall-card--${item.kind}`;
+  const img = document.createElement('img');
+  img.src = item.url;
+  img.alt = item.title;
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  const info = document.createElement('div');
+  info.className = 'wall-card__info';
+  const title = document.createElement('strong');
+  title.textContent = item.title;
+  const tag = document.createElement('span');
+  tag.className = 'wall-card__tag';
+  tag.textContent = item.kind === 'pc' ? 'PC · horizontal' : 'Móvil · vertical';
+  const download = document.createElement('a');
+  download.className = 'btn btn--primary-soft wall-card__dl';
+  download.href = item.url;
+  download.download = item.downloadName;
+  download.textContent = 'Descargar';
+  info.append(title, tag, download);
+  card.append(img, info);
+  return card;
+}
+
+async function loadWallpapers() {
+  if (!wall.grid) return;
+  try {
+    const { items } = await api.wallpapers();
+    wall.grid.replaceChildren(...items.map(wallCard));
+    if (wall.empty) wall.empty.hidden = items.length > 0;
+  } catch (err) {
+    toast(err.message);
+  }
+}
+
+wall.upload?.addEventListener('click', async () => {
+  const file = wall.file.files?.[0];
+  const code = wall.code.value.trim();
+  if (!file) return toast('Elige una imagen.');
+  if (!code) return toast('Escribe el código de administrador.');
+  if (file.size > 5.5 * 1024 * 1024) return toast('La imagen pasa de 5 MB.');
+  wall.upload.disabled = true;
+  try {
+    await api.uploadWallpaper(file, wall.kind.value, wall.title.value.trim(), code);
+    toast('Fondo publicado.');
+    wall.file.value = '';
+    wall.title.value = '';
+    await loadWallpapers();
+  } catch (err) {
+    toast(err.message);
+  } finally {
+    wall.upload.disabled = false;
+  }
+});
 
