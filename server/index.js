@@ -7,6 +7,7 @@ import { getObject, r2Enabled } from './services/r2.js';
 import { config } from './config.js';
 import { apiRouter } from './routes/api.js';
 import { readWallpaperFile } from './services/wallpapers.js';
+import { readVideoFile } from './services/videos.js';
 
 const app = express();
 app.set('trust proxy', config.trustProxy);
@@ -76,6 +77,16 @@ app.get('/wallpapers/:file', async (req, res) => {
   if (!buf) return res.status(404).end();
   const ext = req.params.file.split('.').pop();
   res.type(ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg');
+  res.set('Cache-Control', 'public, max-age=2592000, immutable');
+  res.send(buf);
+});
+
+// Videos publicados: se entregan tal cual se subieron.
+app.get('/videos/:file', async (req, res) => {
+  const buf = await readVideoFile(req.params.file);
+  if (!buf) return res.status(404).end();
+  const ext = req.params.file.split('.').pop();
+  res.type(ext === 'webm' ? 'video/webm' : ext === 'mov' ? 'video/quicktime' : 'video/mp4');
   res.set('Cache-Control', 'public, max-age=2592000, immutable');
   res.send(buf);
 });
