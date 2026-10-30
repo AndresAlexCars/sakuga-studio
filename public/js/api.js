@@ -68,6 +68,21 @@ async function raw(path, { method = 'GET', body, headers = {} } = {}) {
 
 export const api = {
   wallpapers: () => request('/api/wallpapers'),
+  videos: () => request('/api/videos'),
+  uploadVideo: (blob, title, meta, adminCode) =>
+    raw('/api/videos', {
+      method: 'POST',
+      body: blob,
+      headers: {
+        'Content-Type': blob.type || 'video/mp4',
+        'X-Title': encodeURIComponent(title),
+        'X-Width': String(meta.width),
+        'X-Height': String(meta.height),
+        'X-Duration': String(meta.duration),
+        'X-Admin-Code': adminCode,
+      },
+    }),
+  deleteVideo: (id, adminCode) => raw(`/api/videos/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'X-Admin-Code': adminCode } }),
   reactWallpaper: (id, emoji) => request(`/api/wallpapers/${encodeURIComponent(id)}/react`, { method: 'POST', body: { emoji } }),
   deleteWallpaper: (id, adminCode) => raw(`/api/wallpapers/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'X-Admin-Code': adminCode } }),
   uploadWallpaper: (blob, kind, title, adminCode) =>

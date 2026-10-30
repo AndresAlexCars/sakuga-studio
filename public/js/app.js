@@ -1003,3 +1003,123 @@ wall.upload?.addEventListener('click', async () => {
   }
 });
 
+/* ── Videos: pestaña junto a Fondos, con calidad original ── */
+const vid = {
+  grid: $('#video-grid'), empty: $('#video-empty'), file: $('#video-file'), title: $('#video-title'), upload: $('#video-upload'),
+};
+function qualityLabel(w, h) {
+  const m = Math.max(w, h);
+  if (m >= 3840) return '4K';
+  if (m >= 2560) return '2K';
+  if (m >= 1920) return '1080p';
+  if (m >= 1280) return '720p';
+  return m ? `${w}×${h}` : 'Calidad no detectada';
+}
+function videoCard(item) {
+  const card = document.createElement('article');
+  card.className = 'wall-card video-card';
+  const player = document.createElement('video');
+  player.src = item.url;
+  player.controls = true;
+  player.preload = 'metadata';
+  player.playsInline = true;
+  const info = document.createElement('div');
+  info.className = 'wall-card__info';
+  const title = document.createElement('strong');
+  title.textContent = item.title;
+  const chips = document.createElement('div');
+  chips.className = 'quality-chips';
+  const mb = (item.size / (1024 * 1024)).toFixed(1);
+  const list = [
+    qualityLabel(item.width, item.height),
+    item.width && item.height ? `${item.width}×${item.height}` : null,
+    item.duration ? `${item.duration} s` : null,
+    `${mb} MB`,
+    item.mime.replace('video/', '').toUpperCase(),
+    'Original sin recomprimir',
+  ].filter(Boolean);
+  for (const text of list) {
+    const chip = document.createElement('span');
+    chip.className = 'quality-chip';
+    chip.textContent = text;
+    chips.append(chip);
+  }
+  const download = document.createElement('a');
+  download.className = 'btn btn--primary-soft wall-card__dl';
+  download.href = item.url;
+  download.download = item.downloadName;
+  download.textContent = 'Descargar video';
+  info.append(title, chips, download);
+  if (isOwnerDevice) {
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'btn btn--danger wall-card__del';
+    del.textContent = 'Eliminar';
+    del.addEventListener('click', async () => {
+      const code = wall.code?.value.trim();
+      if (!code) return toast('Escribe el código de administrador.');
+      if (!window.confirm(`¿Eliminar el video "${item.title}"? No se puede deshacer.`)) return;
+      try {
+        await api.deleteVideo(item.id, code);
+        toast('Video eliminado.');
+        await loadVideos();
+      } catch (err) {
+        toast(err.message);
+      }
+    });
+    info.append(del);
+  }
+  card.append(player, info);
+  return card;
+}
+async function loadVideos() {
+  if (!vid.grid) return;
+  try {
+    const { items } = await api.videos();
+    vid.grid.replaceChildren(...items.map(videoCard));
+    if (vid.empty) vid.empty.hidden = items.length > 0;
+  } catch (err) {
+    toast(err.message);
+  }
+}
+document.querySelectorAll('.wall-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const name = tab.dataset.tab;
+    document.querySelectorAll('.wall-tab').forEach((b) => b.setAttribute('aria-selected', String(b === tab)));
+    document.getElementById('pane-fondos').hidden = name !== 'fondos';
+    document.getElementById('pane-videos').hidden = name !== 'videos';
+    if (name === 'videos') loadVideos();
+  });
+});
+vid.upload?.addEventListener('click', async () => {
+  const file = vid.file?.files?.[0];
+  const code = wall.code?.value.trim();
+  if (!file) return toast('Elige un video.');
+  if (!code) return toast('Escribe el código de administrador.');
+  if (file.size > 150 * 1024 * 1024) return toast('El video pasa de 150 MB.');
+  vid.upload.disabled = true;
+  try {
+    // Se leen las dimensiones y la duración del propio archivo, sin recomprimirlo.
+    const meta = await new Promise((resolve, reject) => {
+      const probe = document.createElement('video');
+      probe.preload = 'metadata';
+      const url = URL.createObjectURL(file);
+      probe.onloadedmetadata = () => {
+        resolve({ width: probe.videoWidth, height: probe.videoHeight, duration: probe.duration });
+        URL.revokeObjectURL(url);
+      };
+      probe.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer el video.')); };
+      probe.src = url;
+    });
+    await api.uploadVideo(file, vid.title.value.trim() || file.name.replace(/\.[^.]+$/, ''), meta, code);
+    toast('Video publicado.');
+    vid.file.value = '';
+    vid.title.value = '';
+    await loadVideos();
+  } catch (err) {
+    toast(err.message);
+  } finally {
+    vid.upload.disabled = false;
+  }
+});
+
