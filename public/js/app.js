@@ -830,6 +830,12 @@ async function init() {
     openGate();
     return;
   }
+  const owner = Boolean(localStorage.getItem('sakuga.adminCode')) || new URLSearchParams(location.search).has('admin');
+  if (!owner) {
+    document.body.dataset.role = 'visitor';
+    setView('wallpapers');
+    return;
+  }
   await loadHistory();
 }
 

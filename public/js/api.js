@@ -77,7 +77,7 @@ export const api = {
     }),
   config: () => request('/api/config'),
   chat: (messages, provider) => request('/api/chat', { method: 'POST', body: { messages, provider } }),
-  generate: (params) => request('/api/generate', { method: 'POST', body: params }),
+  generate: (params) => raw('/api/generate', { method: 'POST', body: JSON.stringify(params), headers: { 'Content-Type': 'application/json', 'X-Admin-Code': localStorage.getItem('sakuga.adminCode') || '' } }),
   history: () => request('/api/history'),
   remove: (id) => request(`/api/history/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   clear: () => request('/api/history', { method: 'DELETE' }),
