@@ -1183,3 +1183,10 @@ body:not([data-provider="cloudflare"]) .field--size { display: block; }
   flex: 0 0 auto; min-height: 36px; padding: 0 12px; font-size: 13px; gap: 6px; border-radius: 12px;
 }
 .actions__more .btn svg { width: 16px; height: 16px; }
+
+/* ═══ Visitantes: solo Fondos y Chat (no se usan tus tokens) ═══ */
+body[data-role="visitor"] [data-view-target="create"],
+body[data-role="visitor"] [data-view-target="history"],
+body[data-role="visitor"] #nav-fav { display: none; }
+body[data-role="visitor"] .nav { grid-template-columns: repeat(2, 1fr); }
+body[data-role="visitor"] .create, body[data-role="visitor"] .history { display: none !important; }
