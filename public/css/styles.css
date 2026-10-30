@@ -1190,3 +1190,35 @@ body[data-role="visitor"] [data-view-target="history"],
 body[data-role="visitor"] #nav-fav { display: none; }
 body[data-role="visitor"] .nav { grid-template-columns: repeat(2, 1fr); }
 body[data-role="visitor"] .create, body[data-role="visitor"] .history { display: none !important; }
+
+/* ═══ Fondos: tarjetas elegantes con borde de luz y reacciones ═══ */
+.wall-card {
+  border: 0; border-radius: 22px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-hi) 85%, transparent), var(--panel));
+  box-shadow: 0 22px 44px -26px rgba(0, 0, 0, .75);
+}
+.wall-card::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 2; pointer-events: none;
+  background: linear-gradient(160deg, rgba(var(--accent-rgb), .75), transparent 38%, transparent 62%, rgba(var(--accent-2), .55));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.wall-card img { position: relative; border-radius: 0; }
+.wall-card::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 60%; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .35), transparent); z-index: 1;
+}
+.wall-card:hover { transform: translateY(-4px); box-shadow: 0 28px 54px -24px rgba(var(--accent-rgb), .55); }
+.wall-card__info { gap: 10px; padding: 14px 14px 16px; }
+.wall-card__info strong { font-family: var(--font-display); font-size: 16px; letter-spacing: -.01em; }
+.wall-card__tag { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-2); }
+.wall-react { display: flex; flex-wrap: wrap; gap: 6px; }
+.wall-react__btn {
+  min-height: 34px; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 13px; font-weight: 600;
+  transition: transform .15s var(--ease), border-color .2s, background .2s;
+}
+.wall-react__btn:hover { transform: translateY(-1px); border-color: rgba(var(--accent-rgb), .5); }
+.wall-react__btn:active { transform: scale(.92); }
+.wall-react__btn.is-on { border-color: var(--accent); background: rgba(var(--accent-rgb), .18); }
+.wall-card__dl { border-radius: 14px; }
