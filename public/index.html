@@ -127,6 +127,14 @@
           <p class="muted">Descárgalos para tu móvil o tu PC.</p>
         </div>
       </div>
+      <div class="wall-tools">
+        <input id="wall-search" class="wall-search" type="search" placeholder="Buscar fondo por nombre..." autocomplete="off" aria-label="Buscar fondo">
+        <div class="wall-filters" role="group" aria-label="Tipo de fondo">
+          <button type="button" class="chip" data-kind="todos" aria-pressed="true">Todos</button>
+          <button type="button" class="chip" data-kind="movil" aria-pressed="false">Móvil</button>
+          <button type="button" class="chip" data-kind="pc" aria-pressed="false">PC</button>
+        </div>
+      </div>
       <div class="wall-grid" id="wall-grid"></div>
       <p class="empty muted" id="wall-empty" hidden>Todavía no hay fondos publicados.</p>
       <details class="wall-admin" id="wall-admin">
