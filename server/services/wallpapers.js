@@ -50,16 +50,40 @@ function persist() {
   return chain;
 }
 
-export async function listWallpapers() {
-  const data = await load();
-  return data.items.map((item) => ({
+export const REACTIONS = ['👍', '❤️', '😍', '😮', '😂', '😢'];
+
+export function formatWallpaper(item, clientId = '') {
+  const reactions = Object.fromEntries(REACTIONS.map((e) => [e, 0]));
+  for (const emoji of Object.values(item.votes || {})) {
+    if (reactions[emoji] !== undefined) reactions[emoji] += 1;
+  }
+  return {
     id: item.id,
     title: item.title,
     kind: item.kind,
     createdAt: item.createdAt,
     url: `/wallpapers/${item.file}`,
     downloadName: `jordvex-${item.kind}-${item.id.slice(0, 8)}.${item.file.split('.').pop()}`,
-  }));
+    reactions,
+    mine: (item.votes || {})[clientId] ?? null,
+  };
+}
+
+export async function listWallpapers(clientId = '') {
+  const data = await load();
+  return data.items.map((item) => formatWallpaper(item, clientId));
+}
+
+export async function reactWallpaper(id, clientId, emoji) {
+  if (!REACTIONS.includes(emoji)) throw new Error('reacción no válida');
+  const data = await load();
+  const item = data.items.find((x) => x.id === id);
+  if (!item) return null;
+  item.votes = item.votes || {};
+  if (item.votes[clientId] === emoji) delete item.votes[clientId];
+  else item.votes[clientId] = emoji;
+  await persist();
+  return formatWallpaper(item, clientId);
 }
 
 export async function addWallpaper({ buffer, title, kind }) {
