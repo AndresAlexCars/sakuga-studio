@@ -946,16 +946,42 @@ function wallCard(item) {
   return card;
 }
 
+let wallAll = [];
+let wallKind = 'todos';
+const normalizeText = (text) => String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function renderWallpapers() {
+  if (!wall.grid) return;
+  const query = normalizeText(document.getElementById('wall-search')?.value.trim() || '');
+  const items = wallAll.filter((item) =>
+    (wallKind === 'todos' || item.kind === wallKind) &&
+    (!query || normalizeText(item.title).includes(query)));
+  wall.grid.replaceChildren(...items.map(wallCard));
+  if (wall.empty) {
+    wall.empty.hidden = items.length > 0;
+    wall.empty.textContent = wallAll.length ? 'Ningún fondo coincide con tu búsqueda.' : 'Todavía no hay fondos publicados.';
+  }
+}
+
 async function loadWallpapers() {
   if (!wall.grid) return;
   try {
     const { items } = await api.wallpapers();
-    wall.grid.replaceChildren(...items.map(wallCard));
-    if (wall.empty) wall.empty.hidden = items.length > 0;
+    wallAll = items;
+    renderWallpapers();
   } catch (err) {
     toast(err.message);
   }
 }
+
+document.getElementById('wall-search')?.addEventListener('input', renderWallpapers);
+document.querySelectorAll('.wall-filters [data-kind]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    wallKind = btn.dataset.kind;
+    document.querySelectorAll('.wall-filters [data-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    renderWallpapers();
+  });
+});
 
 wall.upload?.addEventListener('click', async () => {
   const file = wall.file.files?.[0];
