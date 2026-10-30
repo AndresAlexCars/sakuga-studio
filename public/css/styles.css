@@ -1232,3 +1232,13 @@ body[data-role="visitor"] .create, body[data-role="visitor"] .history { display:
 .wall-search:focus { outline: none; border-color: rgba(var(--accent-rgb), .7); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12); }
 .wall-filters { display: flex; gap: 8px; flex-wrap: wrap; }
 .wall-filters .chip[aria-pressed="true"] { border-color: var(--accent); background: rgba(var(--accent-rgb), .16); color: var(--text); }
+
+/* ═══ Pestañas Fondos / Videos y tarjetas de video con calidad ═══ */
+.wall-tabs { display: flex; gap: 4px; padding: 4px; margin-bottom: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; }
+.wall-tab { flex: 1; min-height: 40px; border: 0; border-radius: 11px; background: transparent; color: var(--muted); font-weight: 700; font-size: 14px; cursor: pointer; transition: background .2s, color .2s; }
+.wall-tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: 0 8px 18px -10px rgba(var(--accent-rgb), .9); }
+.video-card video { display: block; width: 100%; background: #000; border-radius: 22px 22px 0 0; aspect-ratio: 16 / 9; object-fit: contain; }
+.quality-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.quality-chip { padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: rgba(var(--accent-rgb), .12); border: 1px solid rgba(var(--accent-rgb), .35); color: var(--text); }
+.wall-sep { border: 0; border-top: 1px dashed var(--line); margin: 4px 0; }
+.wall-pane[hidden] { display: none !important; }
