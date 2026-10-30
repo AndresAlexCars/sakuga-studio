@@ -899,7 +899,28 @@ function wallCard(item) {
   download.href = item.url;
   download.download = item.downloadName;
   download.textContent = 'Descargar';
-  info.append(title, tag, download);
+  const WALL_REACTIONS = ['👍', '❤️', '😍', '😮', '😂', '😢'];
+  const bar = document.createElement('div');
+  bar.className = 'wall-react';
+  for (const emoji of WALL_REACTIONS) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'wall-react__btn';
+    if (item.mine === emoji) btn.classList.add('is-on');
+    btn.setAttribute('aria-label', `Reaccionar ${emoji}`);
+    btn.setAttribute('aria-pressed', String(item.mine === emoji));
+    btn.textContent = `${emoji} ${item.reactions?.[emoji] ?? 0}`;
+    btn.addEventListener('click', async () => {
+      try {
+        await api.reactWallpaper(item.id, emoji);
+        await loadWallpapers();
+      } catch (err) {
+        toast(err.message);
+      }
+    });
+    bar.append(btn);
+  }
+  info.append(title, tag, bar, download);
   if (isOwnerDevice) {
     const del = document.createElement('button');
     del.type = 'button';

@@ -68,6 +68,7 @@ async function raw(path, { method = 'GET', body, headers = {} } = {}) {
 
 export const api = {
   wallpapers: () => request('/api/wallpapers'),
+  reactWallpaper: (id, emoji) => request(`/api/wallpapers/${encodeURIComponent(id)}/react`, { method: 'POST', body: { emoji } }),
   deleteWallpaper: (id, adminCode) => raw(`/api/wallpapers/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'X-Admin-Code': adminCode } }),
   uploadWallpaper: (blob, kind, title, adminCode) =>
     raw('/api/wallpapers', {
