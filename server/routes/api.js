@@ -9,7 +9,7 @@ import { chat, takeChatSlot } from '../services/chat.js';
 import { generate } from '../services/generator.js';
 import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
-import { addWallpaper, detectImage, listWallpapers, removeWallpaper } from '../services/wallpapers.js';
+import { addWallpaper, detectImage, listWallpapers, reactWallpaper, removeWallpaper } from '../services/wallpapers.js';
 
 export const apiRouter = Router();
 
@@ -144,8 +144,19 @@ apiRouter.post('/chat', chatLimiter, async (req, res) => {
   }
 });
 
-apiRouter.get('/wallpapers', async (_req, res) => {
-  res.json({ items: await listWallpapers() });
+apiRouter.get('/wallpapers', async (req, res) => {
+  res.json({ items: await listWallpapers(req.clientId) });
+});
+
+apiRouter.post('/wallpapers/:id/react', async (req, res) => {
+  const emoji = typeof req.body?.emoji === 'string' ? req.body.emoji : '';
+  try {
+    const item = await reactWallpaper(req.params.id, req.clientId, emoji);
+    if (!item) return res.status(404).json({ error: 'No se encontró ese fondo.' });
+    res.json(item);
+  } catch {
+    res.status(400).json({ error: 'Esa reacción no está disponible.' });
+  }
 });
 
 apiRouter.post('/wallpapers', express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '25mb' }), async (req, res) => {
