@@ -10,6 +10,7 @@ import { generate } from '../services/generator.js';
 import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
 import { addWallpaper, detectImage, listWallpapers, reactWallpaper, removeWallpaper } from '../services/wallpapers.js';
+import { addVideo, detectVideo, listVideos, removeVideo } from '../services/videos.js';
 
 export const apiRouter = Router();
 
@@ -184,6 +185,40 @@ apiRouter.delete('/wallpapers/:id', async (req, res) => {
   if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
   const removed = await removeWallpaper(req.params.id);
   if (!removed) return res.status(404).json({ error: 'No se encontró ese fondo.' });
+  res.json({ ok: true });
+});
+
+apiRouter.get('/videos', async (_req, res) => {
+  res.json({ items: await listVideos() });
+});
+
+apiRouter.post('/videos', express.raw({ type: ['video/mp4', 'video/webm', 'video/quicktime'], limit: '150mb' }), async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'El panel no está configurado (falta ADMIN_CODE).' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'No llegó ningún video.' });
+  if (!detectVideo(req.body)) return res.status(400).json({ error: 'Formato no válido. Usa MP4, WEBM o MOV.' });
+  let title = '';
+  try { title = decodeURIComponent(req.get('x-title') || '').trim(); } catch { title = ''; }
+  if (!title) title = 'Video';
+  const width = Math.max(0, Math.round(Number(req.get('x-width')) || 0));
+  const height = Math.max(0, Math.round(Number(req.get('x-height')) || 0));
+  const duration = Math.max(0, Math.round((Number(req.get('x-duration')) || 0) * 10) / 10);
+  try {
+    const item = await addVideo({ buffer: req.body, title, width, height, duration });
+    res.status(201).json({ ok: true, id: item.id });
+  } catch (err) {
+    console.error('[videos]', err);
+    res.status(500).json({ error: 'No se pudo guardar el video.' });
+  }
+});
+
+apiRouter.delete('/videos/:id', async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'El panel no está configurado (falta ADMIN_CODE).' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  const removed = await removeVideo(req.params.id);
+  if (!removed) return res.status(404).json({ error: 'No se encontró ese video.' });
   res.json({ ok: true });
 });
 
