@@ -1222,3 +1222,13 @@ body[data-role="visitor"] .create, body[data-role="visitor"] .history { display:
 .wall-react__btn:active { transform: scale(.92); }
 .wall-react__btn.is-on { border-color: var(--accent); background: rgba(var(--accent-rgb), .18); }
 .wall-card__dl { border-radius: 14px; }
+
+/* ═══ Búsqueda y filtros de fondos ═══ */
+.wall-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.wall-search {
+  width: 100%; min-height: 46px; padding: 0 16px; border-radius: 14px;
+  background: var(--bg); border: 1px solid var(--line); color: var(--text); font-size: 15px;
+}
+.wall-search:focus { outline: none; border-color: rgba(var(--accent-rgb), .7); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12); }
+.wall-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.wall-filters .chip[aria-pressed="true"] { border-color: var(--accent); background: rgba(var(--accent-rgb), .16); color: var(--text); }
