@@ -13,6 +13,15 @@ import { addWallpaper, detectImage, listWallpapers, removeWallpaper } from '../s
 
 export const apiRouter = Router();
 
+// Solo el administrador (código ADMIN_CODE, comparado de forma segura) puede subir o borrar fondos.
+function checkAdmin(req) {
+  if (!config.adminCode) return 'off';
+  const given = crypto.createHash('sha256').update(req.get('x-admin-code') || '').digest();
+  const real = crypto.createHash('sha256').update(config.adminCode).digest();
+  return crypto.timingSafeEqual(given, real);
+}
+
+
 // Tope global diario: protege tu gasto aunque alguien consiga acceso.
 let slotDay = '';
 let slotCount = 0;
@@ -44,6 +53,9 @@ apiRouter.get('/config', (_req, res) => res.json(publicCatalog()));
 apiRouter.use(requireClient, requireAccess);
 
 apiRouter.post('/generate', generateLimiter, async (req, res) => {
+  const owner = checkAdmin(req);
+  if (owner === 'off') return res.status(503).json({ error: 'Configura ADMIN_CODE en el servidor para habilitar la generación.' });
+  if (!owner) return res.status(403).json({ error: 'La generación de imágenes está disponible solo para el administrador.' });
   const body = req.body ?? {};
   const prompt = typeof body.prompt === 'string' ? body.prompt.replace(/\s+/g, ' ').trim() : '';
 
@@ -131,14 +143,6 @@ apiRouter.post('/chat', chatLimiter, async (req, res) => {
     res.status(500).json({ error: 'Error interno del asistente.' });
   }
 });
-
-// Solo el administrador (código ADMIN_CODE, comparado de forma segura) puede subir o borrar fondos.
-function checkAdmin(req) {
-  if (!config.adminCode) return 'off';
-  const given = crypto.createHash('sha256').update(req.get('x-admin-code') || '').digest();
-  const real = crypto.createHash('sha256').update(config.adminCode).digest();
-  return crypto.timingSafeEqual(given, real);
-}
 
 apiRouter.get('/wallpapers', async (_req, res) => {
   res.json({ items: await listWallpapers() });
