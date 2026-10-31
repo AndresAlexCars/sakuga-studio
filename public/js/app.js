@@ -830,7 +830,7 @@ async function init() {
     openGate();
     return;
   }
-  const owner = Boolean(localStorage.getItem('sakuga.adminCode')) || new URLSearchParams(location.search).has('admin');
+  const owner = Boolean(localStorage.getItem('sakuga.adminCode')) || localStorage.getItem('sakuga.owner') === '1' || new URLSearchParams(location.search).has('admin');
   if (!owner) {
     document.body.dataset.role = 'visitor';
     setView('wallpapers');
@@ -871,11 +871,15 @@ const WALL_CODE_KEY = 'sakuga.adminCode';
 // Después queda guardado aquí; para los demás, el panel no existe en la página.
 let savedAdminCode = '';
 try { savedAdminCode = localStorage.getItem(WALL_CODE_KEY) || ''; } catch { /* sin almacenamiento */ }
-const isOwnerDevice = Boolean(savedAdminCode) || new URLSearchParams(location.search).has('admin');
+if (new URLSearchParams(location.search).has('admin')) {
+  try { localStorage.setItem('sakuga.owner', '1'); } catch { /* sin almacenamiento */ }
+}
+const isOwnerDevice = Boolean(savedAdminCode) || localStorage.getItem('sakuga.owner') === '1';
 if (wall.code) wall.code.value = savedAdminCode;
 if (!isOwnerDevice) document.getElementById('wall-admin')?.remove();
+else document.getElementById('wall-admin')?.setAttribute('open', '');
 else if (new URLSearchParams(location.search).has('admin')) document.getElementById('wall-admin')?.setAttribute('open', '');
-wall.code?.addEventListener('change', () => {
+wall.code?.addEventListener('input', () => {
   try { localStorage.setItem(WALL_CODE_KEY, wall.code.value.trim()); } catch { /* modo privado */ }
 });
 
