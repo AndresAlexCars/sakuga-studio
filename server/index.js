@@ -91,6 +91,20 @@ app.get('/videos/:file', async (req, res) => {
   res.send(buf);
 });
 
+// Sonido de clic publicado por el administrador.
+app.get('/sound/:file', async (req, res) => {
+  if (!/^click\.(mp3|wav|ogg|m4a)$/.test(req.params.file)) return res.status(404).end();
+  try {
+    const buf = await fs.readFile(path.join(config.dataDir, 'sound', req.params.file));
+    const ext = req.params.file.split('.').pop();
+    res.type({ mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4' }[ext]);
+    res.set('Cache-Control', 'no-cache');
+    res.send(buf);
+  } catch {
+    res.status(404).end();
+  }
+});
+
 app.use('/api', apiRouter);
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
