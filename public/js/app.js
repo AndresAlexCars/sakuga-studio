@@ -1341,3 +1341,62 @@ document.getElementById('sound-upload')?.addEventListener('click', async () => {
   }
 });
 
+/* ── Música de fondo: la publica el administrador; cada visitante la activa con el botón ── */
+let bgTrack = null;
+let bgWanted = localStorage.getItem('sakuga.music') === 'on';
+const musicBtn = document.getElementById('music-toggle');
+function paintMusic() {
+  if (!musicBtn) return;
+  const playing = Boolean(bgTrack && !bgTrack.paused);
+  musicBtn.setAttribute('aria-pressed', String(playing));
+  musicBtn.classList.toggle('is-on', playing);
+}
+function setMusicTrack(url) {
+  if (bgTrack) bgTrack.pause();
+  bgTrack = url ? new Audio(url) : null;
+  if (bgTrack) {
+    bgTrack.loop = true;
+    bgTrack.volume = 0.35;
+    bgTrack.preload = 'auto';
+    bgTrack.addEventListener('play', paintMusic);
+    bgTrack.addEventListener('pause', paintMusic);
+  }
+  if (musicBtn) musicBtn.hidden = !url;
+  if (bgWanted && bgTrack) bgTrack.play().catch(() => {});
+  paintMusic();
+}
+api.music().then((data) => setMusicTrack(data.url)).catch(() => {});
+musicBtn?.addEventListener('click', () => {
+  if (!bgTrack) return;
+  if (bgTrack.paused) {
+    bgWanted = true;
+    bgTrack.play().catch(() => toast('Toca de nuevo para activar la música.'));
+  } else {
+    bgWanted = false;
+    bgTrack.pause();
+  }
+  try { localStorage.setItem('sakuga.music', bgWanted ? 'on' : 'off'); } catch { /* sin almacenamiento */ }
+  paintMusic();
+});
+// Los navegadores bloquean el sonido hasta el primer toque: si la música estaba activa, arranca con ese toque.
+document.addEventListener('pointerdown', () => {
+  if (bgWanted && bgTrack && bgTrack.paused) bgTrack.play().catch(() => {});
+}, { once: true, capture: true });
+
+document.getElementById('music-upload')?.addEventListener('click', async () => {
+  const file = document.getElementById('music-file')?.files?.[0];
+  const code = document.getElementById('admin-code')?.value.trim();
+  if (!file) return toast('Elige una canción.');
+  if (!code) return toast('Escribe el código de administrador.');
+  if (file.size > 30 * 1024 * 1024) return toast('La canción pasa de 30 MB.');
+  try {
+    await api.uploadMusic(file, code);
+    const data = await api.music();
+    setMusicTrack(data.url);
+    document.getElementById('music-file').value = '';
+    toast('Música de fondo publicada.');
+  } catch (err) {
+    toast(err.message);
+  }
+});
+
