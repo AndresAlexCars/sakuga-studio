@@ -222,4 +222,18 @@ apiRouter.delete('/videos/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Comprueba el código de administrador sin revelar nada más. Limitado para evitar intentos masivos.
+const adminCheckLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Espera unos minutos.' },
+});
+apiRouter.get('/admin/check', adminCheckLimiter, (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
+  res.status(ok ? 200 : 401).json({ ok: ok === true });
+});
+
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
