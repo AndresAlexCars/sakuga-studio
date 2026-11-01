@@ -68,6 +68,9 @@ async function raw(path, { method = 'GET', body, headers = {} } = {}) {
 
 export const api = {
   wallpapers: () => request('/api/wallpapers'),
+  sound: () => request('/api/sound'),
+  uploadSound: (blob, adminCode) =>
+    raw('/api/sound', { method: 'POST', body: blob, headers: { 'Content-Type': blob.type, 'X-Admin-Code': adminCode } }),
   videos: () => request('/api/videos'),
   uploadVideo: (blob, title, meta, adminCode) =>
     raw('/api/videos', {
