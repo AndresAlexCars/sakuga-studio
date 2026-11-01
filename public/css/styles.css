@@ -1242,3 +1242,17 @@ body[data-role="visitor"] .create, body[data-role="visitor"] .history { display:
 .quality-chip { padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: rgba(var(--accent-rgb), .12); border: 1px solid rgba(var(--accent-rgb), .35); color: var(--text); }
 .wall-sep { border: 0; border-top: 1px dashed var(--line); margin: 4px 0; }
 .wall-pane[hidden] { display: none !important; }
+
+/* ═══ Videos más grandes y claros ═══ */
+#vid-grid { grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 640px) { #vid-grid { grid-template-columns: repeat(2, 1fr); } }
+.video-card { border-radius: 22px; }
+.video-card video {
+  display: block; width: 100%; height: auto; max-height: 72vh;
+  background: #000; object-fit: contain; border-radius: 0;
+}
+.video-card .wall-card__info { padding: 16px 16px 18px; gap: 12px; }
+.video-card .wall-card__info strong { font-size: 18px; }
+.video-card .quality-chips { gap: 8px; }
+.video-card .quality-chip { font-size: 12.5px; padding: 5px 12px; }
+.video-card .wall-card__dl, .video-card .wall-card__del { width: 100%; min-height: 46px; font-size: 15px; }
