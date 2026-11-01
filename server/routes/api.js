@@ -1,4 +1,6 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import express, { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { config } from '../config.js';
@@ -234,6 +236,35 @@ apiRouter.get('/admin/check', adminCheckLimiter, (req, res) => {
   const ok = checkAdmin(req);
   if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
   res.status(ok ? 200 : 401).json({ ok: ok === true });
+});
+
+// Sonido de clic: lo sube el administrador y lo escuchan todos los visitantes.
+const SOUND_TYPES = { 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/aac': 'm4a' };
+const soundDir = path.join(config.dataDir, 'sound');
+async function findClickSound() {
+  try {
+    const files = await fs.readdir(soundDir);
+    return files.find((f) => /^click\.(mp3|wav|ogg|m4a)$/.test(f)) || null;
+  } catch {
+    return null;
+  }
+}
+apiRouter.get('/sound', async (_req, res) => {
+  const file = await findClickSound();
+  res.json({ url: file ? `/sound/${file}` : null });
+});
+apiRouter.post('/sound', express.raw({ type: Object.keys(SOUND_TYPES), limit: '5mb' }), async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'No llegó ningún sonido.' });
+  const ext = SOUND_TYPES[(req.get('content-type') || '').split(';')[0]];
+  if (!ext) return res.status(400).json({ error: 'Usa MP3, WAV, OGG o M4A.' });
+  await fs.mkdir(soundDir, { recursive: true });
+  const old = await findClickSound();
+  if (old) await fs.unlink(path.join(soundDir, old)).catch(() => {});
+  await fs.writeFile(path.join(soundDir, `click.${ext}`), req.body);
+  res.status(201).json({ ok: true });
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
