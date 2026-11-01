@@ -256,6 +256,21 @@
     </div>
   </dialog>
 
+  <dialog id="preview" class="preview-dialog" aria-label="Vista previa del fondo">
+    <button type="button" class="viewer__close" data-close-preview aria-label="Cerrar">✕</button>
+    <div class="preview-stage">
+      <div class="phone" id="phone-frame">
+        <div class="phone__screen" id="phone-screen">
+          <div class="phone__lock">
+            <p class="phone__date" id="phone-date"></p>
+            <p class="phone__time" id="phone-time"></p>
+          </div>
+          <div class="phone__home"><span></span><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="confirm">
     <form method="dialog">
       <h3 data-i18n="confirm.title">¿Borrar todo el historial?</h3>
