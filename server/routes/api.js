@@ -267,4 +267,33 @@ apiRouter.post('/sound', express.raw({ type: Object.keys(SOUND_TYPES), limit: '5
   res.status(201).json({ ok: true });
 });
 
+// Música de fondo: la sube el administrador y la escuchan todos los visitantes que la activen.
+const MUSIC_TYPES = { 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/aac': 'm4a' };
+const musicDir = path.join(config.dataDir, 'music');
+async function findMusic() {
+  try {
+    const files = await fs.readdir(musicDir);
+    return files.find((f) => /^music\.(mp3|wav|ogg|m4a)$/.test(f)) || null;
+  } catch {
+    return null;
+  }
+}
+apiRouter.get('/music', async (_req, res) => {
+  const file = await findMusic();
+  res.json({ url: file ? `/music/${file}` : null });
+});
+apiRouter.post('/music', express.raw({ type: Object.keys(MUSIC_TYPES), limit: '30mb' }), async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'No llegó ninguna canción.' });
+  const ext = MUSIC_TYPES[(req.get('content-type') || '').split(';')[0]];
+  if (!ext) return res.status(400).json({ error: 'Usa MP3, WAV, OGG o M4A.' });
+  await fs.mkdir(musicDir, { recursive: true });
+  const old = await findMusic();
+  if (old) await fs.unlink(path.join(musicDir, old)).catch(() => {});
+  await fs.writeFile(path.join(musicDir, `music.${ext}`), req.body);
+  res.status(201).json({ ok: true });
+});
+
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
