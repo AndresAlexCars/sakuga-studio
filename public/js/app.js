@@ -5,6 +5,24 @@ import { initSettingsPanel } from './settingsPanel.js';
 import { filterHistory, shortDate, loadFavIds, saveFavIds, onlyFavorites } from './history.js';
 import { getLanguage } from './i18n.js';
 
+// Diagnóstico visible: si algo falla en la página, el error aparece en una caja roja arriba.
+function showJsError(message) {
+  let box = document.getElementById('js-error');
+  if (!box) {
+    box = document.createElement('pre');
+    box.id = 'js-error';
+    box.style.cssText = 'position:fixed;left:8px;right:8px;top:8px;z-index:9999;background:#3a0a14;color:#fff;padding:10px;font:12px/1.4 monospace;white-space:pre-wrap;border-radius:10px;max-height:40vh;overflow:auto;';
+    document.body.append(box);
+  }
+  box.textContent += message + '\n';
+}
+window.addEventListener('error', (event) => showJsError(`ERROR: ${event.message} (${event.filename || 'archivo'}:${event.lineno || 0})`));
+window.addEventListener('unhandledrejection', (event) => showJsError(`PROMESA: ${event.reason?.message || event.reason}`));
+const withTimeout = (promise, ms) => Promise.race([
+  promise,
+  new Promise((_, reject) => setTimeout(() => reject(new Error('El servidor tarda demasiado en responder. Espera 30 segundos y recarga la página.')), ms)),
+]);
+
 const $ = (selector) => document.querySelector(selector);
 const PREFS_KEY = 'sakuga.prefs';
 
@@ -794,7 +812,7 @@ async function init() {
   loadPrefs();
   setLanguage(settings.lang);
   try {
-    state.config = await api.config();
+    state.config = await withTimeout(api.config(), 20000);
   } catch (err) {
     showError(err.message);
     return;
