@@ -160,6 +160,8 @@
           <button type="button" class="btn btn--primary" id="wall-upload">Publicar fondo</button>
           <input id="sound-file" type="file" accept="audio/*" aria-label="Sonido de clic">
           <button type="button" class="btn" id="sound-upload">Subir sonido de clic</button>
+          <input id="music-file" type="file" accept="audio/*" aria-label="Música de fondo">
+          <button type="button" class="btn" id="music-upload">Subir música de fondo</button>
           <hr class="wall-sep">
           <input id="video-file" type="file" accept="video/mp4,video/webm,video/quicktime">
           <input id="video-title" type="text" maxlength="60" placeholder="Título del video">
@@ -204,6 +206,10 @@
       <span data-i18n="nav.chat">Chat</span>
     </button>
   </nav>
+
+  <button type="button" class="music-toggle" id="music-toggle" aria-pressed="false" aria-label="Música de fondo">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </button>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
