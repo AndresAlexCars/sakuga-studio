@@ -1129,6 +1129,7 @@ function videoCard(item) {
   const player = document.createElement('video');
   player.src = item.url;
   player.preload = 'metadata';
+  player.loop = true;
   player.playsInline = true;
   if (item.width && item.height) player.style.aspectRatio = `${item.width} / ${item.height}`;
   const info = document.createElement('div');
