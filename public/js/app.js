@@ -1048,6 +1048,7 @@ function videoCard(item) {
   player.controls = true;
   player.preload = 'metadata';
   player.playsInline = true;
+  if (item.width && item.height) player.style.aspectRatio = `${item.width} / ${item.height}`;
   const info = document.createElement('div');
   info.className = 'wall-card__info';
   const title = document.createElement('strong');
