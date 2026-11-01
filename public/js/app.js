@@ -1289,3 +1289,55 @@ document.getElementById('preview')?.addEventListener('click', (event) => {
   if (event.target === event.currentTarget) event.currentTarget.close();
 });
 
+/* ── Sonidos: un clic suave en cada botón; el administrador puede poner su propio sonido ── */
+let clickAudio = null;
+let audioCtx = null;
+function setClickSound(url) {
+  clickAudio = url ? new Audio(url) : null;
+  if (clickAudio) clickAudio.preload = 'auto';
+}
+api.sound().then((data) => setClickSound(data.url)).catch(() => {});
+function playTick() {
+  try {
+    if (clickAudio) {
+      const sound = clickAudio.cloneNode();
+      sound.volume = 0.5;
+      sound.play().catch(() => {});
+      return;
+    }
+    audioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1200, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.06);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.08);
+  } catch { /* sin audio en este navegador */ }
+}
+document.addEventListener('pointerdown', (event) => {
+  if (event.target.closest('button, a, label, select, summary, input[type="radio"], input[type="checkbox"]')) playTick();
+}, true);
+
+document.getElementById('sound-upload')?.addEventListener('click', async () => {
+  const file = document.getElementById('sound-file')?.files?.[0];
+  const code = document.getElementById('admin-code')?.value.trim();
+  if (!file) return toast('Elige un archivo de sonido.');
+  if (!code) return toast('Escribe el código de administrador.');
+  try {
+    await api.uploadSound(file, code);
+    const data = await api.sound();
+    setClickSound(data.url);
+    document.getElementById('sound-file').value = '';
+    toast('Sonido de clic publicado.');
+  } catch (err) {
+    toast(err.message);
+  }
+});
+
