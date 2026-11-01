@@ -1269,3 +1269,13 @@ body[data-role="visitor"] .create, body[data-role="visitor"] .history { display:
 @media (min-width: 640px) {
   .wall-card--pc img { aspect-ratio: 21 / 9; }
 }
+
+/* ═══ Videos: verticales en dos columnas y horizontales a todo el ancho, como los fondos ═══ */
+#vid-grid { grid-template-columns: repeat(2, 1fr); align-items: start; }
+.video-card--wide { grid-column: 1 / -1; }
+.video-card--wide video { max-height: 70vh; }
+.video-card--tall video { max-height: 62vh; }
+.video-card--tall .wall-card__info { padding: 12px 12px 14px; gap: 10px; }
+.video-card--tall .wall-card__info strong { font-size: 15px; }
+.video-card--tall .quality-chip { font-size: 11px; padding: 3px 8px; }
+.video-card--tall .wall-card__dl, .video-card--tall .wall-card__del { min-height: 40px; font-size: 13px; }
