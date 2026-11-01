@@ -894,9 +894,11 @@ if (new URLSearchParams(location.search).has('admin')) {
 }
 const isOwnerDevice = Boolean(savedAdminCode) || localStorage.getItem('sakuga.owner') === '1';
 if (wall.code) wall.code.value = savedAdminCode;
-if (!isOwnerDevice) document.getElementById('wall-admin')?.remove();
-else document.getElementById('wall-admin')?.setAttribute('open', '');
-else if (new URLSearchParams(location.search).has('admin')) document.getElementById('wall-admin')?.setAttribute('open', '');
+if (!isOwnerDevice) {
+  document.getElementById('wall-admin')?.remove();
+} else {
+  document.getElementById('wall-admin')?.setAttribute('open', '');
+}
 wall.code?.addEventListener('input', () => {
   try { localStorage.setItem(WALL_CODE_KEY, wall.code.value.trim()); } catch { /* modo privado */ }
 });
