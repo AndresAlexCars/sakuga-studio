@@ -1283,3 +1283,38 @@ body[data-role="visitor"] .create, body[data-role="visitor"] .history { display:
 /* ═══ Videos verticales a tamaño de fondo: ocupan toda la tarjeta, sin franjas negras ═══ */
 .video-card--tall video { width: 100%; height: auto; max-height: none; object-fit: cover; }
 .video-card--wide video { object-fit: contain; }
+
+/* ═══ Vista previa del fondo: teléfono (vertical) o monitor (horizontal) ═══ */
+.preview-dialog { width: min(94vw, 460px); padding: 0; background: transparent; border: 0; overflow: visible; }
+.preview-dialog::backdrop { background: rgba(4, 3, 10, .86); }
+.preview-dialog .viewer__close { top: -6px; right: -6px; }
+.preview-stage { display: flex; justify-content: center; }
+.phone {
+  position: relative; width: min(78vw, 330px); aspect-ratio: 9 / 19.5;
+  border-radius: 46px; padding: 9px; background: #0c0c10;
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,.9), inset 0 0 0 2px #2a2a33, 0 0 0 1px rgba(var(--accent-rgb), .35);
+}
+.phone__screen {
+  position: relative; width: 100%; height: 100%; border-radius: 38px; overflow: hidden;
+  background: #111 center / cover no-repeat;
+}
+.phone__lock { position: absolute; top: 15%; left: 0; right: 0; text-align: center; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.45); }
+.phone__date { font-size: 15px; font-weight: 600; opacity: .95; }
+.phone__time { font-family: var(--font-display); font-size: 84px; font-weight: 700; line-height: 1; letter-spacing: -.03em; margin-top: 4px; }
+.phone__home {
+  position: absolute; left: 14px; right: 14px; bottom: 16px; height: 62px; border-radius: 26px;
+  background: rgba(255,255,255,.18); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: flex; justify-content: space-around; align-items: center; padding: 0 14px;
+}
+.phone__home span { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.28); }
+.monitor {
+  position: relative; width: min(92vw, 440px); aspect-ratio: 16 / 10;
+  border-radius: 14px; padding: 8px 8px 22px; background: #0c0c10;
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(var(--accent-rgb), .35);
+}
+.monitor::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 60px; height: 6px; margin-left: -30px; border-radius: 4px; background: #2a2a33; }
+.monitor .phone__screen { border-radius: 6px; }
+.monitor .phone__lock { top: 18%; }
+.monitor .phone__time { font-size: 64px; }
+.monitor .phone__home { left: 22%; right: 22%; bottom: 10%; height: 14%; border-radius: 16px; }
+.monitor .phone__home span { width: 22px; height: 22px; border-radius: 6px; }
