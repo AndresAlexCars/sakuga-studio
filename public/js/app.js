@@ -944,7 +944,12 @@ function wallCard(item) {
     });
     bar.append(btn);
   }
-  info.append(title, tag, bar, download);
+  const preview = document.createElement('button');
+  preview.type = 'button';
+  preview.className = 'btn btn--primary-soft wall-card__dl';
+  preview.textContent = 'Vista previa';
+  preview.addEventListener('click', () => openPreview(item));
+  info.append(title, tag, bar, preview, download);
   if (isOwnerDevice) {
     const del = document.createElement('button');
     del.type = 'button';
@@ -1184,4 +1189,25 @@ vid.upload?.addEventListener('click', async () => {
   });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => brand.addEventListener(ev, cancel));
 })();
+
+/* ── Vista previa: cómo se verá el fondo en el teléfono o en la PC ── */
+function openPreview(item) {
+  const dialog = document.getElementById('preview');
+  const frame = document.getElementById('phone-frame');
+  const screen = document.getElementById('phone-screen');
+  if (!dialog || !frame || !screen) return;
+  const vertical = item.kind !== 'pc';
+  frame.className = vertical ? 'phone' : 'monitor';
+  screen.style.backgroundImage = `url("${item.url}")`;
+  const now = new Date();
+  document.getElementById('phone-date').textContent = now.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' });
+  document.getElementById('phone-time').textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
+  dialog.showModal();
+}
+document.querySelectorAll('[data-close-preview]').forEach((btn) => {
+  btn.addEventListener('click', () => document.getElementById('preview')?.close());
+});
+document.getElementById('preview')?.addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) event.currentTarget.close();
+});
 
