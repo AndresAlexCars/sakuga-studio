@@ -1279,3 +1279,7 @@ body[data-role="visitor"] .create, body[data-role="visitor"] .history { display:
 .video-card--tall .wall-card__info strong { font-size: 15px; }
 .video-card--tall .quality-chip { font-size: 11px; padding: 3px 8px; }
 .video-card--tall .wall-card__dl, .video-card--tall .wall-card__del { min-height: 40px; font-size: 13px; }
+
+/* ═══ Videos verticales a tamaño de fondo: ocupan toda la tarjeta, sin franjas negras ═══ */
+.video-card--tall video { width: 100%; height: auto; max-height: none; object-fit: cover; }
+.video-card--wide video { object-fit: contain; }
