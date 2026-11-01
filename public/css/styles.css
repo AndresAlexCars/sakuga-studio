@@ -1256,3 +1256,16 @@ body[data-role="visitor"] .create, body[data-role="visitor"] .history { display:
 .video-card .quality-chips { gap: 8px; }
 .video-card .quality-chip { font-size: 12.5px; padding: 5px 12px; }
 .video-card .wall-card__dl, .video-card .wall-card__del { width: 100%; min-height: 46px; font-size: 15px; }
+
+/* ═══ Fondos: horizontales a todo el ancho y verticales sin estirarse ═══ */
+.wall-grid { align-items: start; }
+.wall-card--pc { grid-column: 1 / -1; }
+.wall-card--pc img { aspect-ratio: 16 / 9; }
+.wall-card--pc .wall-card__info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; align-items: center; }
+.wall-card--pc .wall-card__info strong { grid-column: 1 / -1; }
+.wall-card--pc .wall-card__tag { grid-column: 1 / -1; }
+.wall-card--pc .wall-react { grid-column: 1 / -1; }
+.wall-card--pc .wall-card__dl, .wall-card--pc .wall-card__del { grid-column: auto; }
+@media (min-width: 640px) {
+  .wall-card--pc img { aspect-ratio: 21 / 9; }
+}
