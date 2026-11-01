@@ -1147,3 +1147,34 @@ vid.upload?.addEventListener('click', async () => {
   }
 });
 
+/* ── Acceso del administrador: mantén pulsado el logo JORDVEX 2 segundos ── */
+(() => {
+  const brand = document.querySelector('.brand');
+  if (!brand) return;
+  let timer = null;
+  const cancel = () => clearTimeout(timer);
+  brand.addEventListener('pointerdown', () => {
+    cancel();
+    timer = setTimeout(async () => {
+      const code = window.prompt('Código de administrador:');
+      if (!code || !code.trim()) return;
+      try {
+        const res = await fetch('/api/admin/check', {
+          headers: {
+            'X-Admin-Code': code.trim(),
+            'X-Client-Id': localStorage.getItem('sakuga.clientId') || '',
+            'X-Access-Code': localStorage.getItem('sakuga.accessCode') || '',
+          },
+        });
+        if (!res.ok) throw new Error('incorrecto');
+        localStorage.setItem('sakuga.adminCode', code.trim());
+        localStorage.setItem('sakuga.owner', '1');
+        location.reload();
+      } catch {
+        toast('Código incorrecto.');
+      }
+    }, 2000);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => brand.addEventListener(ev, cancel));
+})();
+
