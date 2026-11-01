@@ -1060,6 +1060,7 @@ function videoCard(item) {
     item.duration ? `${item.duration} s` : null,
     `${mb} MB`,
     item.mime.replace('video/', '').toUpperCase(),
+    item.codec,
     'Original sin recomprimir',
   ].filter(Boolean);
   for (const text of list) {
