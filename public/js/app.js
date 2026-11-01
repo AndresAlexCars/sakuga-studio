@@ -1044,13 +1044,90 @@ function qualityLabel(w, h) {
   if (m >= 1280) return '720p';
   return m ? `${w}×${h}` : 'Calidad no detectada';
 }
+/* ── Reproductor con estilo propio (no el del teléfono) ── */
+function fmtTime(sec) {
+  if (!Number.isFinite(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+function buildPlayer(video) {
+  const wrap = document.createElement('div');
+  wrap.className = 'vp';
+  const big = document.createElement('button');
+  big.type = 'button';
+  big.className = 'vp__big';
+  big.setAttribute('aria-label', 'Reproducir');
+  big.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+  const bar = document.createElement('div');
+  bar.className = 'vp__bar';
+  const play = document.createElement('button');
+  play.type = 'button';
+  play.className = 'vp__btn';
+  play.setAttribute('aria-label', 'Reproducir o pausar');
+  const seek = document.createElement('input');
+  seek.type = 'range';
+  seek.min = '0';
+  seek.max = '1000';
+  seek.value = '0';
+  seek.className = 'vp__seek';
+  seek.setAttribute('aria-label', 'Avance del video');
+  const time = document.createElement('span');
+  time.className = 'vp__time';
+  time.textContent = '0:00';
+  const mute = document.createElement('button');
+  mute.type = 'button';
+  mute.className = 'vp__btn';
+  mute.setAttribute('aria-label', 'Silenciar o activar sonido');
+  const full = document.createElement('button');
+  full.type = 'button';
+  full.className = 'vp__btn';
+  full.setAttribute('aria-label', 'Pantalla completa');
+  const ICON = {
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',
+    vol: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    mute: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    full: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  };
+  play.innerHTML = ICON.play;
+  mute.innerHTML = ICON.vol;
+  full.innerHTML = ICON.full;
+  const toggle = () => { if (video.paused) video.play().catch(() => {}); else video.pause(); };
+  big.addEventListener('click', toggle);
+  play.addEventListener('click', toggle);
+  video.addEventListener('click', toggle);
+  video.addEventListener('play', () => { wrap.classList.add('is-playing'); play.innerHTML = ICON.pause; });
+  video.addEventListener('pause', () => { wrap.classList.remove('is-playing'); play.innerHTML = ICON.play; });
+  video.addEventListener('ended', () => { wrap.classList.remove('is-playing'); play.innerHTML = ICON.play; });
+  video.addEventListener('loadedmetadata', () => { time.textContent = `0:00 / ${fmtTime(video.duration)}`; });
+  video.addEventListener('timeupdate', () => {
+    if (video.duration) seek.value = String(Math.round((video.currentTime / video.duration) * 1000));
+    time.textContent = `${fmtTime(video.currentTime)} / ${fmtTime(video.duration)}`;
+  });
+  seek.addEventListener('input', () => {
+    if (video.duration) video.currentTime = (Number(seek.value) / 1000) * video.duration;
+  });
+  mute.addEventListener('click', () => {
+    video.muted = !video.muted;
+    mute.innerHTML = video.muted ? ICON.mute : ICON.vol;
+  });
+  full.addEventListener('click', () => {
+    const el = video;
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
+  });
+  bar.append(play, seek, time, mute, full);
+  wrap.append(video, big, bar);
+  return wrap;
+}
+
 function videoCard(item) {
   const card = document.createElement('article');
   card.className = 'wall-card video-card';
   if (item.width && item.height) card.classList.add(item.width > item.height ? 'video-card--wide' : 'video-card--tall');
   const player = document.createElement('video');
   player.src = item.url;
-  player.controls = true;
   player.preload = 'metadata';
   player.playsInline = true;
   if (item.width && item.height) player.style.aspectRatio = `${item.width} / ${item.height}`;
@@ -1101,7 +1178,7 @@ function videoCard(item) {
     });
     info.append(del);
   }
-  card.append(player, info);
+  card.append(buildPlayer(player), info);
   return card;
 }
 async function loadVideos() {
