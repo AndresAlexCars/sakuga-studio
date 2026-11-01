@@ -1124,15 +1124,19 @@ vid.upload?.addEventListener('click', async () => {
   vid.upload.disabled = true;
   try {
     // Se leen las dimensiones y la duración del propio archivo, sin recomprimirlo.
-    const meta = await new Promise((resolve, reject) => {
+    // Si el navegador no puede leer las medidas, el video se publica igual (calidad original, sin cambios).
+    const meta = await new Promise((resolve) => {
       const probe = document.createElement('video');
       probe.preload = 'metadata';
       const url = URL.createObjectURL(file);
-      probe.onloadedmetadata = () => {
-        resolve({ width: probe.videoWidth, height: probe.videoHeight, duration: probe.duration });
+      const done = (data) => {
+        clearTimeout(timer);
         URL.revokeObjectURL(url);
+        resolve(data);
       };
-      probe.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer el video.')); };
+      const timer = setTimeout(() => done({ width: 0, height: 0, duration: 0 }), 8000);
+      probe.onloadedmetadata = () => done({ width: probe.videoWidth || 0, height: probe.videoHeight || 0, duration: Number.isFinite(probe.duration) ? probe.duration : 0 });
+      probe.onerror = () => done({ width: 0, height: 0, duration: 0 });
       probe.src = url;
     });
     await api.uploadVideo(file, vid.title.value.trim() || file.name.replace(/\.[^.]+$/, ''), meta, code);
