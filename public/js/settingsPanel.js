@@ -140,6 +140,10 @@ export function initSettingsPanel({ dialog, getSettings, update, onReset, onExpo
       el('p', { class: 'muted info-note', text: t('settings.info.privacy') }),
       el('p', { class: 'muted info-note', text: t('settings.info.tip') }),
     ),
+    section(
+      'Redes',
+      el('a', { class: 'btn social-link', href: 'https://www.instagram.com/jordvex17', target: '_blank', rel: 'noopener', text: 'Instagram · @jordvex17' }),
+    ),
     el('p', { class: 'muted about', text: t('settings.about', { app: appName, provider }) }),
     );
 
