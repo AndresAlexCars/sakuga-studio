@@ -14,7 +14,7 @@ const trust = process.env.TRUST_PROXY ?? '0';
 const dataDir = path.resolve(root, process.env.DATA_DIR || './data');
 
 // Proveedor de imágenes: 'fal' (de pago, más calidad) o 'cloudflare' (cupo diario gratis).
-const provider = (process.env.PROVIDER || 'fal').toLowerCase() === 'cloudflare' ? 'cloudflare' : 'fal';
+const provider = 'cloudflare';
 const falKey = process.env.FAL_KEY || '';
 const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID || '';
 const cfApiToken = process.env.CLOUDFLARE_API_TOKEN || '';
@@ -42,7 +42,7 @@ export const config = {
   adminCode: process.env.ADMIN_CODE || '',
   cfAccountId,
   cfApiToken,
-  providerReady: provider === 'cloudflare' ? Boolean(cfAccountId && cfApiToken) : Boolean(falKey),
+  providerReady: Boolean(cfAccountId && cfApiToken),
   accessCode: process.env.ACCESS_CODE || '',
 
   trustProxy: Number.isNaN(Number(trust)) ? trust === 'true' : Number(trust),
