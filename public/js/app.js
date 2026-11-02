@@ -923,6 +923,7 @@ function wallCard(item) {
   download.href = item.url;
   download.download = item.downloadName;
   download.textContent = 'Descargar';
+  download.addEventListener('click', () => api.viewWallpaper(item.id).catch(() => {}));
   const WALL_REACTIONS = ['👍', '❤️', '😍', '😮', '😂', '😢'];
   const bar = document.createElement('div');
   bar.className = 'wall-react';
@@ -949,7 +950,10 @@ function wallCard(item) {
   preview.className = 'btn btn--primary-soft wall-card__dl';
   preview.textContent = 'Vista previa';
   preview.addEventListener('click', () => openPreview(item));
-  info.append(title, tag, bar, preview, download);
+  const views = document.createElement('span');
+  views.className = 'wall-card__tag';
+  views.textContent = `👁 ${item.views ?? 0} vistas`;
+  info.append(title, tag, views, bar, preview, download);
   if (isOwnerDevice) {
     const del = document.createElement('button');
     del.type = 'button';
@@ -1270,6 +1274,7 @@ vid.upload?.addEventListener('click', async () => {
 
 /* ── Vista previa: cómo se verá el fondo en el teléfono o en la PC ── */
 function openPreview(item) {
+  api.viewWallpaper(item.id).catch(() => {});
   const dialog = document.getElementById('preview');
   const frame = document.getElementById('phone-frame');
   const screen = document.getElementById('phone-screen');
@@ -1343,6 +1348,24 @@ document.getElementById('music-upload')?.addEventListener('click', async () => {
     setMusicTrack(data.url);
     document.getElementById('music-file').value = '';
     toast('Música de fondo publicada.');
+  } catch (err) {
+    toast(err.message);
+  }
+});
+
+document.getElementById('stats-download')?.addEventListener('click', async () => {
+  const code = document.getElementById('admin-code')?.value.trim();
+  if (!code) return toast('Escribe el código de administrador.');
+  try {
+    const blob = await api.statsCsv(code);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'jordvex-estadisticas.csv';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (err) {
     toast(err.message);
   }

@@ -68,6 +68,23 @@ async function raw(path, { method = 'GET', body, headers = {} } = {}) {
 
 export const api = {
   wallpapers: () => request('/api/wallpapers'),
+  viewWallpaper: (id) => request(`/api/wallpapers/${encodeURIComponent(id)}/view`, { method: 'POST' }),
+  statsCsv: async (adminCode) => {
+    const headers = { 'X-Client-Id': clientId(), 'X-Admin-Code': adminCode };
+    const code = localStorage.getItem(CODE_KEY);
+    if (code) headers['X-Access-Code'] = code;
+    let res;
+    try {
+      res = await fetch('/api/admin/stats.csv', { headers });
+    } catch {
+      throw new ApiError('Sin conexión con el servidor.', 0);
+    }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new ApiError(data.error || 'No se pudo descargar.', res.status);
+    }
+    return res.blob();
+  },
   sound: () => request('/api/sound'),
   music: () => request('/api/music'),
   uploadMusic: (blob, adminCode) =>
