@@ -1383,3 +1383,38 @@ html[data-motion="reduced"] .music-toggle.is-on { animation: none; }
 
 /* ═══ Contador de visualizaciones ═══ */
 .wall-card__info .wall-card__tag:nth-of-type(2) { font-variant-numeric: tabular-nums; }
+
+/* ═══ Bordes animados en fondos y videos ═══ */
+.wall-card::before {
+  background: conic-gradient(from var(--ang), rgba(var(--accent-rgb), .9), transparent 25%, rgba(var(--accent-2), .8), transparent 60%, rgba(var(--accent-rgb), .9));
+}
+html:not([data-motion="reduced"]) .wall-card::before { animation: girar-borde 6s linear infinite; }
+.video-card { position: relative; }
+.video-card::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 2; pointer-events: none;
+  background: conic-gradient(from var(--ang), rgba(var(--accent-rgb), .9), transparent 25%, rgba(var(--accent-2), .8), transparent 60%, rgba(var(--accent-rgb), .9));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+html:not([data-motion="reduced"]) .video-card::before { animation: girar-borde 6s linear infinite; }
+.wall-card:hover, .video-card:hover { transform: translateY(-4px); box-shadow: 0 28px 54px -24px rgba(var(--accent-rgb), .6); }
+
+/* ═══ Ajustes: título con brillo y líneas de sección con movimiento ═══ */
+.sheet__head h3 {
+  background: linear-gradient(90deg, var(--text), var(--accent), var(--accent-2), var(--text));
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+html:not([data-motion="reduced"]) .sheet__head h3 { animation: marca-brillo 7s ease-in-out infinite; }
+.sheet__section { transition: border-color .3s, transform .3s var(--ease); }
+.sheet__section:hover { border-color: rgba(var(--accent-rgb), .45); transform: translateY(-1px); }
+
+/* ═══ Botón de redes sociales ═══ */
+.social-link {
+  width: 100%; min-height: 50px; text-decoration: none; justify-content: center;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), .22), rgba(var(--accent-2), .18));
+  border-color: rgba(var(--accent-rgb), .5); font-weight: 700;
+}
+.social-link:hover { border-color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .wall-card::before, .video-card::before, .sheet__head h3 { animation: none !important; } }
+html[data-motion="reduced"] .wall-card::before, html[data-motion="reduced"] .video-card::before, html[data-motion="reduced"] .sheet__head h3 { animation: none; }
