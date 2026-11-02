@@ -65,6 +65,7 @@ export function formatWallpaper(item, clientId = '') {
     url: `/wallpapers/${item.file}`,
     downloadName: `jordvex-${item.kind}-${item.id.slice(0, 8)}.${item.file.split('.').pop()}`,
     reactions,
+    views: item.views || 0,
     mine: (item.votes || {})[clientId] ?? null,
   };
 }
@@ -127,3 +128,24 @@ export async function readWallpaperFile(file) {
     return buf;
   }
 }
+
+// Cuenta una visualización (vista previa o descarga). Devuelve el total o null si no existe.
+export async function recordView(id) {
+  const data = await load();
+  const item = data.items.find((x) => x.id === id);
+  if (!item) return null;
+  item.views = (item.views || 0) + 1;
+  await persist();
+  return item.views;
+}
+
+// Estadísticas en CSV para abrir en Excel o en el teléfono.
+export async function statsCsv() {
+  const data = await load();
+  const rows = [['id', 'titulo', 'tipo', 'visualizaciones', 'me_gusta', 'fecha']];
+  for (const item of data.items) {
+    rows.push([item.id, item.title, item.kind, item.views || 0, Object.keys(item.votes || {}).length, item.createdAt]);
+  }
+  return rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+}
+
