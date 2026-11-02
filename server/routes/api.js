@@ -11,7 +11,7 @@ import { chat, takeChatSlot } from '../services/chat.js';
 import { generate } from '../services/generator.js';
 import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
-import { addWallpaper, detectImage, listWallpapers, reactWallpaper, removeWallpaper } from '../services/wallpapers.js';
+import { addWallpaper, detectImage, listWallpapers, reactWallpaper, recordView, removeWallpaper, statsCsv } from '../services/wallpapers.js';
 import { addVideo, detectVideo, listVideos, removeVideo } from '../services/videos.js';
 
 export const apiRouter = Router();
@@ -294,6 +294,21 @@ apiRouter.post('/music', express.raw({ type: Object.keys(MUSIC_TYPES), limit: '3
   if (old) await fs.unlink(path.join(musicDir, old)).catch(() => {});
   await fs.writeFile(path.join(musicDir, `music.${ext}`), req.body);
   res.status(201).json({ ok: true });
+});
+
+apiRouter.post('/wallpapers/:id/view', async (req, res) => {
+  const views = await recordView(req.params.id);
+  if (views === null) return res.status(404).json({ error: 'No se encontró ese fondo.' });
+  res.json({ views });
+});
+
+apiRouter.get('/admin/stats.csv', async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  res.type('text/csv');
+  res.set('Content-Disposition', 'attachment; filename="jordvex-estadisticas.csv"');
+  res.send('\uFEFF' + (await statsCsv()));
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
