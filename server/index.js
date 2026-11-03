@@ -2,12 +2,14 @@ import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 import fs from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { Readable } from 'node:stream';
 import path from 'node:path';
-import { getObject, presignUrl, r2Enabled } from './services/r2.js';
+import { getObject, getObjectStream, r2Enabled } from './services/r2.js';
 import { config } from './config.js';
 import { apiRouter } from './routes/api.js';
 import { readWallpaperFile } from './services/wallpapers.js';
-import { readVideoFile } from './services/videos.js';
+import { readVideoFile, videoPath } from './services/videos.js';
 
 const app = express();
 app.set('trust proxy', config.trustProxy);
@@ -81,19 +83,47 @@ app.get('/wallpapers/:file', async (req, res) => {
   res.send(buf);
 });
 
-// Videos publicados: se entregan tal cual se subieron.
+// Videos publicados: se entregan en streaming con soporte de rangos (el reproductor pide partes).
 app.get('/videos/:file', async (req, res) => {
-  if (!/^[0-9a-f-]{36}\.(mp4|webm|mov)$/.test(req.params.file)) return res.status(404).end();
-  if (r2Enabled()) {
-    res.set('Cache-Control', 'private, max-age=600');
-    return res.redirect(302, presignUrl('GET', `videos/${req.params.file}`, 3600));
-  }
-  const buf = await readVideoFile(req.params.file);
-  if (!buf) return res.status(404).end();
-  const ext = req.params.file.split('.').pop();
+  const file = req.params.file;
+  if (!/^[0-9a-f-]{36}\.(mp4|webm|mov)$/.test(file)) return res.status(404).end();
+  const ext = file.split('.').pop();
   res.type(ext === 'webm' ? 'video/webm' : ext === 'mov' ? 'video/quicktime' : 'video/mp4');
+  res.set('Accept-Ranges', 'bytes');
   res.set('Cache-Control', 'public, max-age=2592000, immutable');
-  res.send(buf);
+
+  const local = await videoPath(file);
+  if (local) {
+    const { size } = await fs.stat(local);
+    const m = /bytes=(\d*)-(\d*)/.exec(req.headers.range || '');
+    let start = 0;
+    let end = size - 1;
+    if (m) {
+      if (m[1]) start = Number(m[1]);
+      if (m[2]) end = Number(m[2]);
+      res.status(206);
+      res.set('Content-Range', `bytes ${start}-${end}/${size}`);
+    }
+    res.set('Content-Length', String(end - start + 1));
+    return createReadStream(local, { start, end }).pipe(res);
+  }
+
+  // Tras un reinicio el video está solo en R2: se reenvía en streaming, sin cargarlo en memoria.
+  if (!r2Enabled()) return res.status(404).end();
+  try {
+    const up = await getObjectStream(`videos/${file}`, req.headers.range || '');
+    if (up.status === 404) return res.status(404).end();
+    if (!up.ok && up.status !== 206) return res.status(502).end();
+    for (const h of ['content-length', 'content-range']) {
+      const v = up.headers.get(h);
+      if (v) res.set(h, v);
+    }
+    res.status(up.status);
+    Readable.fromWeb(up.body).pipe(res);
+  } catch (err) {
+    console.error('[video-r2]', err.message);
+    if (!res.headersSent) res.status(502).end();
+  }
 });
 
 // Sonido de clic publicado por el administrador.
