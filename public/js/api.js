@@ -62,7 +62,7 @@ async function raw(path, { method = 'GET', body, headers = {} } = {}) {
     throw new ApiError('Sin conexión con el servidor. Revisa tu internet.', 0);
   }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(data.error || 'Algo salió mal. Inténtalo de nuevo.', res.status);
+  if (!res.ok) throw new ApiError(data.error || `Algo salió mal (código ${res.status}). Inténtalo de nuevo.`, res.status);
   return data;
 }
 
