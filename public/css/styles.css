@@ -1384,180 +1384,40 @@ html[data-motion="reduced"] .music-toggle.is-on { animation: none; }
 /* ═══ Contador de visualizaciones ═══ */
 .wall-card__info .wall-card__tag:nth-of-type(2) { font-variant-numeric: tabular-nums; }
 
-/* ═══ Fondos y Videos: estilo profesional (bordes, profundidad y microefectos) ═══ */
-
-/* Tarjeta base más limpia y con más profundidad */
-.wall-card,
-.video-card {
-  position: relative;
-  overflow: hidden;
-  border: 0;
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--panel-hi) 88%, transparent) 0%,
-      var(--panel) 100%);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, .04) inset,
-    0 18px 40px -22px rgba(0, 0, 0, .75);
-  transition:
-    transform .35s var(--ease),
-    box-shadow .4s var(--ease);
+/* ═══ Bordes animados en fondos y videos ═══ */
+.wall-card::before {
+  background: conic-gradient(from var(--ang), rgba(var(--accent-rgb), .9), transparent 25%, rgba(var(--accent-2), .8), transparent 60%, rgba(var(--accent-rgb), .9));
 }
-
-/* Borde de luz premium (fino y elegante) */
-.wall-card::before,
+html:not([data-motion="reduced"]) .wall-card::before { animation: girar-borde 6s linear infinite; }
+.video-card { position: relative; }
 .video-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.2px;
-  z-index: 3;
-  pointer-events: none;
-  background: conic-gradient(
-    from var(--ang, 0deg),
-    rgba(var(--accent-rgb), .85),
-    transparent 22%,
-    rgba(var(--accent-2), .7),
-    transparent 48%,
-    rgba(var(--accent-rgb), .55),
-    transparent 72%,
-    rgba(var(--accent-2), .65),
-    transparent 90%,
-    rgba(var(--accent-rgb), .85)
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: .9;
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 2; pointer-events: none;
+  background: conic-gradient(from var(--ang), rgba(var(--accent-rgb), .9), transparent 25%, rgba(var(--accent-2), .8), transparent 60%, rgba(var(--accent-rgb), .9));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
 }
+html:not([data-motion="reduced"]) .video-card::before { animation: girar-borde 6s linear infinite; }
+.wall-card:hover, .video-card:hover { transform: translateY(-4px); box-shadow: 0 28px 54px -24px rgba(var(--accent-rgb), .6); }
 
-/* Giro suave del borde (solo si no hay reduce-motion) */
-html:not([data-motion="reduced"]) .wall-card::before,
-html:not([data-motion="reduced"]) .video-card::before {
-  animation: girar-borde 8s linear infinite;
+/* ═══ Ajustes: título con brillo y líneas de sección con movimiento ═══ */
+.sheet__head h3 {
+  background: linear-gradient(90deg, var(--text), var(--accent), var(--accent-2), var(--text));
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
 }
+html:not([data-motion="reduced"]) .sheet__head h3 { animation: marca-brillo 7s ease-in-out infinite; }
+.sheet__section { transition: border-color .3s, transform .3s var(--ease); }
+.sheet__section:hover { border-color: rgba(var(--accent-rgb), .45); transform: translateY(-1px); }
 
-/* Brillo diagonal al pasar el cursor */
-.wall-card::after,
-.video-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    115deg,
-    transparent 35%,
-    rgba(255, 255, 255, .07) 48%,
-    transparent 62%
-  );
-  transform: translateX(-120%);
-  opacity: 0;
-  transition: opacity .25s;
+/* ═══ Botón de redes sociales ═══ */
+.social-link {
+  width: 100%; min-height: 50px; text-decoration: none; justify-content: center;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), .22), rgba(var(--accent-2), .18));
+  border-color: rgba(var(--accent-rgb), .5); font-weight: 700;
 }
+.social-link:hover { border-color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .wall-card::before, .video-card::before, .sheet__head h3 { animation: none !important; } }
+html[data-motion="reduced"] .wall-card::before, html[data-motion="reduced"] .video-card::before, html[data-motion="reduced"] .sheet__head h3 { animation: none; }
 
-.wall-card:hover::after,
-.video-card:hover::after {
-  opacity: 1;
-}
-
-html:not([data-motion="reduced"]) .wall-card:hover::after,
-html:not([data-motion="reduced"]) .video-card:hover::after {
-  animation: wall-shine .9s var(--ease) both;
-}
-
-@keyframes wall-shine {
-  from { transform: translateX(-120%); }
-  to   { transform: translateX(120%); }
-}
-
-/* Hover profesional: sube un poco + glow controlado */
-.wall-card:hover,
-.video-card:hover {
-  transform: translateY(-5px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, .06) inset,
-    0 28px 56px -24px rgba(var(--accent-rgb), .55),
-    0 0 0 1px rgba(var(--accent-rgb), .18);
-}
-
-/* Imagen / video sin bordes internos raros */
-.wall-card img {
-  position: relative;
-  z-index: 1;
-  border-radius: 0;
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.video-card video,
-.video-card .vp {
-  position: relative;
-  z-index: 1;
-  border-radius: 0;
-}
-
-/* Info más limpia y profesional */
-.wall-card__info,
-.video-card .wall-card__info {
-  position: relative;
-  z-index: 2;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    color-mix(in srgb, var(--panel) 92%, transparent) 18%
-  );
-}
-
-/* Entrada en cascada más elegante */
-html:not([data-motion="reduced"]) .wall-card,
-html:not([data-motion="reduced"]) .video-card {
-  animation: cascada-entrada .5s var(--ease) both;
-}
-
-html:not([data-motion="reduced"]) .wall-card:nth-child(2),
-html:not([data-motion="reduced"]) .video-card:nth-child(2) { animation-delay: .06s; }
-html:not([data-motion="reduced"]) .wall-card:nth-child(3),
-html:not([data-motion="reduced"]) .video-card:nth-child(3) { animation-delay: .12s; }
-html:not([data-motion="reduced"]) .wall-card:nth-child(4),
-html:not([data-motion="reduced"]) .video-card:nth-child(4) { animation-delay: .18s; }
-html:not([data-motion="reduced"]) .wall-card:nth-child(5),
-html:not([data-motion="reduced"]) .video-card:nth-child(5) { animation-delay: .24s; }
-html:not([data-motion="reduced"]) .wall-card:nth-child(n+6),
-html:not([data-motion="reduced"]) .video-card:nth-child(n+6) { animation-delay: .3s; }
-
-/* Reducir animaciones: se apaga todo lo anterior */
-@media (prefers-reduced-motion: reduce) {
-  .wall-card::before,
-  .video-card::before,
-  .wall-card::after,
-  .video-card::after,
-  .wall-card,
-  .video-card {
-    animation: none !important;
-  }
-  .wall-card:hover,
-  .video-card:hover {
-    transform: none;
-  }
-}
-
-html[data-motion="reduced"] .wall-card::before,
-html[data-motion="reduced"] .video-card::before,
-html[data-motion="reduced"] .wall-card::after,
-html[data-motion="reduced"] .video-card::after,
-html[data-motion="reduced"] .wall-card,
-html[data-motion="reduced"] .video-card {
-  animation: none !important;
-}
-
-html[data-motion="reduced"] .wall-card:hover,
-html[data-motion="reduced"] .video-card:hover {
-  transform: none;
-}
+/* ═══ Aviso de carga de videos ═══ */
+.video-tip { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: rgba(var(--accent-rgb), .08); border: 1px solid rgba(var(--accent-rgb), .25); }
