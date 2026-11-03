@@ -1210,7 +1210,7 @@ vid.upload?.addEventListener('click', async () => {
   const code = wall.code?.value.trim();
   if (!file) return toast('Elige un video.');
   if (!code) return toast('Escribe el código de administrador.');
-  if (file.size > 150 * 1024 * 1024) return toast('El video pasa de 150 MB.');
+  if (file.size > 300 * 1024 * 1024) return toast('El video pasa de 300 MB.');
   vid.upload.disabled = true;
   try {
     // Se leen las dimensiones y la duración del propio archivo, sin recomprimirlo.
