@@ -194,7 +194,7 @@ apiRouter.get('/videos', async (_req, res) => {
   res.json({ items: await listVideos() });
 });
 
-apiRouter.post('/videos', express.raw({ type: ['video/mp4', 'video/webm', 'video/quicktime'], limit: '150mb' }), async (req, res) => {
+apiRouter.post('/videos', express.raw({ type: ['video/mp4', 'video/webm', 'video/quicktime'], limit: '300mb' }), async (req, res) => {
   const ok = checkAdmin(req);
   if (ok === 'off') return res.status(503).json({ error: 'El panel no está configurado (falta ADMIN_CODE).' });
   if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
