@@ -11,8 +11,9 @@ import { chat, takeChatSlot } from '../services/chat.js';
 import { generate } from '../services/generator.js';
 import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
+import { presignUrl, r2Enabled } from '../services/r2.js';
 import { addWallpaper, detectImage, listWallpapers, reactWallpaper, recordView, removeWallpaper, statsCsv } from '../services/wallpapers.js';
-import { addVideo, detectVideo, listVideos, removeVideo } from '../services/videos.js';
+import { addVideo, detectVideo, listVideos, registerVideo, removeVideo } from '../services/videos.js';
 
 export const apiRouter = Router();
 
@@ -309,6 +310,34 @@ apiRouter.get('/admin/stats.csv', async (req, res) => {
   res.type('text/csv');
   res.set('Content-Disposition', 'attachment; filename="jordvex-estadisticas.csv"');
   res.send('\uFEFF' + (await statsCsv()));
+});
+
+// Subida directa a R2: el servidor solo da permiso y registra el video; los bytes van directo a R2.
+const VIDEO_EXT = { 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov' };
+const VIDEO_MAX = 300 * 1024 * 1024;
+apiRouter.post('/videos/presign', async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  if (!r2Enabled()) return res.status(503).json({ error: 'R2 no está configurado en el servidor.' });
+  const ext = VIDEO_EXT[req.body?.contentType];
+  const size = Number(req.body?.size);
+  if (!ext) return res.status(400).json({ error: 'Formato no válido. Usa MP4, WEBM o MOV.' });
+  if (!(size > 0 && size <= VIDEO_MAX)) return res.status(400).json({ error: 'El video pasa de 300 MB.' });
+  const id = crypto.randomUUID();
+  res.json({ id, ext, uploadUrl: presignUrl('PUT', `videos/${id}.${ext}`, 1800) });
+});
+
+apiRouter.post('/videos/complete', async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  try {
+    const item = await registerVideo(req.body || {});
+    res.status(201).json({ ok: true, id: item.id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
