@@ -120,3 +120,22 @@ export async function putStream(key, stream, size, contentType) {
   if (!res.ok) throw new Error(`R2 PUT ${key}: ${res.status}`);
 }
 
+// Descarga un objeto de R2 en streaming (con soporte de rangos para el reproductor).
+export async function getObjectStream(key, range = '') {
+  const host = `${config.r2.accountId}.r2.cloudflarestorage.com`;
+  const urlPath = `/${config.r2.bucket}/${key.split('/').map(encodeURIComponent).join('/')}`;
+  const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const dateStamp = amzDate.slice(0, 8);
+  const headers = { host, 'x-amz-content-sha256': 'UNSIGNED-PAYLOAD', 'x-amz-date': amzDate };
+  if (range) headers.range = range;
+  const names = Object.keys(headers).sort();
+  const canonicalHeaders = names.map((n) => `${n}:${String(headers[n]).trim()}\n`).join('');
+  const signedHeaders = names.join(';');
+  const canonicalRequest = ['GET', urlPath, '', canonicalHeaders, signedHeaders, 'UNSIGNED-PAYLOAD'].join('\n');
+  const scope = `${dateStamp}/auto/s3/aws4_request`;
+  const stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, sha256(canonicalRequest)].join('\n');
+  const signature = crypto.createHmac('sha256', signingKey(dateStamp)).update(stringToSign).digest('hex');
+  const sendHeaders = { 'x-amz-content-sha256': 'UNSIGNED-PAYLOAD', 'x-amz-date': amzDate, authorization: `AWS4-HMAC-SHA256 Credential=${config.r2.accessKeyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}` };
+  if (range) sendHeaders.range = range;
+  return fetch(`https://${host}${urlPath}`, { method: 'GET', headers: sendHeaders, signal: AbortSignal.timeout(30 * 60 * 1000) });
+}
