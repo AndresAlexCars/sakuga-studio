@@ -86,6 +86,7 @@ export const api = {
     return res.blob();
   },
   sound: () => request('/api/sound'),
+  videoMeta: (id, meta) => request(`/api/videos/${encodeURIComponent(id)}/meta`, { method: 'POST', body: meta }),
   videoStream: (file, meta, title, adminCode) =>
     raw('/api/videos/stream', {
       method: 'POST',

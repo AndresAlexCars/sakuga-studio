@@ -1143,21 +1143,40 @@ function videoCard(item) {
   const chips = document.createElement('div');
   chips.className = 'quality-chips';
   const mb = (item.size / (1024 * 1024)).toFixed(1);
-  const list = [
-    qualityLabel(item.width, item.height),
-    item.width && item.height ? `${item.width}×${item.height}` : null,
-    item.duration ? `${item.duration} s` : null,
-    `${mb} MB`,
-    item.mime.replace('video/', '').toUpperCase(),
-    item.codec,
-    'Original sin recomprimir',
-  ].filter(Boolean);
-  for (const text of list) {
-    const chip = document.createElement('span');
-    chip.className = 'quality-chip';
-    chip.textContent = text;
-    chips.append(chip);
-  }
+  const fillChips = (w, h, dur) => {
+    const list = [
+      qualityLabel(w, h),
+      w && h ? `${w}×${h}` : null,
+      dur ? `${dur} s` : null,
+      `${mb} MB`,
+      item.mime.replace('video/', '').toUpperCase(),
+      item.codec,
+      'Original sin recomprimir',
+    ].filter(Boolean);
+    chips.replaceChildren(...list.map((text) => {
+      const chip = document.createElement('span');
+      chip.className = 'quality-chip';
+      chip.textContent = text;
+      return chip;
+    }));
+  };
+  fillChips(item.width, item.height, item.duration);
+  // Medidas reales: el navegador las lee del propio video, así orientación y calidad salen bien.
+  let reported = false;
+  player.addEventListener('loadedmetadata', () => {
+    const w = player.videoWidth;
+    const h = player.videoHeight;
+    if (!w || !h) return;
+    const dur = Number.isFinite(player.duration) ? Math.round(player.duration * 10) / 10 : 0;
+    card.classList.toggle('video-card--wide', w > h);
+    card.classList.toggle('video-card--tall', w <= h);
+    player.style.aspectRatio = `${w} / ${h}`;
+    fillChips(w, h, dur);
+    if ((!item.width || !item.height) && !reported) {
+      reported = true;
+      api.videoMeta(item.id, { width: w, height: h, duration: dur }).catch(() => {});
+    }
+  });
   const download = document.createElement('a');
   download.className = 'btn btn--primary-soft wall-card__dl';
   download.href = item.url;
@@ -1224,7 +1243,7 @@ vid.upload?.addEventListener('click', async () => {
         URL.revokeObjectURL(url);
         resolve(data);
       };
-      const timer = setTimeout(() => done({ width: 0, height: 0, duration: 0 }), 8000);
+      const timer = setTimeout(() => done({ width: 0, height: 0, duration: 0 }), 30000);
       probe.onloadedmetadata = () => done({ width: probe.videoWidth || 0, height: probe.videoHeight || 0, duration: Number.isFinite(probe.duration) ? probe.duration : 0 });
       probe.onerror = () => done({ width: 0, height: 0, duration: 0 });
       probe.src = url;
