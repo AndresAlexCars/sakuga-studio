@@ -13,7 +13,7 @@ import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
 import { presignUrl, putStream, r2Enabled } from '../services/r2.js';
 import { addWallpaper, detectImage, listWallpapers, reactWallpaper, recordView, removeWallpaper, statsCsv } from '../services/wallpapers.js';
-import { addVideo, detectVideo, listVideos, registerVideo, removeVideo } from '../services/videos.js';
+import { addVideo, detectVideo, listVideos, registerVideo, removeVideo, setVideoMetaIfMissing } from '../services/videos.js';
 
 export const apiRouter = Router();
 
@@ -364,6 +364,13 @@ apiRouter.post('/videos/stream', async (req, res) => {
     console.error('[video-stream]', err.message);
     res.status(502).json({ error: `No se pudo guardar el video: ${err.message}` });
   }
+});
+
+// Guarda las medidas reales de un video que llegó sin ellas (solo si aún no las tiene).
+apiRouter.post('/videos/:id/meta', async (req, res) => {
+  const saved = await setVideoMetaIfMissing(req.params.id, req.body ?? {});
+  if (!saved) return res.status(404).json({ error: 'No se encontró ese video o ya tiene medidas.' });
+  res.json({ ok: true });
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
