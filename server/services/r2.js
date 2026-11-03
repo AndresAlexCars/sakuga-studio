@@ -1,6 +1,7 @@
 // Cliente mínimo para Cloudflare R2 (API compatible con S3), sin dependencias.
 // Solo se usa si hay credenciales R2 en las variables de entorno. Las claves nunca llegan al navegador.
 import crypto from 'node:crypto';
+import { Readable } from 'node:stream';
 import { config } from '../config.js';
 
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
@@ -87,5 +88,35 @@ export function presignUrl(method, key, expires = 3600) {
 export async function headObject(key) {
   const res = await request('HEAD', key);
   return res.ok;
+}
+
+// Sube un video en streaming: el servidor lo reenvía a R2 sin guardarlo en memoria.
+export async function putStream(key, stream, size, contentType) {
+  const host = `${config.r2.accountId}.r2.cloudflarestorage.com`;
+  const urlPath = `/${config.r2.bucket}/${key.split('/').map(encodeURIComponent).join('/')}`;
+  const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const dateStamp = amzDate.slice(0, 8);
+  const headers = { host, 'x-amz-content-sha256': 'UNSIGNED-PAYLOAD', 'x-amz-date': amzDate, 'content-type': contentType };
+  const names = Object.keys(headers).sort();
+  const canonicalHeaders = names.map((n) => `${n}:${String(headers[n]).trim()}\n`).join('');
+  const signedHeaders = names.join(';');
+  const canonicalRequest = ['PUT', urlPath, '', canonicalHeaders, signedHeaders, 'UNSIGNED-PAYLOAD'].join('\n');
+  const scope = `${dateStamp}/auto/s3/aws4_request`;
+  const stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, sha256(canonicalRequest)].join('\n');
+  const signature = crypto.createHmac('sha256', signingKey(dateStamp)).update(stringToSign).digest('hex');
+  const res = await fetch(`https://${host}${urlPath}`, {
+    method: 'PUT',
+    headers: {
+      'x-amz-content-sha256': 'UNSIGNED-PAYLOAD',
+      'x-amz-date': amzDate,
+      'content-type': contentType,
+      'content-length': String(size),
+      authorization: `AWS4-HMAC-SHA256 Credential=${config.r2.accessKeyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`,
+    },
+    body: Readable.toWeb(stream),
+    duplex: 'half',
+    signal: AbortSignal.timeout(30 * 60 * 1000),
+  });
+  if (!res.ok) throw new Error(`R2 PUT ${key}: ${res.status}`);
 }
 
