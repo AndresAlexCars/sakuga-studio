@@ -214,3 +214,17 @@ export async function registerVideo({ id, ext, title, width, height, duration, c
   return item;
 }
 
+// Guarda medidas reales de un video que se publicó sin ellas. Solo actúa una vez por video.
+export async function setVideoMetaIfMissing(id, meta) {
+  const data = await load();
+  const item = data.items.find((x) => x.id === id);
+  if (!item || (item.width && item.height)) return false;
+  const width = Math.round(Number(meta.width) || 0);
+  const height = Math.round(Number(meta.height) || 0);
+  if (width < 16 || height < 16 || width > 8192 || height > 8192) return false;
+  item.width = width;
+  item.height = height;
+  item.duration = Math.max(0, Math.round((Number(meta.duration) || 0) * 10) / 10);
+  await persist();
+  return true;
+}
