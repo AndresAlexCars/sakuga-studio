@@ -3,7 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getObject, r2Enabled } from './services/r2.js';
+import { getObject, presignUrl, r2Enabled } from './services/r2.js';
 import { config } from './config.js';
 import { apiRouter } from './routes/api.js';
 import { readWallpaperFile } from './services/wallpapers.js';
@@ -83,6 +83,11 @@ app.get('/wallpapers/:file', async (req, res) => {
 
 // Videos publicados: se entregan tal cual se subieron.
 app.get('/videos/:file', async (req, res) => {
+  if (!/^[0-9a-f-]{36}\.(mp4|webm|mov)$/.test(req.params.file)) return res.status(404).end();
+  if (r2Enabled()) {
+    res.set('Cache-Control', 'private, max-age=600');
+    return res.redirect(302, presignUrl('GET', `videos/${req.params.file}`, 3600));
+  }
   const buf = await readVideoFile(req.params.file);
   if (!buf) return res.status(404).end();
   const ext = req.params.file.split('.').pop();
