@@ -86,6 +86,18 @@ export const api = {
     return res.blob();
   },
   sound: () => request('/api/sound'),
+  videoStream: (file, meta, title, adminCode) =>
+    raw('/api/videos/stream', {
+      method: 'POST',
+      body: file,
+      headers: {
+        'Content-Type': file.type || 'video/mp4',
+        'X-Size': String(file.size),
+        'X-Title': encodeURIComponent(title),
+        'X-Meta': encodeURIComponent(JSON.stringify(meta)),
+        'X-Admin-Code': adminCode,
+      },
+    }),
   videoPresign: (contentType, size, adminCode) =>
     raw('/api/videos/presign', { method: 'POST', body: JSON.stringify({ contentType, size }), headers: { 'Content-Type': 'application/json', 'X-Admin-Code': adminCode } }),
   videoComplete: (data, adminCode) =>

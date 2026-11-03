@@ -1230,12 +1230,8 @@ vid.upload?.addEventListener('click', async () => {
       probe.src = url;
     });
     const title = vid.title.value.trim() || file.name.replace(/\.[^.]+$/, '');
-    const mime = file.type || 'video/mp4';
-    toast('Subiendo el video a R2... no cierres la página.');
-    const pre = await api.videoPresign(mime, file.size, code);
-    const put = await fetch(pre.uploadUrl, { method: 'PUT', body: file });
-    if (!put.ok) throw new Error(`No se pudo subir a R2 (código ${put.status}). Revisa la configuración CORS del bucket.`);
-    await api.videoComplete({ id: pre.id, ext: pre.ext, title, width: meta.width, height: meta.height, duration: meta.duration, size: file.size, mime }, code);
+    toast('Subiendo el video... no cierres la página.');
+    await api.videoStream(file, { width: meta.width, height: meta.height, duration: meta.duration }, title, code);
     toast('Video publicado.');
     vid.file.value = '';
     vid.title.value = '';
