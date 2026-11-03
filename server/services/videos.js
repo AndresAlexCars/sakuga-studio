@@ -122,22 +122,21 @@ export function formatVideo(item) {
 }
 
 export async function listVideos() {
+  // Solo lee el índice: nunca abre los archivos de video (evita quedarse sin memoria con videos grandes).
   const data = await load();
-  // Videos publicados antes de esta versión: se leen sus medidas una sola vez y se guardan.
-  let changed = false;
-  for (const item of data.items) {
-    if (item.width && item.codec) continue;
-    const buf = await readVideoFile(item.file).catch(() => null);
-    if (!buf) continue;
-    const info = parseMp4(buf);
-    item.width = item.width || info.width;
-    item.height = item.height || info.height;
-    item.duration = item.duration || info.duration;
-    item.codec = info.codec || item.codec || '';
-    changed = true;
-  }
-  if (changed) await persist();
   return data.items.map(formatVideo);
+}
+
+// Ruta local del video si está en disco; null si no está.
+export async function videoPath(file) {
+  if (!FILE_RE.test(file)) return null;
+  const full = path.join(dir, file);
+  try {
+    await fs.access(full);
+    return full;
+  } catch {
+    return null;
+  }
 }
 
 export async function addVideo({ buffer, title, width, height, duration }) {
