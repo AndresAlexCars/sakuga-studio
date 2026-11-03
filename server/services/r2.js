@@ -62,3 +62,30 @@ export async function deleteObject(key) {
   const res = await request('DELETE', key);
   if (!res.ok && res.status !== 404) throw new Error(`R2 DELETE ${key}: ${res.status}`);
 }
+
+// URL firmada: el navegador sube o descarga directo de R2, sin pasar por el servidor.
+export function presignUrl(method, key, expires = 3600) {
+  const host = `${config.r2.accountId}.r2.cloudflarestorage.com`;
+  const urlPath = `/${config.r2.bucket}/${key.split('/').map(encodeURIComponent).join('/')}`;
+  const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const dateStamp = amzDate.slice(0, 8);
+  const scope = `${dateStamp}/auto/s3/aws4_request`;
+  const params = {
+    'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+    'X-Amz-Credential': `${config.r2.accessKeyId}/${scope}`,
+    'X-Amz-Date': amzDate,
+    'X-Amz-Expires': String(expires),
+    'X-Amz-SignedHeaders': 'host',
+  };
+  const canonicalQuery = Object.keys(params).sort().map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&');
+  const canonicalRequest = [method, urlPath, canonicalQuery, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
+  const stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, sha256(canonicalRequest)].join('\n');
+  const signature = crypto.createHmac('sha256', signingKey(dateStamp)).update(stringToSign).digest('hex');
+  return `https://${host}${urlPath}?${canonicalQuery}&X-Amz-Signature=${signature}`;
+}
+
+export async function headObject(key) {
+  const res = await request('HEAD', key);
+  return res.ok;
+}
+

@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { config } from '../config.js';
-import { deleteObject, getObject, putObject, r2Enabled } from './r2.js';
+import { deleteObject, getObject, headObject, putObject, r2Enabled } from './r2.js';
 
 const dir = path.join(config.dataDir, 'videos');
 const indexFile = path.join(dir, 'index.json');
@@ -190,3 +190,28 @@ export async function readVideoFile(file) {
     return buf;
   }
 }
+
+// Registra un video que el navegador ya subió directo a R2.
+export async function registerVideo({ id, ext, title, width, height, duration, codec, size, mime }) {
+  const MIME = { mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime' };
+  if (!/^[0-9a-f-]{36}$/.test(String(id)) || !MIME[ext]) throw new Error('Datos del video no válidos.');
+  const exists = await headObject(`videos/${id}.${ext}`);
+  if (!exists) throw new Error('El video no llegó completo a R2. Inténtalo de nuevo.');
+  const data = await load();
+  const item = {
+    id,
+    file: `${id}.${ext}`,
+    title: String(title || 'Video').slice(0, 60),
+    width: Math.max(0, Math.round(Number(width) || 0)),
+    height: Math.max(0, Math.round(Number(height) || 0)),
+    duration: Math.max(0, Number(duration) || 0),
+    codec: String(codec || '').slice(0, 20),
+    size: Math.max(0, Number(size) || 0),
+    mime: MIME[ext],
+    createdAt: new Date().toISOString(),
+  };
+  data.items.unshift(item);
+  await persist();
+  return item;
+}
+
