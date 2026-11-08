@@ -13,7 +13,7 @@ import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
 import { presignUrl, putStream, r2Enabled } from '../services/r2.js';
 import { addWallpaper, detectImage, listWallpapers, reactWallpaper, recordView, removeWallpaper, statsCsv } from '../services/wallpapers.js';
-import { addVideo, detectVideo, listVideos, registerVideo, removeVideo, setVideoMetaIfMissing } from '../services/videos.js';
+import { addVideo, addYoutube, detectVideo, extractYoutubeId, listVideos, registerVideo, removeVideo, setVideoMetaIfMissing } from '../services/videos.js';
 
 export const apiRouter = Router();
 
@@ -371,6 +371,18 @@ apiRouter.post('/videos/:id/meta', async (req, res) => {
   const saved = await setVideoMetaIfMissing(req.params.id, req.body ?? {});
   if (!saved) return res.status(404).json({ error: 'No se encontró ese video o ya tiene medidas.' });
   res.json({ ok: true });
+});
+
+// Añade un video de YouTube no listado (solo administrador).
+apiRouter.post('/videos/youtube', async (req, res) => {
+  const ok = checkAdmin(req);
+  if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
+  if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
+  const youtubeId = extractYoutubeId(req.body?.url);
+  if (!youtubeId) return res.status(400).json({ error: 'Ese enlace no parece de YouTube.' });
+  const title = String(req.body?.title || '').trim().slice(0, 60) || 'Video de YouTube';
+  const item = await addYoutube({ title, youtubeId });
+  res.status(201).json({ ok: true, id: item.id });
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
