@@ -1,4 +1,6 @@
 // Cliente de la API del propio servidor. No contiene ninguna clave del proveedor.
+const safeGet = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
+const safeSet = (key, value) => { try { localStorage.setItem(key, value); } catch { /* sin almacenamiento */ } };
 const CLIENT_KEY = 'sakuga.clientId';
 const CODE_KEY = 'sakuga.accessCode';
 
@@ -31,12 +33,12 @@ function clientId() {
   }
 }
 
-export const hasAccessCode = () => Boolean(localStorage.getItem(CODE_KEY));
-export const setAccessCode = (code) => localStorage.setItem(CODE_KEY, code);
+export const hasAccessCode = () => Boolean(safeGet(CODE_KEY));
+export const setAccessCode = (code) => safeSet(CODE_KEY, code);
 
 async function request(path, { method = 'GET', body } = {}) {
   const headers = { 'X-Client-Id': clientId() };
-  const code = localStorage.getItem(CODE_KEY);
+  const code = safeGet(CODE_KEY);
   if (code) headers['X-Access-Code'] = code;
   if (body) headers['Content-Type'] = 'application/json';
 
@@ -53,7 +55,7 @@ async function request(path, { method = 'GET', body } = {}) {
 
 async function raw(path, { method = 'GET', body, headers = {} } = {}) {
   const h = { 'X-Client-Id': clientId(), ...headers };
-  const code = localStorage.getItem(CODE_KEY);
+  const code = safeGet(CODE_KEY);
   if (code) h['X-Access-Code'] = code;
   let res;
   try {
@@ -71,7 +73,7 @@ export const api = {
   viewWallpaper: (id) => request(`/api/wallpapers/${encodeURIComponent(id)}/view`, { method: 'POST' }),
   statsCsv: async (adminCode) => {
     const headers = { 'X-Client-Id': clientId(), 'X-Admin-Code': adminCode };
-    const code = localStorage.getItem(CODE_KEY);
+    const code = safeGet(CODE_KEY);
     if (code) headers['X-Access-Code'] = code;
     let res;
     try {
@@ -133,7 +135,7 @@ export const api = {
     }),
   config: () => request('/api/config'),
   chat: (messages, provider) => request('/api/chat', { method: 'POST', body: { messages, provider } }),
-  generate: (params) => raw('/api/generate', { method: 'POST', body: JSON.stringify(params), headers: { 'Content-Type': 'application/json', 'X-Admin-Code': localStorage.getItem('sakuga.adminCode') || '' } }),
+  generate: (params) => raw('/api/generate', { method: 'POST', body: JSON.stringify(params), headers: { 'Content-Type': 'application/json', 'X-Admin-Code': safeGet('sakuga.adminCode') || '' } }),
   history: () => request('/api/history'),
   remove: (id) => request(`/api/history/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   clear: () => request('/api/history', { method: 'DELETE' }),

@@ -1,3 +1,6 @@
+// Almacenamiento seguro: en algunos navegadores integrados localStorage es null y no debe romper la app.
+const safeGet = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
+const safeSet = (key, value) => { try { localStorage.setItem(key, value); } catch { /* sin almacenamiento */ } };
 import { api, ApiError, hasAccessCode, setAccessCode } from './api.js';
 import { ideas, setLanguage, t, tl } from './i18n.js';
 import { applyAppearance, loadDraft, loadSettings, normalize, resetSettings, saveDraft, saveSettings } from './settings.js';
@@ -90,11 +93,11 @@ function toast(message) {
 
 function loadPrefs() {
   try {
-    Object.assign(state.prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}'));
+    Object.assign(state.prefs, JSON.parse(safeGet(PREFS_KEY) || '{}'));
   } catch { /* se usan los valores por defecto */ }
 }
 function savePrefs() {
-  try { localStorage.setItem(PREFS_KEY, JSON.stringify(state.prefs)); } catch { /* modo privado */ }
+  try { safeSet(PREFS_KEY, JSON.stringify(state.prefs)); } catch { /* modo privado */ }
 }
 function sanitizePrefs() {
   const { styles, ratios, resolutions, qualities } = state.config;
@@ -848,7 +851,7 @@ async function init() {
     openGate();
     return;
   }
-  const owner = Boolean(localStorage.getItem('sakuga.adminCode')) || localStorage.getItem('sakuga.owner') === '1' || new URLSearchParams(location.search).has('admin');
+  const owner = Boolean(safeGet('sakuga.adminCode')) || safeGet('sakuga.owner') === '1' || new URLSearchParams(location.search).has('admin');
   if (!owner) {
     document.body.dataset.role = 'visitor';
     setView('wallpapers');
@@ -888,11 +891,11 @@ const WALL_CODE_KEY = 'sakuga.adminCode';
 // El panel solo aparece en tu dispositivo: entra una vez con ?admin=1 y escribe tu código.
 // Después queda guardado aquí; para los demás, el panel no existe en la página.
 let savedAdminCode = '';
-try { savedAdminCode = localStorage.getItem(WALL_CODE_KEY) || ''; } catch { /* sin almacenamiento */ }
+try { savedAdminCode = safeGet(WALL_CODE_KEY) || ''; } catch { /* sin almacenamiento */ }
 if (new URLSearchParams(location.search).has('admin')) {
-  try { localStorage.setItem('sakuga.owner', '1'); } catch { /* sin almacenamiento */ }
+  try { safeSet('sakuga.owner', '1'); } catch { /* sin almacenamiento */ }
 }
-const isOwnerDevice = Boolean(savedAdminCode) || localStorage.getItem('sakuga.owner') === '1';
+const isOwnerDevice = Boolean(savedAdminCode) || safeGet('sakuga.owner') === '1';
 if (wall.code) wall.code.value = savedAdminCode;
 if (!isOwnerDevice) {
   document.getElementById('wall-admin')?.remove();
@@ -900,7 +903,7 @@ if (!isOwnerDevice) {
   document.getElementById('wall-admin')?.setAttribute('open', '');
 }
 wall.code?.addEventListener('input', () => {
-  try { localStorage.setItem(WALL_CODE_KEY, wall.code.value.trim()); } catch { /* modo privado */ }
+  try { safeSet(WALL_CODE_KEY, wall.code.value.trim()); } catch { /* modo privado */ }
 });
 
 function wallCard(item) {
@@ -1277,13 +1280,13 @@ vid.upload?.addEventListener('click', async () => {
         const res = await fetch('/api/admin/check', {
           headers: {
             'X-Admin-Code': code.trim(),
-            'X-Client-Id': localStorage.getItem('sakuga.clientId') || '',
-            'X-Access-Code': localStorage.getItem('sakuga.accessCode') || '',
+            'X-Client-Id': safeGet('sakuga.clientId') || '',
+            'X-Access-Code': safeGet('sakuga.accessCode') || '',
           },
         });
         if (!res.ok) throw new Error('incorrecto');
-        localStorage.setItem('sakuga.adminCode', code.trim());
-        localStorage.setItem('sakuga.owner', '1');
+        safeSet('sakuga.adminCode', code.trim());
+        safeSet('sakuga.owner', '1');
         location.reload();
       } catch {
         toast('Código incorrecto.');
@@ -1317,7 +1320,7 @@ document.getElementById('preview')?.addEventListener('click', (event) => {
 
 /* ── Música de fondo: la publica el administrador; cada visitante la activa con el botón ── */
 let bgTrack = null;
-let bgWanted = localStorage.getItem('sakuga.music') === 'on';
+let bgWanted = safeGet('sakuga.music') === 'on';
 const musicBtn = document.getElementById('music-toggle');
 function paintMusic() {
   if (!musicBtn) return;
@@ -1349,7 +1352,7 @@ musicBtn?.addEventListener('click', () => {
     bgWanted = false;
     bgTrack.pause();
   }
-  try { localStorage.setItem('sakuga.music', bgWanted ? 'on' : 'off'); } catch { /* sin almacenamiento */ }
+  try { safeSet('sakuga.music', bgWanted ? 'on' : 'off'); } catch { /* sin almacenamiento */ }
   paintMusic();
 });
 // Los navegadores bloquean el sonido hasta el primer toque: si la música estaba activa, arranca con ese toque.
