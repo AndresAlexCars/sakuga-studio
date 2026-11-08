@@ -1131,9 +1131,14 @@ function buildPlayer(video) {
 
 function youtubeCard(item) {
   const card = document.createElement('article');
-  card.className = 'wall-card video-card video-card--wide';
+  card.className = 'wall-card video-card';
   const frame = document.createElement('div');
-  frame.style.cssText = 'position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:22px 22px 0 0;overflow:hidden;';
+  const vertical = item.orientation === 'vertical';
+  card.classList.toggle('video-card--tall', vertical);
+  card.classList.toggle('video-card--wide', !vertical);
+  frame.style.cssText = vertical
+    ? 'position:relative;width:min(100%,360px);aspect-ratio:9/16;margin:0 auto;background:#000;border-radius:22px 22px 0 0;overflow:hidden;'
+    : 'position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:22px 22px 0 0;overflow:hidden;';
   const iframe = document.createElement('iframe');
   iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.youtubeId)}`;
   iframe.title = item.title;
@@ -1190,6 +1195,14 @@ function ensureYoutubeForm() {
   title.type = 'text';
   title.maxLength = 60;
   title.placeholder = 'Título del video';
+  const orient = document.createElement('select');
+  orient.setAttribute('aria-label', 'Orientación del video');
+  for (const [value, label] of [['horizontal', 'Horizontal (PC)'], ['vertical', 'Vertical (móvil)']]) {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    orient.append(opt);
+  }
   const add = document.createElement('button');
   add.type = 'button';
   add.className = 'btn btn--primary';
@@ -1200,7 +1213,7 @@ function ensureYoutubeForm() {
     if (!url.value.trim()) return toast('Pega el enlace de YouTube.');
     add.disabled = true;
     try {
-      await api.videoYoutube(url.value.trim(), title.value.trim(), code);
+      await api.videoYoutube(url.value.trim(), title.value.trim(), code, orient.value);
       toast('Video de YouTube añadido.');
       url.value = '';
       title.value = '';
@@ -1211,7 +1224,7 @@ function ensureYoutubeForm() {
       add.disabled = false;
     }
   });
-  box.append(url, title, add);
+  box.append(url, title, orient, add);
   vid.grid.parentElement.insertBefore(box, vid.grid);
 }
 
