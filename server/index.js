@@ -15,6 +15,9 @@ const app = express();
 app.set('trust proxy', config.trustProxy);
 app.disable('x-powered-by');
 
+// URL pública del bucket R2.
+const R2_PUBLIC = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -23,6 +26,7 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", 'https://fonts.googleapis.com'],
+        frameSrc: ["'self'", 'https://www.youtube-nocookie.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:'],
         connectSrc: ["'self'"],
@@ -75,6 +79,10 @@ app.use(
 
 // Fondos publicados: archivos con nombre UUID, descargables por cualquiera que tenga el enlace.
 app.get('/wallpapers/:file', async (req, res) => {
+  if (R2_PUBLIC && r2Enabled() && /^[0-9a-f-]{36}\.(png|jpg|webp)$/.test(req.params.file)) {
+    res.set('Cache-Control', 'public, max-age=86400');
+    return res.redirect(302, `${R2_PUBLIC}/wallpapers/${req.params.file}`);
+  }
   const buf = await readWallpaperFile(req.params.file);
   if (!buf) return res.status(404).end();
   const ext = req.params.file.split('.').pop();
@@ -87,6 +95,11 @@ app.get('/wallpapers/:file', async (req, res) => {
 app.get('/videos/:file', async (req, res) => {
   const file = req.params.file;
   if (!/^[0-9a-f-]{36}\.(mp4|webm|mov)$/.test(file)) return res.status(404).end();
+  // Con R2 público, el video sale directo de Cloudflare (no gasta el ancho de banda de Render).
+  if (R2_PUBLIC && r2Enabled()) {
+    res.set('Cache-Control', 'public, max-age=86400');
+    return res.redirect(302, `${R2_PUBLIC}/videos/${file}`);
+  }
   const ext = file.split('.').pop();
   res.type(ext === 'webm' ? 'video/webm' : ext === 'mov' ? 'video/quicktime' : 'video/mp4');
   res.set('Accept-Ranges', 'bytes');
