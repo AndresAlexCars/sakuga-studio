@@ -13,7 +13,7 @@ import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
 import { presignUrl, putStream, r2Enabled } from '../services/r2.js';
 import { addWallpaper, detectImage, listWallpapers, reactWallpaper, recordView, removeWallpaper, statsCsv } from '../services/wallpapers.js';
-import { addVideo, addYoutube, detectVideo, extractYoutubeId, listVideos, registerVideo, removeVideo, setVideoMetaIfMissing } from '../services/videos.js';
+import { addVideo, addYoutube, detectVideo, extractYoutubeId, listVideos, registerVideo, removeVideo, setVideoMetaIfMissing, addVideoView } from '../services/videos.js';
 
 export const apiRouter = Router();
 
@@ -384,6 +384,13 @@ apiRouter.post('/videos/youtube', async (req, res) => {
   const orientation = req.body?.orientation === 'vertical' ? 'vertical' : 'horizontal';
   const item = await addYoutube({ title, youtubeId, orientation });
   res.status(201).json({ ok: true, id: item.id });
+});
+
+// Suma una reproducción al video (público: solo cuenta).
+apiRouter.post('/videos/:id/view', async (req, res) => {
+  const views = await addVideoView(req.params.id);
+  if (views == null) return res.status(404).json({ error: 'No se encontró ese video.' });
+  res.json({ ok: true, views });
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
