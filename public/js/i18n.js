@@ -2,7 +2,7 @@
 // El texto en español de index.html es el valor por defecto: si algo falla, la app sigue en español.
 const DICT = {
   es: {
-    'title': 'ilustraciones anime con IA',
+    'title': 'fondos y videos anime',
     'tagline': 'Ilustraciones anime a partir de una frase',
     'canvas.empty.title': 'Tu lienzo está vacío',
     'canvas.empty.sub': 'Describe una escena y pulsa Generar.',
@@ -129,7 +129,7 @@ const DICT = {
     ],
   },
   en: {
-    'title': 'AI anime illustrations',
+    'title': 'anime wallpapers and videos',
     'tagline': 'Anime illustrations from a single sentence',
     'canvas.empty.title': 'Your canvas is empty',
     'canvas.empty.sub': 'Describe a scene and tap Generate.',
