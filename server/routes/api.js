@@ -381,7 +381,8 @@ apiRouter.post('/videos/youtube', async (req, res) => {
   const youtubeId = extractYoutubeId(req.body?.url);
   if (!youtubeId) return res.status(400).json({ error: 'Ese enlace no parece de YouTube.' });
   const title = String(req.body?.title || '').trim().slice(0, 60) || 'Video de YouTube';
-  const item = await addYoutube({ title, youtubeId });
+  const orientation = req.body?.orientation === 'vertical' ? 'vertical' : 'horizontal';
+  const item = await addYoutube({ title, youtubeId, orientation });
   res.status(201).json({ ok: true, id: item.id });
 });
 
