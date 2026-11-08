@@ -109,6 +109,7 @@ export function formatVideo(item) {
   return {
     id: item.id,
     title: item.title,
+    youtubeId: item.youtubeId || '',
     width: item.width,
     height: item.height,
     duration: item.duration,
@@ -169,8 +170,10 @@ export async function removeVideo(id) {
   const i = data.items.findIndex((x) => x.id === id);
   if (i < 0) return false;
   const [item] = data.items.splice(i, 1);
-  await fs.unlink(path.join(dir, item.file)).catch(() => {});
-  if (r2Enabled()) await deleteObject(`videos/${item.file}`).catch(() => {});
+  if (item.file) {
+    await fs.unlink(path.join(dir, item.file)).catch(() => {});
+    if (r2Enabled()) await deleteObject(`videos/${item.file}`).catch(() => {});
+  }
   await persist();
   return true;
 }
@@ -227,4 +230,32 @@ export async function setVideoMetaIfMissing(id, meta) {
   item.duration = Math.max(0, Math.round((Number(meta.duration) || 0) * 10) / 10);
   await persist();
   return true;
+}
+
+// Acepta enlaces de YouTube (watch, youtu.be, shorts, embed) o el código de 11 caracteres.
+export function extractYoutubeId(text) {
+  const raw = String(text || '').trim();
+  if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
+  const m = raw.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : '';
+}
+
+// Video de YouTube no listado: se reproduce con el reproductor de YouTube, sin guardar archivos.
+export async function addYoutube({ title, youtubeId }) {
+  const data = await load();
+  const item = {
+    id: crypto.randomUUID(),
+    title: title.slice(0, 60),
+    youtubeId,
+    width: 1920,
+    height: 1080,
+    duration: 0,
+    codec: '',
+    size: 0,
+    mime: 'video/youtube',
+    createdAt: new Date().toISOString(),
+  };
+  data.items.unshift(item);
+  await persist();
+  return item;
 }
