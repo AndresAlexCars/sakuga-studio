@@ -27,8 +27,10 @@ app.use(
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", 'https://fonts.googleapis.com'],
         frameSrc: ["'self'", 'https://www.youtube-nocookie.com'],
+        imgSrc: ["'self'", 'data:', ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
+        mediaSrc: ["'self'", ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:'],
+
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
         // Permite probar desde el teléfono por http en tu red local.
