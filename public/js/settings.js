@@ -12,7 +12,7 @@ export const PALETTES = {
 
 export const DEFAULTS = Object.freeze({
   mode: 'dark',
-  palette: 'sakura',
+  palette: 'medianoche',
   accent: '',
   oled: false,
   reduceMotion: false,
