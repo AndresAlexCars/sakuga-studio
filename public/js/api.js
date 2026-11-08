@@ -94,6 +94,7 @@ export const api = {
       body: JSON.stringify({ url, title, orientation }),
       headers: { 'Content-Type': 'application/json', 'X-Admin-Code': adminCode },
     }),
+  videoView: (id) => request(`/api/videos/${encodeURIComponent(id)}/view`, { method: 'POST' }),
   videoMeta: (id, meta) => request(`/api/videos/${encodeURIComponent(id)}/meta`, { method: 'POST', body: meta }),
   videoStream: (file, meta, title, adminCode) =>
     raw('/api/videos/stream', {

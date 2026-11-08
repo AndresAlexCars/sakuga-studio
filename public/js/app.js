@@ -1139,15 +1139,39 @@ function youtubeCard(item) {
   frame.style.cssText = vertical
     ? 'position:relative;width:min(100%,360px);aspect-ratio:9/16;margin:0 auto;background:#000;border-radius:22px 22px 0 0;overflow:hidden;'
     : 'position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:22px 22px 0 0;overflow:hidden;';
-  const iframe = document.createElement('iframe');
-  iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.youtubeId)}`;
-  iframe.title = item.title;
-  iframe.allow = 'accelerometer; encrypted-media; gyroscope; picture-in-picture';
-  iframe.allowFullscreen = true;
-  iframe.loading = 'lazy';
-  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
-  frame.append(iframe);
+  // Miniatura ligera: el reproductor de YouTube solo se carga al pulsar Reproducir.
+  let viewsEl = null;
+  let counted = false;
+  const countView = () => {
+    if (counted) return;
+    counted = true;
+    api.videoView(item.id).then((r) => {
+      if (viewsEl && r && r.views != null) viewsEl.textContent = `${r.views} reproducciones`;
+    }).catch(() => {});
+  };
+  const thumb = document.createElement('img');
+  thumb.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.youtubeId)}/hqdefault.jpg`;
+  thumb.alt = item.title;
+  thumb.loading = 'lazy';
+  thumb.decoding = 'async';
+  thumb.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+  const playBtn = document.createElement('button');
+  playBtn.type = 'button';
+  playBtn.setAttribute('aria-label', 'Reproducir video');
+  playBtn.textContent = '▶';
+  playBtn.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:48px;border:0;border-radius:14px;background:#ff0033;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 10px 30px -8px rgba(0,0,0,.6);';
+  playBtn.addEventListener('click', () => {
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.youtubeId)}?autoplay=1`;
+    iframe.title = item.title;
+    iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
+    frame.replaceChildren(iframe);
+    countView();
+  });
+  frame.append(thumb, playBtn);
   const info = document.createElement('div');
   info.className = 'wall-card__info';
   const title = document.createElement('strong');
@@ -1157,7 +1181,10 @@ function youtubeCard(item) {
   const chip = document.createElement('span');
   chip.className = 'quality-chip';
   chip.textContent = 'YouTube · reproducción sin descarga';
-  chips.append(chip);
+  viewsEl = document.createElement('span');
+  viewsEl.className = 'quality-chip';
+  viewsEl.textContent = `${item.views || 0} reproducciones`;
+  chips.append(chip, viewsEl);
   info.append(title, chips);
   if (isOwnerDevice) {
     const del = document.createElement('button');
@@ -1254,6 +1281,7 @@ function videoCard(item) {
       `${mb} MB`,
       item.mime.replace('video/', '').toUpperCase(),
       item.codec,
+      `${item.views || 0} reproducciones`,
       'Original sin recomprimir',
     ].filter(Boolean);
     chips.replaceChildren(...list.map((text) => {
@@ -1305,6 +1333,12 @@ function videoCard(item) {
     });
     info.append(del);
   }
+  let videoCounted = false;
+  player.addEventListener('play', () => {
+    if (videoCounted) return;
+    videoCounted = true;
+    api.videoView(item.id).then((r) => { if (r && r.views != null) item.views = r.views; }).catch(() => {});
+  });
   card.append(buildPlayer(player), info);
   return card;
 }
