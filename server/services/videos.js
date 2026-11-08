@@ -110,6 +110,7 @@ export function formatVideo(item) {
     id: item.id,
     title: item.title,
     youtubeId: item.youtubeId || '',
+    orientation: item.orientation === 'vertical' ? 'vertical' : 'horizontal',
     width: item.width,
     height: item.height,
     duration: item.duration,
@@ -117,7 +118,7 @@ export function formatVideo(item) {
     mime: item.mime,
     codec: item.codec || '',
     createdAt: item.createdAt,
-    url: item.file ? `${(process.env.R2_PUBLIC_URL || '').replace(/\/$/, '')}/videos/${item.file}` : '',
+    url: item.file ? `/videos/${item.file}` : '',
     downloadName: item.file ? `jordvex-video-${item.id.slice(0, 8)}.${item.file.split('.').pop()}` : '',
   };
 }
@@ -241,14 +242,15 @@ export function extractYoutubeId(text) {
 }
 
 // Video de YouTube no listado: se reproduce con el reproductor de YouTube, sin guardar archivos.
-export async function addYoutube({ title, youtubeId }) {
+export async function addYoutube({ title, youtubeId, orientation }) {
   const data = await load();
   const item = {
     id: crypto.randomUUID(),
     title: title.slice(0, 60),
     youtubeId,
-    width: 1920,
-    height: 1080,
+    orientation: orientation === 'vertical' ? 'vertical' : 'horizontal',
+    width: orientation === 'vertical' ? 1080 : 1920,
+    height: orientation === 'vertical' ? 1920 : 1080,
     duration: 0,
     codec: '',
     size: 0,
