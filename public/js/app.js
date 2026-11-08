@@ -1140,6 +1140,7 @@ function youtubeCard(item) {
   iframe.allow = 'accelerometer; encrypted-media; gyroscope; picture-in-picture';
   iframe.allowFullscreen = true;
   iframe.loading = 'lazy';
+  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
   iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
   frame.append(iframe);
   const info = document.createElement('div');
