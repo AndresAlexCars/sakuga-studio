@@ -62,7 +62,7 @@ export function formatWallpaper(item, clientId = '') {
     title: item.title,
     kind: item.kind,
     createdAt: item.createdAt,
-    url: `/wallpapers/${item.file}`,
+    url: `${(process.env.R2_PUBLIC_URL || '').replace(/\/$/, '')}/wallpapers/${item.file}`,
     downloadName: `jordvex-${item.kind}-${item.id.slice(0, 8)}.${item.file.split('.').pop()}`,
     reactions,
     views: item.views || 0,
