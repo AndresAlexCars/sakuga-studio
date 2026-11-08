@@ -117,8 +117,8 @@ export function formatVideo(item) {
     mime: item.mime,
     codec: item.codec || '',
     createdAt: item.createdAt,
-    url: `/videos/${item.file}`,
-    downloadName: `jordvex-video-${item.id.slice(0, 8)}.${item.file.split('.').pop()}`,
+    url: item.file ? `/videos/${item.file}` : '',
+    downloadName: item.file ? `jordvex-video-${item.id.slice(0, 8)}.${item.file.split('.').pop()}` : '',
   };
 }
 
