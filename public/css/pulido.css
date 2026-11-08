@@ -1,1 +1,40 @@
+/* ═══ Pulido visual: tarjetas de fondos y videos (paleta profesional) ═══ */
 
+.wall-grid { gap: 14px; }
+
+.wall-card {
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, .6);
+  transition: transform .25s var(--ease), box-shadow .3s var(--ease), border-color .25s;
+}
+.wall-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--accent-rgb), .45);
+  box-shadow: 0 20px 40px -20px rgba(var(--accent-rgb), .35);
+}
+.wall-card img { background: var(--panel-hi); border-radius: 0; }
+.wall-card__info { gap: 8px; padding: 14px 14px 16px; }
+.wall-card__info strong { font-weight: 700; letter-spacing: -.01em; line-height: 1.3; }
+.wall-card__tag { letter-spacing: .08em; }
+
+/* Vídeos: tarjeta limpia, vertical centrada y horizontal a todo el ancho */
+#vid-grid { gap: 18px; }
+.video-card {
+  background: var(--panel);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.video-card--tall { max-width: 360px; margin: 0 auto; }
+.video-card--wide { grid-column: 1 / -1; }
+.video-card .wall-card__info { padding: 14px 16px 16px; }
+.video-card .wall-card__info strong { font-size: 16px; }
+
+/* Botones de reacción más sobrios */
+.wall-react__btn { font-size: 13px; min-height: 32px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wall-card, .wall-card:hover { transition: none; transform: none; }
+}
+html[data-motion="reduced"] .wall-card, html[data-motion="reduced"] .wall-card:hover { transition: none; transform: none; }
