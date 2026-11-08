@@ -110,6 +110,7 @@ export function formatVideo(item) {
     id: item.id,
     title: item.title,
     youtubeId: item.youtubeId || '',
+    views: item.views || 0,
     orientation: item.orientation === 'vertical' ? 'vertical' : 'horizontal',
     width: item.width,
     height: item.height,
@@ -260,4 +261,14 @@ export async function addYoutube({ title, youtubeId, orientation }) {
   data.items.unshift(item);
   await persist();
   return item;
+}
+
+// Cuenta una reproducción del video. Devuelve el total o null si no existe.
+export async function addVideoView(id) {
+  const data = await load();
+  const item = data.items.find((x) => x.id === id);
+  if (!item) return null;
+  item.views = (item.views || 0) + 1;
+  await persist();
+  return item.views;
 }
