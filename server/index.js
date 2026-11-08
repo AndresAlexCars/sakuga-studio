@@ -27,7 +27,7 @@ app.use(
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", 'https://fonts.googleapis.com'],
         frameSrc: ["'self'", 'https://www.youtube-nocookie.com'],
-        imgSrc: ["'self'", 'data:', ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
+        imgSrc: ["'self'", 'data:', 'https://i.ytimg.com', ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
         mediaSrc: ["'self'", ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
 
