@@ -1129,8 +1129,94 @@ function buildPlayer(video) {
   return wrap;
 }
 
+function youtubeCard(item) {
+  const card = document.createElement('article');
+  card.className = 'wall-card video-card video-card--wide';
+  const frame = document.createElement('div');
+  frame.style.cssText = 'position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:22px 22px 0 0;overflow:hidden;';
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.youtubeId)}`;
+  iframe.title = item.title;
+  iframe.allow = 'accelerometer; encrypted-media; gyroscope; picture-in-picture';
+  iframe.allowFullscreen = true;
+  iframe.loading = 'lazy';
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
+  frame.append(iframe);
+  const info = document.createElement('div');
+  info.className = 'wall-card__info';
+  const title = document.createElement('strong');
+  title.textContent = item.title;
+  const chips = document.createElement('div');
+  chips.className = 'quality-chips';
+  const chip = document.createElement('span');
+  chip.className = 'quality-chip';
+  chip.textContent = 'YouTube · reproducción sin descarga';
+  chips.append(chip);
+  info.append(title, chips);
+  if (isOwnerDevice) {
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'btn btn--danger wall-card__del';
+    del.textContent = 'Eliminar';
+    del.addEventListener('click', async () => {
+      const code = wall.code?.value.trim();
+      if (!code) return toast('Escribe el código de administrador.');
+      if (!window.confirm(`¿Quitar el video "${item.title}" de la lista?`)) return;
+      try {
+        await api.deleteVideo(item.id, code);
+        toast('Video eliminado.');
+        await loadVideos();
+      } catch (err) {
+        toast(err.message);
+      }
+    });
+    info.append(del);
+  }
+  card.append(frame, info);
+  return card;
+}
+
+function ensureYoutubeForm() {
+  if (!isOwnerDevice || !vid.grid || document.getElementById('yt-form')) return;
+  const box = document.createElement('div');
+  box.id = 'yt-form';
+  box.className = 'wall-admin__body';
+  box.style.cssText = 'margin-bottom:14px;padding:12px;border:1px dashed var(--line);border-radius:16px;';
+  const url = document.createElement('input');
+  url.type = 'url';
+  url.placeholder = 'Enlace de YouTube (no listado)';
+  const title = document.createElement('input');
+  title.type = 'text';
+  title.maxLength = 60;
+  title.placeholder = 'Título del video';
+  const add = document.createElement('button');
+  add.type = 'button';
+  add.className = 'btn btn--primary';
+  add.textContent = 'Añadir video de YouTube';
+  add.addEventListener('click', async () => {
+    const code = wall.code?.value.trim();
+    if (!code) return toast('Escribe el código de administrador.');
+    if (!url.value.trim()) return toast('Pega el enlace de YouTube.');
+    add.disabled = true;
+    try {
+      await api.videoYoutube(url.value.trim(), title.value.trim(), code);
+      toast('Video de YouTube añadido.');
+      url.value = '';
+      title.value = '';
+      await loadVideos();
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      add.disabled = false;
+    }
+  });
+  box.append(url, title, add);
+  vid.grid.parentElement.insertBefore(box, vid.grid);
+}
+
 function videoCard(item) {
   const card = document.createElement('article');
+  if (item.youtubeId) return youtubeCard(item);
   card.className = 'wall-card video-card';
   if (item.width && item.height) card.classList.add(item.width > item.height ? 'video-card--wide' : 'video-card--tall');
   const player = document.createElement('video');
@@ -1210,6 +1296,7 @@ function videoCard(item) {
 }
 async function loadVideos() {
   if (!vid.grid) return;
+  ensureYoutubeForm();
   try {
     const { items } = await api.videos();
     vid.grid.replaceChildren(...items.map(videoCard));

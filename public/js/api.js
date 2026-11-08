@@ -88,6 +88,12 @@ export const api = {
     return res.blob();
   },
   sound: () => request('/api/sound'),
+  videoYoutube: (url, title, adminCode) =>
+    raw('/api/videos/youtube', {
+      method: 'POST',
+      body: JSON.stringify({ url, title }),
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Code': adminCode },
+    }),
   videoMeta: (id, meta) => request(`/api/videos/${encodeURIComponent(id)}/meta`, { method: 'POST', body: meta }),
   videoStream: (file, meta, title, adminCode) =>
     raw('/api/videos/stream', {
