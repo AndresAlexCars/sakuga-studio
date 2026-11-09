@@ -13,7 +13,7 @@ import { checkPrompt } from '../services/moderation.js';
 import { clearItems, deleteItem, listItems } from '../services/store.js';
 import { presignUrl, putStream, r2Enabled } from '../services/r2.js';
 import { addWallpaper, detectImage, listWallpapers, reactWallpaper, recordView, removeWallpaper, statsCsv } from '../services/wallpapers.js';
-import { addVideo, addYoutube, detectVideo, extractYoutubeId, listVideos, registerVideo, removeVideo, setVideoMetaIfMissing, addVideoView } from '../services/videos.js';
+import { addVideo, addYoutube, detectVideo, extractYoutubeId, listVideos, registerVideo, removeVideo, setVideoMetaIfMissing, addVideoView, extractStreamableId } from '../services/videos.js';
 
 export const apiRouter = Router();
 
@@ -378,11 +378,12 @@ apiRouter.post('/videos/youtube', async (req, res) => {
   const ok = checkAdmin(req);
   if (ok === 'off') return res.status(503).json({ error: 'Falta ADMIN_CODE en el servidor.' });
   if (!ok) return res.status(401).json({ error: 'Código de administrador incorrecto.' });
-  const youtubeId = extractYoutubeId(req.body?.url);
-  if (!youtubeId) return res.status(400).json({ error: 'Ese enlace no parece de YouTube.' });
+  const streamableId = extractStreamableId(req.body?.url);
+  const youtubeId = streamableId ? '' : extractYoutubeId(req.body?.url);
+  if (!youtubeId && !streamableId) return res.status(400).json({ error: 'Ese enlace no parece de YouTube ni de Streamable.' });
   const title = String(req.body?.title || '').trim().slice(0, 60) || 'Video de YouTube';
   const orientation = req.body?.orientation === 'vertical' ? 'vertical' : 'horizontal';
-  const item = await addYoutube({ title, youtubeId, orientation });
+  const item = await addYoutube({ title, youtubeId, streamableId, orientation });
   res.status(201).json({ ok: true, id: item.id });
 });
 
