@@ -1150,7 +1150,7 @@ function youtubeCard(item) {
     }).catch(() => {});
   };
   const thumb = document.createElement('img');
-  thumb.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.youtubeId)}/hqdefault.jpg`;
+  if (!item.streamableId) thumb.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.youtubeId)}/hqdefault.jpg`;
   thumb.alt = item.title;
   thumb.loading = 'lazy';
   thumb.decoding = 'async';
@@ -1162,7 +1162,9 @@ function youtubeCard(item) {
   playBtn.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:48px;border:0;border-radius:14px;background:#ff0033;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 10px 30px -8px rgba(0,0,0,.6);';
   playBtn.addEventListener('click', () => {
     const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.youtubeId)}?autoplay=1`;
+    iframe.src = item.streamableId
+      ? `https://streamable.com/e/${encodeURIComponent(item.streamableId)}?autoplay=1`
+      : `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.youtubeId)}?autoplay=1`;
     iframe.title = item.title;
     iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
     iframe.allowFullscreen = true;
@@ -1171,7 +1173,8 @@ function youtubeCard(item) {
     frame.replaceChildren(iframe);
     countView();
   });
-  frame.append(thumb, playBtn);
+  if (item.streamableId) frame.style.background = 'linear-gradient(135deg,#1b2238,#0b0f1c)';
+  frame.append(...(item.streamableId ? [] : [thumb]), playBtn);
   const info = document.createElement('div');
   info.className = 'wall-card__info';
   const title = document.createElement('strong');
@@ -1180,7 +1183,7 @@ function youtubeCard(item) {
   chips.className = 'quality-chips';
   const chip = document.createElement('span');
   chip.className = 'quality-chip';
-  chip.textContent = 'YouTube · reproducción sin descarga';
+  chip.textContent = item.streamableId ? 'Streamable · reproducción sin descarga' : 'YouTube · reproducción sin descarga';
   viewsEl = document.createElement('span');
   viewsEl.className = 'quality-chip';
   viewsEl.textContent = `${item.views || 0} reproducciones`;
@@ -1216,8 +1219,8 @@ function ensureYoutubeForm() {
   box.className = 'wall-admin__body';
   box.style.cssText = 'margin-bottom:14px;padding:12px;border:1px dashed var(--line);border-radius:16px;';
   const url = document.createElement('input');
-  url.type = 'url';
-  url.placeholder = 'Enlace de YouTube (no listado)';
+  url.type = 'text';
+  url.placeholder = 'Enlace de YouTube o Streamable (o pega el código embed)';
   const title = document.createElement('input');
   title.type = 'text';
   title.maxLength = 60;
