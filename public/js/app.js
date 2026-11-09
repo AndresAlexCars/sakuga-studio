@@ -1260,7 +1260,7 @@ function ensureYoutubeForm() {
 
 function videoCard(item) {
   const card = document.createElement('article');
-  if (item.youtubeId) return youtubeCard(item);
+  if (item.youtubeId || item.streamableId) return youtubeCard(item);
   card.className = 'wall-card video-card';
   if (item.width && item.height) card.classList.add(item.width > item.height ? 'video-card--wide' : 'video-card--tall');
   const player = document.createElement('video');
