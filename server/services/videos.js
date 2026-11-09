@@ -110,6 +110,7 @@ export function formatVideo(item) {
     id: item.id,
     title: item.title,
     youtubeId: item.youtubeId || '',
+    streamableId: item.streamableId || '',
     views: item.views || 0,
     orientation: item.orientation === 'vertical' ? 'vertical' : 'horizontal',
     width: item.width,
@@ -243,12 +244,13 @@ export function extractYoutubeId(text) {
 }
 
 // Video de YouTube no listado: se reproduce con el reproductor de YouTube, sin guardar archivos.
-export async function addYoutube({ title, youtubeId, orientation }) {
+export async function addYoutube({ title, youtubeId, streamableId, orientation }) {
   const data = await load();
   const item = {
     id: crypto.randomUUID(),
     title: title.slice(0, 60),
-    youtubeId,
+    youtubeId: youtubeId || '',
+    streamableId: streamableId || '',
     orientation: orientation === 'vertical' ? 'vertical' : 'horizontal',
     width: orientation === 'vertical' ? 1080 : 1920,
     height: orientation === 'vertical' ? 1920 : 1080,
@@ -271,4 +273,10 @@ export async function addVideoView(id) {
   item.views = (item.views || 0) + 1;
   await persist();
   return item.views;
+}
+
+// Acepta el enlace de Streamable (streamable.com/xxxx) o el código embed completo que copias de su web.
+export function extractStreamableId(text) {
+  const m = String(text || '').match(/streamable\.com\/(?:e\/)?([a-z0-9]{4,12})(?![a-z0-9])/i);
+  return m ? m[1].toLowerCase() : '';
 }
