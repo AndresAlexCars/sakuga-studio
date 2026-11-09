@@ -26,7 +26,7 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", 'https://fonts.googleapis.com'],
-        frameSrc: ["'self'", 'https://www.youtube-nocookie.com'],
+        frameSrc: ["'self'", 'https://www.youtube-nocookie.com', 'https://streamable.com'],
         imgSrc: ["'self'", 'data:', 'https://i.ytimg.com', ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
         mediaSrc: ["'self'", ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
