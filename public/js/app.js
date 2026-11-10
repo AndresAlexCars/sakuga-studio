@@ -928,26 +928,49 @@ function wallCard(item) {
   download.textContent = 'Descargar';
   download.addEventListener('click', () => api.viewWallpaper(item.id).catch(() => {}));
   const WALL_REACTIONS = ['👍', '❤️', '😍', '😮', '😂', '😢'];
+  const counts = item.reactions || {};
+  const total = WALL_REACTIONS.reduce((n, e) => n + (counts[e] || 0), 0);
   const bar = document.createElement('div');
   bar.className = 'wall-react';
+  const react = async (emoji) => {
+    try {
+      await api.reactWallpaper(item.id, emoji);
+      await loadWallpapers();
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+  // Botón principal: toca para dar tu reacción; toca otra vez para quitarla
+  const mainBtn = document.createElement('button');
+  mainBtn.type = 'button';
+  mainBtn.className = 'wall-react__main' + (item.mine ? ' is-on' : '');
+  mainBtn.setAttribute('aria-label', item.mine ? 'Quitar mi reacción' : 'Reaccionar');
+  mainBtn.textContent = `${item.mine || '♡'} ${total}`;
+  mainBtn.addEventListener('click', () => react(item.mine || '👍'));
+  // Botón +: abre la bandeja con todas las reacciones
+  const moreBtn = document.createElement('button');
+  moreBtn.type = 'button';
+  moreBtn.className = 'wall-react__more';
+  moreBtn.textContent = '+';
+  moreBtn.setAttribute('aria-label', 'Más reacciones');
+  moreBtn.setAttribute('aria-expanded', 'false');
+  const picker = document.createElement('div');
+  picker.className = 'wall-react__picker';
+  picker.hidden = true;
   for (const emoji of WALL_REACTIONS) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'wall-react__btn';
-    if (item.mine === emoji) btn.classList.add('is-on');
-    btn.setAttribute('aria-label', `Reaccionar ${emoji}`);
-    btn.setAttribute('aria-pressed', String(item.mine === emoji));
-    btn.textContent = `${emoji} ${item.reactions?.[emoji] ?? 0}`;
-    btn.addEventListener('click', async () => {
-      try {
-        await api.reactWallpaper(item.id, emoji);
-        await loadWallpapers();
-      } catch (err) {
-        toast(err.message);
-      }
-    });
-    bar.append(btn);
+    const opt = document.createElement('button');
+    opt.type = 'button';
+    opt.className = 'wall-react__opt' + (item.mine === emoji ? ' is-on' : '');
+    opt.setAttribute('aria-label', `Reaccionar ${emoji}`);
+    opt.innerHTML = `<span>${emoji}</span><small>${counts[emoji] || 0}</small>`;
+    opt.addEventListener('click', () => react(emoji));
+    picker.append(opt);
   }
+  moreBtn.addEventListener('click', () => {
+    picker.hidden = !picker.hidden;
+    moreBtn.setAttribute('aria-expanded', String(!picker.hidden));
+  });
+  bar.append(mainBtn, moreBtn, picker);
   const preview = document.createElement('button');
   preview.type = 'button';
   preview.className = 'btn btn--primary-soft wall-card__dl';
@@ -1019,24 +1042,94 @@ document.querySelectorAll('.wall-filters [data-kind]').forEach((btn) => {
   });
 });
 
-wall.upload?.addEventListener('click', async () => {
-  const file = wall.file.files?.[0];
-  const code = wall.code.value.trim();
-  if (!file) return toast('Elige una imagen.');
-  if (!code) return toast('Escribe el código de administrador.');
-  if (file.size > 25 * 1024 * 1024) return toast('La imagen pasa de 25 MB.');
+if (wall.file) wall.file.multiple = true;
+
+// Sube la lista de archivos con los nombres ya editados
+async function publishWallpapers(files, titles, code) {
   wall.upload.disabled = true;
-  try {
-    await api.uploadWallpaper(file, wall.kind.value, wall.title.value.trim(), code);
-    toast('Fondo publicado.');
-    wall.file.value = '';
-    wall.title.value = '';
-    await loadWallpapers();
-  } catch (err) {
-    toast(err.message);
-  } finally {
-    wall.upload.disabled = false;
+  let ok = 0;
+  let fail = 0;
+  for (let i = 0; i < files.length; i++) {
+    toast(`Subiendo ${i + 1} de ${files.length}…`);
+    try {
+      await api.uploadWallpaper(files[i], wall.kind.value, titles[i] || files[i].name.replace(/\.[^.]+$/, ''), code);
+      ok += 1;
+    } catch (err) {
+      fail += 1;
+      if (err instanceof ApiError && err.status === 401) {
+        toast(err.message);
+        break;
+      }
+    }
   }
+  wall.file.value = '';
+  wall.title.value = '';
+  wall.upload.disabled = false;
+  toast(fail ? `Publicados ${ok}. Fallaron ${fail}.` : `Publicados ${ok} fondo${ok === 1 ? '' : 's'}.`);
+  await loadWallpapers();
+}
+
+// Ventana para cambiar los nombres de cada fondo antes de publicarlos
+function openTitleEditor(files, defaults, onConfirm) {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'sheet';
+  dlg.style.cssText = 'width:min(94vw,520px);max-height:88vh;padding:0;';
+  const head = document.createElement('div');
+  head.className = 'sheet__head';
+  const h = document.createElement('h3');
+  h.textContent = `Nombres de ${files.length} fondo${files.length === 1 ? '' : 's'}`;
+  head.append(h);
+  const body = document.createElement('div');
+  body.className = 'sheet__body';
+  body.style.cssText = 'overflow-y:auto;max-height:60vh;';
+  const inputs = files.map((file, i) => {
+    const row = document.createElement('label');
+    row.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-bottom:12px;';
+    const small = document.createElement('small');
+    small.className = 'muted';
+    small.textContent = file.name;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.maxLength = 60;
+    input.value = defaults[i];
+    input.style.cssText = 'min-height:44px;padding:0 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font:inherit;';
+    row.append(small, input);
+    body.append(row);
+    return input;
+  });
+  const actions = document.createElement('div');
+  actions.className = 'dialog__actions';
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'btn';
+  cancel.textContent = 'Cancelar';
+  const go = document.createElement('button');
+  go.type = 'button';
+  go.className = 'btn btn--primary';
+  go.textContent = 'Publicar todos';
+  cancel.addEventListener('click', () => dlg.close());
+  go.addEventListener('click', () => {
+    const titles = inputs.map((inp) => inp.value.trim());
+    dlg.close();
+    onConfirm(titles);
+  });
+  dlg.addEventListener('close', () => dlg.remove());
+  actions.append(cancel, go);
+  dlg.append(head, body, actions);
+  document.body.append(dlg);
+  dlg.showModal();
+}
+
+wall.upload?.addEventListener('click', () => {
+  const files = [...(wall.file?.files || [])];
+  const code = wall.code.value.trim();
+  if (!files.length) return toast('Elige una o varias imágenes.');
+  if (!code) return toast('Escribe el código de administrador.');
+  const big = files.find((f) => f.size > 25 * 1024 * 1024);
+  if (big) return toast(`"${big.name}" pasa de 25 MB.`);
+  const typedTitle = wall.title.value.trim();
+  const defaults = files.map((f) => (files.length === 1 && typedTitle ? typedTitle : f.name.replace(/\.[^.]+$/, '').slice(0, 60)));
+  openTitleEditor(files, defaults, (titles) => publishWallpapers(files, titles, code));
 });
 
 /* ── Videos: pestaña junto a Fondos, con calidad original ── */
@@ -1534,15 +1627,14 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
 });
 
 
-/* ── Buscador flotante: campo + botón # que abre los atajos (NTE, Zenless Zone Zero, filtros) ── */
+/* ── Lupa y # como iconos dentro de la barra inferior ── */
 (() => {
   const topSearch = document.getElementById('wall-search');
-  if (!topSearch) return;
+  const nav = document.querySelector('.nav');
+  if (!topSearch || !nav) return;
 
   const bar = document.createElement('div');
   bar.className = 'nav-search';
-  const panel = document.createElement('div');
-  panel.className = 'nav-suggest';
   const row = document.createElement('div');
   row.className = 'nav-search__row';
   const input = document.createElement('input');
@@ -1551,25 +1643,18 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   input.setAttribute('aria-label', 'Buscar fondos');
   input.autocomplete = 'off';
   input.enterKeyHint = 'search';
-  const hashBtn = document.createElement('button');
-  hashBtn.type = 'button';
-  hashBtn.className = 'nav-hash';
-  hashBtn.setAttribute('aria-label', 'Atajos de búsqueda');
-  hashBtn.setAttribute('aria-expanded', 'false');
-  hashBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/></svg>';
-  row.append(input, hashBtn);
+  row.append(input);
+  const panel = document.createElement('div');
+  panel.className = 'nav-suggest';
+  bar.append(panel, row);
+  document.body.append(bar);
 
-  const openPanel = (on) => {
-    bar.classList.toggle('is-open', on);
-    hashBtn.setAttribute('aria-expanded', String(on));
-  };
   const setSearch = (text) => {
     input.value = text;
     topSearch.value = text;
     renderWallpapers();
   };
   const filterClick = (kind) => document.querySelector(`.wall-filters [data-kind="${kind}"]`)?.click();
-
   const atajos = [
     ['NTE', () => setSearch('NTE')],
     ['Zenless Zone Zero', () => setSearch('Zenless Zone Zero')],
@@ -1584,15 +1669,44 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     b.addEventListener('mousedown', (e) => e.preventDefault());
     b.addEventListener('click', () => {
       action();
-      openPanel(false);
+      bar.classList.remove('is-open');
+      hashBtn.setAttribute('aria-pressed', 'false');
     });
     panel.append(b);
   });
 
-  bar.append(panel, row);
-  document.body.append(bar);
+  const ICON_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+  const ICON_HASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/></svg>';
+  const searchBtn = document.createElement('button');
+  searchBtn.type = 'button';
+  searchBtn.className = 'nav-tool';
+  searchBtn.setAttribute('aria-label', 'Buscar fondos');
+  searchBtn.setAttribute('aria-pressed', 'false');
+  searchBtn.innerHTML = ICON_SEARCH + '<span>Buscar</span>';
+  const hashBtn = document.createElement('button');
+  hashBtn.type = 'button';
+  hashBtn.className = 'nav-tool';
+  hashBtn.setAttribute('aria-label', 'Atajos de búsqueda');
+  hashBtn.setAttribute('aria-pressed', 'false');
+  hashBtn.innerHTML = ICON_HASH + '<span>Atajos</span>';
+  nav.append(searchBtn, hashBtn);
 
-  hashBtn.addEventListener('click', () => openPanel(!bar.classList.contains('is-open')));
+  searchBtn.addEventListener('click', () => {
+    const on = !bar.classList.contains('is-search');
+    bar.classList.toggle('is-search', on);
+    bar.classList.remove('is-open');
+    searchBtn.setAttribute('aria-pressed', String(on));
+    hashBtn.setAttribute('aria-pressed', 'false');
+    if (on) input.focus();
+  });
+  hashBtn.addEventListener('click', () => {
+    const on = !bar.classList.contains('is-open');
+    bar.classList.toggle('is-open', on);
+    bar.classList.remove('is-search');
+    hashBtn.setAttribute('aria-pressed', String(on));
+    searchBtn.setAttribute('aria-pressed', 'false');
+  });
+
   input.addEventListener('input', () => setSearch(input.value));
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') input.blur();
