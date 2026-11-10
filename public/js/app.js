@@ -1627,15 +1627,14 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
 });
 
 
-/* ── Buscador flotante: campo + botón # que abre los atajos (NTE, Zenless Zone Zero, filtros) ── */
+/* ── Lupa y # como iconos dentro de la barra inferior ── */
 (() => {
   const topSearch = document.getElementById('wall-search');
-  if (!topSearch) return;
+  const nav = document.querySelector('.nav');
+  if (!topSearch || !nav) return;
 
   const bar = document.createElement('div');
   bar.className = 'nav-search';
-  const panel = document.createElement('div');
-  panel.className = 'nav-suggest';
   const row = document.createElement('div');
   row.className = 'nav-search__row';
   const input = document.createElement('input');
@@ -1644,25 +1643,18 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   input.setAttribute('aria-label', 'Buscar fondos');
   input.autocomplete = 'off';
   input.enterKeyHint = 'search';
-  const hashBtn = document.createElement('button');
-  hashBtn.type = 'button';
-  hashBtn.className = 'nav-hash';
-  hashBtn.setAttribute('aria-label', 'Atajos de búsqueda');
-  hashBtn.setAttribute('aria-expanded', 'false');
-  hashBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/></svg>';
-  row.append(input, hashBtn);
+  row.append(input);
+  const panel = document.createElement('div');
+  panel.className = 'nav-suggest';
+  bar.append(panel, row);
+  document.body.append(bar);
 
-  const openPanel = (on) => {
-    bar.classList.toggle('is-open', on);
-    hashBtn.setAttribute('aria-expanded', String(on));
-  };
   const setSearch = (text) => {
     input.value = text;
     topSearch.value = text;
     renderWallpapers();
   };
   const filterClick = (kind) => document.querySelector(`.wall-filters [data-kind="${kind}"]`)?.click();
-
   const atajos = [
     ['NTE', () => setSearch('NTE')],
     ['Zenless Zone Zero', () => setSearch('Zenless Zone Zero')],
@@ -1677,15 +1669,44 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     b.addEventListener('mousedown', (e) => e.preventDefault());
     b.addEventListener('click', () => {
       action();
-      openPanel(false);
+      bar.classList.remove('is-open');
+      hashBtn.setAttribute('aria-pressed', 'false');
     });
     panel.append(b);
   });
 
-  bar.append(panel, row);
-  document.body.append(bar);
+  const ICON_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+  const ICON_HASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/></svg>';
+  const searchBtn = document.createElement('button');
+  searchBtn.type = 'button';
+  searchBtn.className = 'nav-tool';
+  searchBtn.setAttribute('aria-label', 'Buscar fondos');
+  searchBtn.setAttribute('aria-pressed', 'false');
+  searchBtn.innerHTML = ICON_SEARCH + '<span>Buscar</span>';
+  const hashBtn = document.createElement('button');
+  hashBtn.type = 'button';
+  hashBtn.className = 'nav-tool';
+  hashBtn.setAttribute('aria-label', 'Atajos de búsqueda');
+  hashBtn.setAttribute('aria-pressed', 'false');
+  hashBtn.innerHTML = ICON_HASH + '<span>Atajos</span>';
+  nav.append(searchBtn, hashBtn);
 
-  hashBtn.addEventListener('click', () => openPanel(!bar.classList.contains('is-open')));
+  searchBtn.addEventListener('click', () => {
+    const on = !bar.classList.contains('is-search');
+    bar.classList.toggle('is-search', on);
+    bar.classList.remove('is-open');
+    searchBtn.setAttribute('aria-pressed', String(on));
+    hashBtn.setAttribute('aria-pressed', 'false');
+    if (on) input.focus();
+  });
+  hashBtn.addEventListener('click', () => {
+    const on = !bar.classList.contains('is-open');
+    bar.classList.toggle('is-open', on);
+    bar.classList.remove('is-search');
+    hashBtn.setAttribute('aria-pressed', String(on));
+    searchBtn.setAttribute('aria-pressed', 'false');
+  });
+
   input.addEventListener('input', () => setSearch(input.value));
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') input.blur();
