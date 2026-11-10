@@ -1019,24 +1019,39 @@ document.querySelectorAll('.wall-filters [data-kind]').forEach((btn) => {
   });
 });
 
+if (wall.file) wall.file.multiple = true;
 wall.upload?.addEventListener('click', async () => {
-  const file = wall.file.files?.[0];
+  const files = [...(wall.file?.files || [])];
   const code = wall.code.value.trim();
-  if (!file) return toast('Elige una imagen.');
+  if (!files.length) return toast('Elige una o varias imágenes.');
   if (!code) return toast('Escribe el código de administrador.');
-  if (file.size > 25 * 1024 * 1024) return toast('La imagen pasa de 25 MB.');
+  const big = files.find((f) => f.size > 25 * 1024 * 1024);
+  if (big) return toast(`"${big.name}" pasa de 25 MB.`);
+  const single = files.length === 1;
+  const typedTitle = wall.title.value.trim();
   wall.upload.disabled = true;
-  try {
-    await api.uploadWallpaper(file, wall.kind.value, wall.title.value.trim(), code);
-    toast('Fondo publicado.');
-    wall.file.value = '';
-    wall.title.value = '';
-    await loadWallpapers();
-  } catch (err) {
-    toast(err.message);
-  } finally {
-    wall.upload.disabled = false;
+  let ok = 0;
+  let fail = 0;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const title = single && typedTitle ? typedTitle : file.name.replace(/\.[^.]+$/, '').slice(0, 60);
+    toast(`Subiendo ${i + 1} de ${files.length}…`);
+    try {
+      await api.uploadWallpaper(file, wall.kind.value, title, code);
+      ok += 1;
+    } catch (err) {
+      fail += 1;
+      if (err instanceof ApiError && err.status === 401) {
+        toast(err.message);
+        break;
+      }
+    }
   }
+  wall.file.value = '';
+  wall.title.value = '';
+  wall.upload.disabled = false;
+  toast(fail ? `Publicados ${ok}. Fallaron ${fail}.` : `Publicados ${ok} fondo${ok === 1 ? '' : 's'}.`);
+  await loadWallpapers();
 });
 
 /* ── Videos: pestaña junto a Fondos, con calidad original ── */
