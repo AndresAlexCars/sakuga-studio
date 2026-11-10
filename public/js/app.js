@@ -1534,71 +1534,65 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
 });
 
 
-/* ── Buscador flotante con atajos y filtros con iconos en la barra inferior ── */
+/* ── Buscador flotante: campo + botón # que abre los atajos (NTE, Zenless Zone Zero, filtros) ── */
 (() => {
   const topSearch = document.getElementById('wall-search');
-  const nav = document.querySelector('.nav');
-  if (!topSearch || !nav) return;
+  if (!topSearch) return;
 
-  const ICONS = {
-    todos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
-    movil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
-    pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>'
-  };
-  const LABELS = { todos: 'Todos', movil: 'Móvil', pc: 'PC' };
-
-  // Filtros con icono dentro de la barra inferior (usan los botones originales)
-  const originals = [...document.querySelectorAll('.wall-filters [data-kind]')];
-  const filterButtons = originals.map((orig) => {
-    const kind = orig.dataset.kind;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'nav-filter';
-    btn.dataset.kind = kind;
-    btn.innerHTML = (ICONS[kind] || '') + `<span>${LABELS[kind] || orig.textContent.trim()}</span>`;
-    btn.setAttribute('aria-pressed', String(orig.getAttribute('aria-pressed') === 'true'));
-    btn.addEventListener('click', () => {
-      orig.click();
-      filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-    });
-    return btn;
-  });
-  if (filterButtons.length) nav.prepend(...filterButtons);
-
-  // Buscador flotante con atajos que aparecen al tocarlo
   const bar = document.createElement('div');
   bar.className = 'nav-search';
-  const suggest = document.createElement('div');
-  suggest.className = 'nav-suggest';
+  const panel = document.createElement('div');
+  panel.className = 'nav-suggest';
+  const row = document.createElement('div');
+  row.className = 'nav-search__row';
   const input = document.createElement('input');
   input.type = 'search';
   input.placeholder = 'Buscar: NTE, Zenless Zone Zero…';
   input.setAttribute('aria-label', 'Buscar fondos');
   input.autocomplete = 'off';
   input.enterKeyHint = 'search';
+  const hashBtn = document.createElement('button');
+  hashBtn.type = 'button';
+  hashBtn.className = 'nav-hash';
+  hashBtn.setAttribute('aria-label', 'Atajos de búsqueda');
+  hashBtn.setAttribute('aria-expanded', 'false');
+  hashBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/></svg>';
+  row.append(input, hashBtn);
 
+  const openPanel = (on) => {
+    bar.classList.toggle('is-open', on);
+    hashBtn.setAttribute('aria-expanded', String(on));
+  };
   const setSearch = (text) => {
     input.value = text;
     topSearch.value = text;
     renderWallpapers();
   };
-  [['NTE', 'NTE'], ['Zenless Zone Zero', 'Zenless Zone Zero'], ['Limpiar', '']].forEach(([label, value]) => {
+  const filterClick = (kind) => document.querySelector(`.wall-filters [data-kind="${kind}"]`)?.click();
+
+  const atajos = [
+    ['NTE', () => setSearch('NTE')],
+    ['Zenless Zone Zero', () => setSearch('Zenless Zone Zero')],
+    ['Móvil', () => filterClick('movil')],
+    ['PC', () => filterClick('pc')],
+    ['Todos', () => { setSearch(''); filterClick('todos'); }],
+  ];
+  atajos.forEach(([label, action]) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = label;
     b.addEventListener('mousedown', (e) => e.preventDefault());
     b.addEventListener('click', () => {
-      setSearch(value);
-      input.blur();
+      action();
+      openPanel(false);
     });
-    suggest.append(b);
+    panel.append(b);
   });
 
-  bar.append(suggest, input);
+  bar.append(panel, row);
   document.body.append(bar);
 
-  input.addEventListener('focus', () => bar.classList.add('is-open'));
-  input.addEventListener('blur', () => bar.classList.remove('is-open'));
+  hashBtn.addEventListener('click', () => openPanel(!bar.classList.contains('is-open')));
   input.addEventListener('input', () => setSearch(input.value));
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') input.blur();
