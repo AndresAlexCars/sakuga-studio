@@ -2,19 +2,19 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>⏳ Volvemos pronto | JORDVEX</title>
-  <meta name="theme-color" content="#0d0c15">
+  <meta name="theme-color" content="#0b0d18">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       min-height: 100dvh;
       background:
-        radial-gradient(900px 420px at 50% -100px, rgba(255, 143, 184, 0.18), transparent 65%),
-        radial-gradient(600px 300px at 90% 80%, rgba(143, 130, 255, 0.12), transparent 60%),
-        #0d0c15;
-      color: #ede9fa;
+        radial-gradient(800px 400px at 50% -80px, rgba(123, 167, 255, 0.14), transparent 65%),
+        radial-gradient(500px 280px at 85% 90%, rgba(192, 162, 255, 0.10), transparent 55%),
+        #0b0d18;
+      color: #e8edfb;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       display: flex;
       flex-direction: column;
@@ -24,129 +24,143 @@
       padding: 24px 18px;
       -webkit-font-smoothing: antialiased;
     }
-    .logo {
-      font-size: 28px;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      color: #7ba7ff;
+    }
+    .brand svg {
+      width: 26px;
+      height: 26px;
+      filter: drop-shadow(0 0 10px rgba(123, 167, 255, 0.55));
+    }
+    .brand span {
+      font-size: 24px;
       font-weight: 800;
       letter-spacing: -0.03em;
-      color: #ff8fb8;
-      margin-bottom: 36px;
-      text-shadow: 0 0 28px rgba(255, 143, 184, 0.45);
+      color: #e8edfb;
     }
-    .caja {
+
+    .card {
       width: min(100%, 360px);
-      background: linear-gradient(180deg, #1e1b2d 0%, #151320 100%);
-      border: 1px solid #2d2a42;
-      border-radius: 24px;
-      padding: 40px 26px 36px;
+      background: linear-gradient(180deg, #171f38 0%, #0f1526 100%);
+      border: 1px solid #27315a;
+      border-radius: 22px;
+      padding: 36px 24px 32px;
       box-shadow:
-        0 0 0 1px rgba(255, 143, 184, 0.08),
-        0 28px 60px -28px rgba(0, 0, 0, 0.85),
-        0 0 40px -10px rgba(255, 143, 184, 0.15);
+        0 0 0 1px rgba(123, 167, 255, 0.08),
+        0 28px 55px -30px rgba(0, 0, 0, 0.9);
     }
-    .icono {
-      font-size: 42px;
-      margin-bottom: 14px;
-      filter: drop-shadow(0 0 12px rgba(255, 143, 184, 0.4));
+
+    .icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 14px rgba(123, 167, 255, 0.4));
     }
+
     h1 {
-      font-size: 26px;
+      font-size: 25px;
       font-weight: 800;
       letter-spacing: -0.02em;
       margin-bottom: 10px;
-      background: linear-gradient(90deg, #ede9fa, #ff8fb8, #8f82ff);
+      background: linear-gradient(90deg, #e8edfb, #7ba7ff, #c0a2ff);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
     }
-    .mensaje {
+
+    .msg {
       font-size: 15px;
-      color: #9a95b4;
-      margin-bottom: 28px;
+      color: #8d98bb;
       line-height: 1.5;
+      margin-bottom: 26px;
     }
+
     #tiempo {
-      font-size: 52px;
+      font-size: 50px;
       font-weight: 800;
-      letter-spacing: 3px;
-      color: #ff8fb8;
+      letter-spacing: 2px;
+      color: #7ba7ff;
       font-variant-numeric: tabular-nums;
-      text-shadow: 0 0 30px rgba(255, 143, 184, 0.5);
-      min-height: 62px;
+      text-shadow: 0 0 28px rgba(123, 167, 255, 0.45);
+      min-height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .etiqueta {
-      margin-top: 14px;
+
+    .label {
+      margin-top: 12px;
       font-size: 12px;
-      color: #9a95b4;
+      color: #8d98bb;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
     }
-    .volver {
+
+    .back {
       margin-top: 32px;
     }
-    .volver a {
-      color: #8f82ff;
+    .back a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #c0a2ff;
       text-decoration: none;
       font-size: 15px;
       font-weight: 600;
-      padding: 10px 18px;
-      border-radius: 12px;
-      border: 1px solid rgba(143, 130, 255, 0.35);
-      background: rgba(143, 130, 255, 0.08);
-      transition: background 0.2s, border-color 0.2s;
+      padding: 11px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(192, 162, 255, 0.35);
+      background: rgba(192, 162, 255, 0.08);
     }
-    .volver a:hover {
-      background: rgba(143, 130, 255, 0.16);
-      border-color: #8f82ff;
-    }
+
     .listo {
       color: #5fd6a8 !important;
       text-shadow: 0 0 24px rgba(95, 214, 168, 0.5) !important;
-      font-size: 28px !important;
+      font-size: 26px !important;
       letter-spacing: 0 !important;
     }
   </style>
 </head>
 <body>
-  <div class="logo">✦ JORDVEX</div>
-
-  <div class="caja">
-    <div class="icono">⏳</div>
-    <h1>Volvemos pronto</h1>
-    <p class="mensaje" id="mensaje">Estamos preparando algo increíble.<br>¡Vuelve en:</p>
-    <div id="tiempo">--:--:--</div>
-    <div class="etiqueta" id="etiqueta">Tiempo restante</div>
+  <div class="brand">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 38 26 58 32 38 38 32 58 26 38 6 32 26 26Z" fill="currentColor"/></svg>
+    <span>JORDVEX</span>
   </div>
 
-  <div class="volver">
+  <div class="card">
+    <div class="icon">⏳</div>
+    <h1>Volvemos pronto</h1>
+    <p class="msg" id="mensaje">Estamos preparando algo increíble.<br>¡Vuelve en:</p>
+    <div id="tiempo">--:--:--</div>
+    <div class="label" id="etiqueta">Tiempo restante</div>
+  </div>
+
+  <div class="back">
     <a href="/">← Ir al inicio</a>
   </div>
 
   <script>
     (function () {
-      // Objetivo: HOY a las 12:49 (hora del teléfono)
-      var now = new Date();
-      var target = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        12,
-        49,
-        0
+      var ahora = new Date();
+      var objetivo = new Date(
+        ahora.getFullYear(),
+        ahora.getMonth(),
+        ahora.getDate(),
+        12, 49, 0
       );
 
       var elTiempo = document.getElementById("tiempo");
       var elMensaje = document.getElementById("mensaje");
       var elEtiqueta = document.getElementById("etiqueta");
 
-      function pad(n) {
-        return n < 10 ? "0" + n : "" + n;
-      }
+      function pad(n) { return n < 10 ? "0" + n : String(n); }
 
       function tick() {
-        var restante = target.getTime() - Date.now();
+        var restante = objetivo.getTime() - Date.now();
 
         if (restante <= 0) {
           elTiempo.textContent = "¡YA ESTAMOS AQUÍ!";
@@ -160,7 +174,6 @@
         var h = Math.floor(total / 3600);
         var m = Math.floor((total % 3600) / 60);
         var s = total % 60;
-
         elTiempo.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
       }
 
