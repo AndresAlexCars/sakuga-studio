@@ -4,110 +4,143 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⏳ Volvemos pronto | JORDVEX</title>
+  <meta name="theme-color" content="#0d0c15">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: sans-serif;
     }
     html, body {
       height: 100%;
     }
     body {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(900px 420px at 50% -120px, rgba(255, 143, 184, 0.13), transparent 70%),
+        #0d0c15;
+      color: #ede9fa;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: white;
       text-align: center;
-      padding: 20px;
+      padding: 24px 20px;
     }
     .logo {
-      font-size: 28px;
-      font-weight: bold;
-      color: #ffcc00;
-      margin-bottom: 60px;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ff8fb8;
+      margin-bottom: 48px;
+    }
+    .caja {
+      width: min(100%, 380px);
+      background: linear-gradient(180deg, #1e1b2d 0%, #151320 100%);
+      border: 1px solid #2d2a42;
+      border-radius: 22px;
+      padding: 36px 28px;
+      box-shadow: 0 28px 50px -34px #000;
     }
     h1 {
-      font-size: 28px;
-      margin-bottom: 12px;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
     }
-    p {
-      font-size: 16px;
-      color: #b0b0c0;
-      margin-bottom: 40px;
-    }
-    .caja-reloj {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 40px 50px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .mensaje {
+      font-size: 15px;
+      color: #9a95b4;
+      margin-bottom: 28px;
+      line-height: 1.45;
     }
     #tiempo {
       font-size: 48px;
-      font-weight: bold;
-      color: #ffdd44;
-      letter-spacing: 3px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #ff8fb8;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 24px rgba(255, 143, 184, 0.35);
     }
     .etiqueta {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #888899;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #9a95b4;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
     .volver {
-      margin-top: 40px;
+      margin-top: 36px;
     }
     .volver a {
-      color: #ffcc00;
+      color: #8f82ff;
       text-decoration: none;
-      font-size: 16px;
+      font-size: 15px;
+      font-weight: 500;
     }
     .volver a:hover {
       text-decoration: underline;
+    }
+    .listo {
+      color: #5fd6a8;
+      font-size: 22px;
+      font-weight: 700;
     }
   </style>
 </head>
 <body>
   <div class="logo">✦ JORDVEX</div>
-  
-  <div class="caja-reloj">
+
+  <div class="caja">
     <h1>⏳ Volvemos pronto</h1>
-    <p>Estamos preparando algo increíble. ¡Vuelve en:</p>
-    <div id="tiempo">02:22:00</div>
-    <div class="etiqueta">Tiempo restante</div>
+    <p class="mensaje" id="mensaje">Estamos preparando algo increíble. ¡Vuelve en:</p>
+    <div id="tiempo">--:--:--</div>
+    <div class="etiqueta" id="etiqueta">Tiempo restante</div>
   </div>
-  
+
   <div class="volver">
-    <a href="index.html">← Ir al inicio</a>
+    <a href="/">← Ir al inicio</a>
   </div>
 
   <script>
-    let tiempoRestante = 2 * 60 * 60 + 22 * 60;
-    
-    function actualizarReloj() {
-      const horas = Math.floor(tiempoRestante / 3600);
-      const minutos = Math.floor((tiempoRestante % 3600) / 60);
-      const segundos = tiempoRestante % 60;
-      
+    // Hora objetivo: hoy a las 12:49 (hora local del dispositivo)
+    const ahora = new Date();
+    const objetivo = new Date(
+      ahora.getFullYear(),
+      ahora.getMonth(),
+      ahora.getDate(),
+      12,  // hora
+      49,  // minutos
+      0    // segundos
+    );
+
+    function actualizar() {
+      const restante = objetivo - Date.now();
+
+      if (restante <= 0) {
+        document.getElementById('tiempo').textContent = '¡YA ESTAMOS AQUÍ!';
+        document.getElementById('tiempo').className = 'listo';
+        document.getElementById('mensaje').textContent = 'El sitio ya está disponible.';
+        document.getElementById('etiqueta').textContent = 'Puedes entrar';
+        return;
+      }
+
+      const totalSeg = Math.floor(restante / 1000);
+      const horas = Math.floor(totalSeg / 3600);
+      const minutos = Math.floor((totalSeg % 3600) / 60);
+      const segundos = totalSeg % 60;
+
       const formato =
         String(horas).padStart(2, '0') + ':' +
         String(minutos).padStart(2, '0') + ':' +
         String(segundos).padStart(2, '0');
-      
+
       document.getElementById('tiempo').textContent = formato;
-      
-      if (tiempoRestante > 0) {
-        tiempoRestante--;
-      } else {
-        document.getElementById('tiempo').textContent = '¡YA ESTAMOS AQUÍ! 🎉';
-      }
     }
-    
-    setInterval(actualizarReloj, 1000);
-    actualizarReloj();
+
+    actualizar();
+    setInterval(actualizar, 1000);
   </script>
 </body>
 </html>
