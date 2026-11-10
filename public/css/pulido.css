@@ -273,3 +273,20 @@ body[data-view="wallpapers"] .app { padding-bottom: calc(150px + env(safe-area-i
   border-color: var(--accent);
   background: rgba(var(--accent-rgb), .16);
 }
+
+/* ═══ Bandeja de reacciones deslizable (se desplaza con el dedo) ═══ */
+.wall-react__picker {
+  flex-basis: 100%;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.wall-react__picker::-webkit-scrollbar { display: none; }
+.wall-react__opt {
+  flex: 0 0 64px;
+  scroll-snap-align: center;
+}
