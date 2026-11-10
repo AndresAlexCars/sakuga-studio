@@ -101,31 +101,9 @@ body[data-view="wallpapers"] .nav-search { display: block; }
 body[data-view="wallpapers"] .app { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 @media (min-width: 960px) { .nav-search { display: none !important; } }
 
-/* ═══ Lupa y # dentro de la barra inferior; campo y atajos sobre la barra ═══ */
+/* ═══ Buscador con botón # y panel de atajos; barra inferior: Fondos y Chat ═══ */
 .wall-tools { display: none !important; }
 .nav-filter { display: none !important; }
-.nav-tool { display: none; }
-body[data-view="wallpapers"] .nav-tool {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-height: 52px;
-  padding: 6px 0 4px;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--muted);
-  font-size: 11.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.nav-tool svg { width: 22px; height: 22px; flex: 0 0 auto; }
-.nav-tool[aria-pressed="true"] {
-  color: var(--accent);
-  background: rgba(var(--accent-rgb), .14);
-}
 
 .nav-search {
   position: fixed;
@@ -135,10 +113,8 @@ body[data-view="wallpapers"] .nav-tool {
   z-index: 19;
   display: none;
 }
-body[data-view="wallpapers"] .nav-search.is-search,
-body[data-view="wallpapers"] .nav-search.is-open { display: block; }
-.nav-search__row { display: none; }
-.nav-search.is-search .nav-search__row { display: flex; }
+body[data-view="wallpapers"] .nav-search { display: block; }
+.nav-search__row { display: flex; align-items: center; gap: 8px; }
 .nav-search input {
   flex: 1;
   min-width: 0;
@@ -159,6 +135,26 @@ body[data-view="wallpapers"] .nav-search.is-open { display: block; }
 .nav-search input:focus {
   border-color: rgba(var(--accent-rgb), .6);
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15);
+}
+.nav-hash {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: color-mix(in srgb, var(--panel-hi) 80%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 12px 30px -14px rgba(0, 0, 0, .7);
+  color: var(--muted);
+  cursor: pointer;
+}
+.nav-hash svg { width: 20px; height: 20px; }
+.nav-hash[aria-expanded="true"] {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), .6);
 }
 
 .nav-suggest {
@@ -193,104 +189,5 @@ body[data-view="wallpapers"] .nav-search.is-open { display: block; }
 
 body[data-view="wallpapers"] .app { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 @media (min-width: 960px) {
-  .nav-search, .nav-tool { display: none !important; }
-}
-
-/* ═══ Reacciones: botón principal con total + bandeja propia (sin estilo de Facebook) ═══ */
-.wall-react { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.wall-react__main {
-  min-height: 40px;
-  padding: 0 16px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: transform .2s var(--ease), border-color .2s, background .2s;
-}
-.wall-react__main:hover { border-color: rgba(var(--accent-rgb), .5); }
-.wall-react__main:active { transform: scale(.94); }
-.wall-react__main.is-on {
-  border-color: var(--accent);
-  background: rgba(var(--accent-rgb), .16);
-}
-.wall-react__more {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--muted);
-  font: inherit;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  transition: transform .25s var(--ease), color .2s, border-color .2s;
-}
-.wall-react__more[aria-expanded="true"] {
-  color: var(--accent);
-  border-color: rgba(var(--accent-rgb), .6);
-  transform: rotate(45deg);
-}
-.wall-react__picker {
-  flex-basis: 100%;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-  padding: 8px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--panel-hi) 80%, transparent);
-  animation: wall-react-in .3s var(--ease) both;
-}
-.wall-react__picker[hidden] { display: none !important; }
-@keyframes wall-react-in {
-  from { opacity: 0; transform: translateY(-6px) scale(.98); }
-  to { opacity: 1; transform: none; }
-}
-.wall-react__opt {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 8px 2px;
-  border-radius: 14px;
-  border: 1px solid transparent;
-  background: none;
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
-  transition: transform .2s var(--ease), background .2s, border-color .2s;
-}
-.wall-react__opt span { font-size: 22px; line-height: 1; }
-.wall-react__opt small { font-size: 11px; color: var(--muted); font-weight: 600; }
-.wall-react__opt:hover { background: rgba(var(--accent-rgb), .1); transform: translateY(-2px); }
-.wall-react__opt:active { transform: scale(.9); }
-.wall-react__opt.is-on {
-  border-color: var(--accent);
-  background: rgba(var(--accent-rgb), .16);
-}
-
-/* ═══ Bandeja de reacciones deslizable (se desplaza con el dedo) ═══ */
-.wall-react__picker {
-  flex-basis: 100%;
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-}
-.wall-react__picker::-webkit-scrollbar { display: none; }
-.wall-react__opt {
-  flex: 0 0 64px;
-  scroll-snap-align: center;
+  .nav-search { display: none !important; }
 }
