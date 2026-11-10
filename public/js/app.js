@@ -1533,3 +1533,29 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   }
 });
 
+
+/* ── Buscador flotante sobre la barra inferior (en la vista Fondos) ── */
+(() => {
+  const topSearch = document.getElementById('wall-search');
+  if (!topSearch) return;
+  const bar = document.createElement('div');
+  bar.className = 'nav-search';
+  const input = document.createElement('input');
+  input.type = 'search';
+  input.placeholder = 'Buscar fondo: Zenless Zone Zero…';
+  input.setAttribute('aria-label', 'Buscar fondos');
+  input.autocomplete = 'off';
+  input.enterKeyHint = 'search';
+  bar.append(input);
+  document.body.append(bar);
+  input.addEventListener('input', () => {
+    topSearch.value = input.value;
+    renderWallpapers();
+  });
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') input.blur();
+  });
+  topSearch.addEventListener('input', () => {
+    if (input.value !== topSearch.value) input.value = topSearch.value;
+  });
+})();
