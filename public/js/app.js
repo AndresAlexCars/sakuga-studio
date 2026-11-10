@@ -1020,24 +1020,16 @@ document.querySelectorAll('.wall-filters [data-kind]').forEach((btn) => {
 });
 
 if (wall.file) wall.file.multiple = true;
-wall.upload?.addEventListener('click', async () => {
-  const files = [...(wall.file?.files || [])];
-  const code = wall.code.value.trim();
-  if (!files.length) return toast('Elige una o varias imágenes.');
-  if (!code) return toast('Escribe el código de administrador.');
-  const big = files.find((f) => f.size > 25 * 1024 * 1024);
-  if (big) return toast(`"${big.name}" pasa de 25 MB.`);
-  const single = files.length === 1;
-  const typedTitle = wall.title.value.trim();
+
+// Sube la lista de archivos con los nombres ya editados
+async function publishWallpapers(files, titles, code) {
   wall.upload.disabled = true;
   let ok = 0;
   let fail = 0;
   for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const title = single && typedTitle ? typedTitle : file.name.replace(/\.[^.]+$/, '').slice(0, 60);
     toast(`Subiendo ${i + 1} de ${files.length}…`);
     try {
-      await api.uploadWallpaper(file, wall.kind.value, title, code);
+      await api.uploadWallpaper(files[i], wall.kind.value, titles[i] || files[i].name.replace(/\.[^.]+$/, ''), code);
       ok += 1;
     } catch (err) {
       fail += 1;
@@ -1052,6 +1044,69 @@ wall.upload?.addEventListener('click', async () => {
   wall.upload.disabled = false;
   toast(fail ? `Publicados ${ok}. Fallaron ${fail}.` : `Publicados ${ok} fondo${ok === 1 ? '' : 's'}.`);
   await loadWallpapers();
+}
+
+// Ventana para cambiar los nombres de cada fondo antes de publicarlos
+function openTitleEditor(files, defaults, onConfirm) {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'sheet';
+  dlg.style.cssText = 'width:min(94vw,520px);max-height:88vh;padding:0;';
+  const head = document.createElement('div');
+  head.className = 'sheet__head';
+  const h = document.createElement('h3');
+  h.textContent = `Nombres de ${files.length} fondo${files.length === 1 ? '' : 's'}`;
+  head.append(h);
+  const body = document.createElement('div');
+  body.className = 'sheet__body';
+  body.style.cssText = 'overflow-y:auto;max-height:60vh;';
+  const inputs = files.map((file, i) => {
+    const row = document.createElement('label');
+    row.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-bottom:12px;';
+    const small = document.createElement('small');
+    small.className = 'muted';
+    small.textContent = file.name;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.maxLength = 60;
+    input.value = defaults[i];
+    input.style.cssText = 'min-height:44px;padding:0 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font:inherit;';
+    row.append(small, input);
+    body.append(row);
+    return input;
+  });
+  const actions = document.createElement('div');
+  actions.className = 'dialog__actions';
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'btn';
+  cancel.textContent = 'Cancelar';
+  const go = document.createElement('button');
+  go.type = 'button';
+  go.className = 'btn btn--primary';
+  go.textContent = 'Publicar todos';
+  cancel.addEventListener('click', () => dlg.close());
+  go.addEventListener('click', () => {
+    const titles = inputs.map((inp) => inp.value.trim());
+    dlg.close();
+    onConfirm(titles);
+  });
+  dlg.addEventListener('close', () => dlg.remove());
+  actions.append(cancel, go);
+  dlg.append(head, body, actions);
+  document.body.append(dlg);
+  dlg.showModal();
+}
+
+wall.upload?.addEventListener('click', () => {
+  const files = [...(wall.file?.files || [])];
+  const code = wall.code.value.trim();
+  if (!files.length) return toast('Elige una o varias imágenes.');
+  if (!code) return toast('Escribe el código de administrador.');
+  const big = files.find((f) => f.size > 25 * 1024 * 1024);
+  if (big) return toast(`"${big.name}" pasa de 25 MB.`);
+  const typedTitle = wall.title.value.trim();
+  const defaults = files.map((f) => (files.length === 1 && typedTitle ? typedTitle : f.name.replace(/\.[^.]+$/, '').slice(0, 60)));
+  openTitleEditor(files, defaults, (titles) => publishWallpapers(files, titles, code));
 });
 
 /* ── Videos: pestaña junto a Fondos, con calidad original ── */
