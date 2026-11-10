@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⏳ En descanso</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: sans-serif;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
     body {
       background: linear-gradient(135deg, #1a1a2e, #16213e);
       min-height: 100vh;
@@ -29,21 +24,9 @@
       max-width: 420px;
       width: 100%;
     }
-    .reloj {
-      font-size: 60px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 12px;
-      color: #ffcc00;
-    }
-    p {
-      font-size: 16px;
-      color: #b0b0c0;
-      margin-bottom: 25px;
-      line-height: 1.6;
-    }
+    .reloj { font-size: 60px; margin-bottom: 20px; }
+    h1 { font-size: 24px; margin-bottom: 12px; color: #ffcc00; }
+    p { font-size: 16px; color: #b0b0c0; margin-bottom: 25px; line-height: 1.6; }
     .tiempo {
       font-size: 32px;
       font-weight: bold;
@@ -54,11 +37,7 @@
       color: #ffdd44;
       letter-spacing: 2px;
     }
-    .etiqueta {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #888899;
-    }
+    .etiqueta { margin-top: 15px; font-size: 14px; color: #888899; }
   </style>
 </head>
 <body>
@@ -71,33 +50,24 @@
   </div>
 
   <script>
-    // ⏱️ 2 horas y 22 minutos en segundos
     let tiempoRestante = 2 * 60 * 60 + 22 * 60;
-
     function actualizarReloj() {
       const horas = Math.floor(tiempoRestante / 3600);
       const minutos = Math.floor((tiempoRestante % 3600) / 60);
       const segundos = tiempoRestante % 60;
-
-      const formato = 
+      const formato =
         String(horas).padStart(2, '0') + ':' +
         String(minutos).padStart(2, '0') + ':' +
         String(segundos).padStart(2, '0');
-
       document.getElementById('cuenta').textContent = formato;
-
       if (tiempoRestante > 0) {
         tiempoRestante--;
       } else {
         document.getElementById('cuenta').textContent = '¡Ya volvimos! ✅';
       }
     }
-
-    // Actualizar cada segundo
     setInterval(actualizarReloj, 1000);
     actualizarReloj();
   </script>
 </body>
 </html>
-
-"Temporizador de descanso agregado"
