@@ -21,7 +21,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   color: #7ba7ff;
 }
 .brand svg {
@@ -37,27 +37,55 @@ body {
 }
 
 .card {
-  width: min(100%, 360px);
+  width: min(100%, 380px);
   background: linear-gradient(180deg, #171f38 0%, #0f1526 100%);
   border: 1px solid #27315a;
   border-radius: 22px;
-  padding: 36px 24px 32px;
+  padding: 28px 24px 30px;
   box-shadow:
     0 0 0 1px rgba(123, 167, 255, 0.08),
     0 28px 55px -30px rgba(0, 0, 0, 0.9);
 }
 
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: rgba(123, 167, 255, 0.14);
+  color: #7ba7ff;
+  border: 1px solid rgba(123, 167, 255, 0.3);
+}
+.badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+.badge.listo {
+  background: rgba(95, 214, 168, 0.14);
+  color: #5fd6a8;
+  border-color: rgba(95, 214, 168, 0.35);
+}
+
 .icon {
-  font-size: 40px;
-  margin-bottom: 12px;
+  font-size: 38px;
+  margin-bottom: 10px;
   filter: drop-shadow(0 0 14px rgba(123, 167, 255, 0.4));
 }
 
 h1 {
-  font-size: 25px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   background: linear-gradient(90deg, #e8edfb, #7ba7ff, #c0a2ff);
   -webkit-background-clip: text;
   background-clip: text;
@@ -65,36 +93,61 @@ h1 {
 }
 
 .msg {
-  font-size: 15px;
+  font-size: 14.5px;
   color: #8d98bb;
-  line-height: 1.5;
-  margin-bottom: 26px;
+  line-height: 1.55;
+  margin-bottom: 22px;
 }
 
 #tiempo {
-  font-size: 50px;
+  font-size: 48px;
   font-weight: 800;
   letter-spacing: 2px;
   color: #7ba7ff;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0 28px rgba(123, 167, 255, 0.45);
-  min-height: 60px;
+  min-height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .label {
-  margin-top: 12px;
+  margin-top: 10px;
   font-size: 12px;
   color: #8d98bb;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
-.back {
-  margin-top: 32px;
+.barra {
+  margin: 18px auto 0;
+  width: 80%;
+  height: 6px;
+  border-radius: 999px;
+  background: #27315a;
+  overflow: hidden;
 }
+.barra i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7ba7ff, #c0a2ff);
+  transition: width 0.8s linear;
+}
+
+.extra {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #8d98bb;
+  line-height: 1.45;
+}
+
+.back {
+  margin-top: 28px;
+}
+.back[hidden] { display: none !important; }
 .back a {
   display: inline-flex;
   align-items: center;
@@ -103,15 +156,15 @@ h1 {
   text-decoration: none;
   font-size: 15px;
   font-weight: 600;
-  padding: 11px 18px;
+  padding: 12px 20px;
   border-radius: 14px;
-  border: 1px solid rgba(192, 162, 255, 0.35);
-  background: rgba(192, 162, 255, 0.08);
+  border: 1px solid rgba(192, 162, 255, 0.4);
+  background: rgba(192, 162, 255, 0.1);
 }
 
-.listo {
+.listo-tiempo {
   color: #5fd6a8 !important;
   text-shadow: 0 0 24px rgba(95, 214, 168, 0.5) !important;
-  font-size: 26px !important;
+  font-size: 24px !important;
   letter-spacing: 0 !important;
 }
