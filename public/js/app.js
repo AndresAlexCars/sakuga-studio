@@ -1559,3 +1559,27 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     if (input.value !== topSearch.value) input.value = topSearch.value;
   });
 })();
+
+/* ── Filtros Todos / Móvil / PC dentro de la barra inferior ── */
+(() => {
+  const nav = document.querySelector('.nav');
+  if (!nav || !document.getElementById('wall-grid')) return;
+  const originals = [...document.querySelectorAll('.wall-filters [data-kind]')];
+  if (!originals.length) return;
+  const labels = { todos: 'Todos', movil: 'Móvil', pc: 'PC' };
+  const buttons = originals.map((orig) => {
+    const kind = orig.dataset.kind;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'nav-filter';
+    btn.dataset.kind = kind;
+    btn.textContent = labels[kind] || orig.textContent.trim();
+    btn.setAttribute('aria-pressed', String(orig.getAttribute('aria-pressed') === 'true'));
+    btn.addEventListener('click', () => {
+      orig.click();
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    });
+    return btn;
+  });
+  nav.prepend(...buttons);
+})();
