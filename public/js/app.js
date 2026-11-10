@@ -928,26 +928,49 @@ function wallCard(item) {
   download.textContent = 'Descargar';
   download.addEventListener('click', () => api.viewWallpaper(item.id).catch(() => {}));
   const WALL_REACTIONS = ['👍', '❤️', '😍', '😮', '😂', '😢'];
+  const counts = item.reactions || {};
+  const total = WALL_REACTIONS.reduce((n, e) => n + (counts[e] || 0), 0);
   const bar = document.createElement('div');
   bar.className = 'wall-react';
+  const react = async (emoji) => {
+    try {
+      await api.reactWallpaper(item.id, emoji);
+      await loadWallpapers();
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+  // Botón principal: toca para dar tu reacción; toca otra vez para quitarla
+  const mainBtn = document.createElement('button');
+  mainBtn.type = 'button';
+  mainBtn.className = 'wall-react__main' + (item.mine ? ' is-on' : '');
+  mainBtn.setAttribute('aria-label', item.mine ? 'Quitar mi reacción' : 'Reaccionar');
+  mainBtn.textContent = `${item.mine || '♡'} ${total}`;
+  mainBtn.addEventListener('click', () => react(item.mine || '👍'));
+  // Botón +: abre la bandeja con todas las reacciones
+  const moreBtn = document.createElement('button');
+  moreBtn.type = 'button';
+  moreBtn.className = 'wall-react__more';
+  moreBtn.textContent = '+';
+  moreBtn.setAttribute('aria-label', 'Más reacciones');
+  moreBtn.setAttribute('aria-expanded', 'false');
+  const picker = document.createElement('div');
+  picker.className = 'wall-react__picker';
+  picker.hidden = true;
   for (const emoji of WALL_REACTIONS) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'wall-react__btn';
-    if (item.mine === emoji) btn.classList.add('is-on');
-    btn.setAttribute('aria-label', `Reaccionar ${emoji}`);
-    btn.setAttribute('aria-pressed', String(item.mine === emoji));
-    btn.textContent = `${emoji} ${item.reactions?.[emoji] ?? 0}`;
-    btn.addEventListener('click', async () => {
-      try {
-        await api.reactWallpaper(item.id, emoji);
-        await loadWallpapers();
-      } catch (err) {
-        toast(err.message);
-      }
-    });
-    bar.append(btn);
+    const opt = document.createElement('button');
+    opt.type = 'button';
+    opt.className = 'wall-react__opt' + (item.mine === emoji ? ' is-on' : '');
+    opt.setAttribute('aria-label', `Reaccionar ${emoji}`);
+    opt.innerHTML = `<span>${emoji}</span><small>${counts[emoji] || 0}</small>`;
+    opt.addEventListener('click', () => react(emoji));
+    picker.append(opt);
   }
+  moreBtn.addEventListener('click', () => {
+    picker.hidden = !picker.hidden;
+    moreBtn.setAttribute('aria-expanded', String(!picker.hidden));
+  });
+  bar.append(mainBtn, moreBtn, picker);
   const preview = document.createElement('button');
   preview.type = 'button';
   preview.className = 'btn btn--primary-soft wall-card__dl';
