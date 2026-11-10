@@ -1534,52 +1534,76 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
 });
 
 
-/* ── Buscador flotante sobre la barra inferior (en la vista Fondos) ── */
+/* ── Buscador flotante con atajos y filtros con iconos en la barra inferior ── */
 (() => {
   const topSearch = document.getElementById('wall-search');
-  if (!topSearch) return;
+  const nav = document.querySelector('.nav');
+  if (!topSearch || !nav) return;
+
+  const ICONS = {
+    todos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+    movil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+    pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>'
+  };
+  const LABELS = { todos: 'Todos', movil: 'Móvil', pc: 'PC' };
+
+  // Filtros con icono dentro de la barra inferior (usan los botones originales)
+  const originals = [...document.querySelectorAll('.wall-filters [data-kind]')];
+  const filterButtons = originals.map((orig) => {
+    const kind = orig.dataset.kind;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'nav-filter';
+    btn.dataset.kind = kind;
+    btn.innerHTML = (ICONS[kind] || '') + `<span>${LABELS[kind] || orig.textContent.trim()}</span>`;
+    btn.setAttribute('aria-pressed', String(orig.getAttribute('aria-pressed') === 'true'));
+    btn.addEventListener('click', () => {
+      orig.click();
+      filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    });
+    return btn;
+  });
+  if (filterButtons.length) nav.prepend(...filterButtons);
+
+  // Buscador flotante con atajos que aparecen al tocarlo
   const bar = document.createElement('div');
   bar.className = 'nav-search';
+  const suggest = document.createElement('div');
+  suggest.className = 'nav-suggest';
   const input = document.createElement('input');
   input.type = 'search';
-  input.placeholder = 'Buscar fondo: Zenless Zone Zero…';
+  input.placeholder = 'Buscar: NTE, Zenless Zone Zero…';
   input.setAttribute('aria-label', 'Buscar fondos');
   input.autocomplete = 'off';
   input.enterKeyHint = 'search';
-  bar.append(input);
-  document.body.append(bar);
-  input.addEventListener('input', () => {
-    topSearch.value = input.value;
+
+  const setSearch = (text) => {
+    input.value = text;
+    topSearch.value = text;
     renderWallpapers();
+  };
+  [['NTE', 'NTE'], ['Zenless Zone Zero', 'Zenless Zone Zero'], ['Limpiar', '']].forEach(([label, value]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.addEventListener('mousedown', (e) => e.preventDefault());
+    b.addEventListener('click', () => {
+      setSearch(value);
+      input.blur();
+    });
+    suggest.append(b);
   });
+
+  bar.append(suggest, input);
+  document.body.append(bar);
+
+  input.addEventListener('focus', () => bar.classList.add('is-open'));
+  input.addEventListener('blur', () => bar.classList.remove('is-open'));
+  input.addEventListener('input', () => setSearch(input.value));
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') input.blur();
   });
   topSearch.addEventListener('input', () => {
     if (input.value !== topSearch.value) input.value = topSearch.value;
   });
-})();
-
-/* ── Filtros Todos / Móvil / PC dentro de la barra inferior ── */
-(() => {
-  const nav = document.querySelector('.nav');
-  if (!nav || !document.getElementById('wall-grid')) return;
-  const originals = [...document.querySelectorAll('.wall-filters [data-kind]')];
-  if (!originals.length) return;
-  const labels = { todos: 'Todos', movil: 'Móvil', pc: 'PC' };
-  const buttons = originals.map((orig) => {
-    const kind = orig.dataset.kind;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'nav-filter';
-    btn.dataset.kind = kind;
-    btn.textContent = labels[kind] || orig.textContent.trim();
-    btn.setAttribute('aria-pressed', String(orig.getAttribute('aria-pressed') === 'true'));
-    btn.addEventListener('click', () => {
-      orig.click();
-      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-    });
-    return btn;
-  });
-  nav.prepend(...buttons);
 })();
