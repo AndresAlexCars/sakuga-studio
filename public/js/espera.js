@@ -1,14 +1,13 @@
 (function () {
-  // Objetivo: HOY a las 00:00 de la noche siguiente (medianoche)
+  // Objetivo: medianoche de esta noche (00:00 del día siguiente)
   var ahora = new Date();
   var objetivo = new Date(
     ahora.getFullYear(),
     ahora.getMonth(),
-    ahora.getDate() + 1, // mañana a las 00:00 = medianoche de esta noche
+    ahora.getDate() + 1,
     0, 0, 0
   );
 
-  // Referencia para la barra: desde ahora hasta medianoche
   var inicioRef = ahora.getTime();
   var totalMs = objetivo.getTime() - inicioRef;
 
@@ -55,12 +54,6 @@
     elBarra.style.width = pct.toFixed(1) + "%";
 
     elBack.hidden = true;
-  }
-
-  // Intentar reproducir el vídeo de fondo (algunos móviles lo bloquean sin gesto)
-  var vid = document.getElementById("bg-video");
-  if (vid) {
-    vid.play().catch(function () {});
   }
 
   tick();
