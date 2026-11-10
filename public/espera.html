@@ -8,10 +8,17 @@
   <link rel="stylesheet" href="/css/espera.css">
 </head>
 <body>
-  <!-- Vídeo de fondo (pon tu archivo en public/videos/espera-bg.mp4) -->
-  <video class="bg-video" id="bg-video" autoplay muted loop playsinline poster="">
-    <source src="/video/espera-bg.mp4" type="video/mp4">
-  </video>
+  <!-- Vídeo de fondo desde Streamable (sin subir a GitHub) -->
+  <div class="bg-video-wrap" aria-hidden="true">
+    <iframe
+      class="bg-video"
+      src="https://streamable.com/e/81yg36?autoplay=1&muted=1&nocontrols=1"
+      allow="autoplay; fullscreen"
+      allowfullscreen
+      loading="eager"
+      title=""
+    ></iframe>
+  </div>
   <div class="bg-overlay"></div>
 
   <div class="content">
