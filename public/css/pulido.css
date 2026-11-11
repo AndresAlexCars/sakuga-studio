@@ -294,3 +294,23 @@ body[data-view="wallpapers"] .app { padding-bottom: calc(150px + env(safe-area-i
   flex: 0 0 64px;
   scroll-snap-align: center;
 }
+
+/* ═══ Barra en una sola fila (más baja) y buscador siempre visible encima ═══ */
+body[data-role="visitor"] .nav,
+.nav {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  height: auto;
+  padding: 6px;
+}
+.nav button,
+.nav-tool,
+body[data-view="wallpapers"] .nav-tool {
+  min-height: 48px;
+  padding-top: 4px;
+  padding-bottom: 2px;
+}
+.nav-tool svg, .nav button svg { width: 20px; height: 20px; }
+.nav-search { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+body[data-view="wallpapers"] .app { padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
