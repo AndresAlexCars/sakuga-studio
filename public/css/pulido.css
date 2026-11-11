@@ -340,3 +340,7 @@ body[data-view="wallpapers"] .app { padding-bottom: calc(140px + env(safe-area-i
   .nav-indicator { transition: none; }
 }
 html[data-motion="reduced"] .nav-indicator { transition: none; }
+
+/* ═══ Asistente (Chat) oculto: se quitan el botón de la barra y la ventana ═══ */
+#nav-chat,
+#chat { display: none !important; }
