@@ -1715,3 +1715,32 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     if (input.value !== topSearch.value) input.value = topSearch.value;
   });
 })();
+
+/* ── Cápsula que se desliza hasta la opción activa de la barra inferior ── */
+(() => {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+  const ind = document.createElement('span');
+  ind.className = 'nav-indicator';
+  nav.prepend(ind);
+  const visibleButtons = () => [...nav.querySelectorAll('button')].filter((b) => b.offsetParent !== null);
+  const place = () => {
+    const btns = visibleButtons();
+    const active = btns.find((b) => b.getAttribute('aria-pressed') === 'true')
+      || btns.find((b) => b.getAttribute('aria-current') === 'page');
+    if (!active) {
+      ind.style.opacity = '0';
+      return;
+    }
+    ind.style.opacity = '1';
+    ind.style.width = `${active.offsetWidth}px`;
+    ind.style.transform = `translateX(${active.offsetLeft}px)`;
+  };
+  new MutationObserver(place).observe(nav, {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['aria-current', 'aria-pressed', 'class'],
+  });
+  window.addEventListener('resize', place);
+  requestAnimationFrame(place);
+})();
