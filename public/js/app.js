@@ -1706,6 +1706,15 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     searchBtn.setAttribute('aria-pressed', 'false');
   });
 
+  // Al tocar fuera de la barra, se cierran el campo y los atajos
+  document.addEventListener('pointerdown', (event) => {
+    if (bar.contains(event.target) || event.target === searchBtn || event.target === hashBtn) return;
+    if (!bar.classList.contains('is-search') && !bar.classList.contains('is-open')) return;
+    bar.classList.remove('is-search', 'is-open');
+    searchBtn.setAttribute('aria-pressed', 'false');
+    hashBtn.setAttribute('aria-pressed', 'false');
+    input.blur();
+  });
   input.addEventListener('input', () => setSearch(input.value));
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') input.blur();
