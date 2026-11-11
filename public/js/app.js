@@ -1697,7 +1697,6 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     bar.classList.remove('is-open');
     searchBtn.setAttribute('aria-pressed', String(on));
     hashBtn.setAttribute('aria-pressed', 'false');
-    if (on) input.focus();
   });
   hashBtn.addEventListener('click', () => {
     const on = !bar.classList.contains('is-open');
