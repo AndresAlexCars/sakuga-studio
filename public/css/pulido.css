@@ -314,3 +314,29 @@ body[data-view="wallpapers"] .nav-tool {
 .nav-tool svg, .nav button svg { width: 20px; height: 20px; }
 .nav-search { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 body[data-view="wallpapers"] .app { padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
+
+/* ═══ Cápsula deslizante de la barra inferior (estilo píldora de cristal) ═══ */
+.nav-indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb), .16);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), .28);
+  pointer-events: none;
+  transition: transform .45s var(--ease), width .45s var(--ease), opacity .25s;
+}
+.nav button {
+  position: relative;
+  z-index: 1;
+  background: none !important;
+}
+.nav button[aria-current="page"]::before { display: none; }
+.nav button[aria-current="page"],
+.nav button[aria-pressed="true"] { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  .nav-indicator { transition: none; }
+}
+html[data-motion="reduced"] .nav-indicator { transition: none; }
