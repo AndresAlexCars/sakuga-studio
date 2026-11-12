@@ -15,7 +15,6 @@ const app = express();
 app.set('trust proxy', config.trustProxy);
 app.disable('x-powered-by');
 
-// URL pública del bucket R2.
 const R2_PUBLIC = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
 
 app.use(
@@ -32,7 +31,6 @@ app.use(
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
-        // Permite probar desde el teléfono por http en tu red local.
         upgradeInsecureRequests: null,
       },
     },
@@ -43,8 +41,6 @@ app.use(express.json({ limit: '10kb' }));
 
 app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
-// Los nombres de archivo son UUID aleatorios (no adivinables).
-// Si la imagen no está en disco (p. ej. tras reiniciar), se trae de R2 y se guarda como caché.
 app.get('/media/:file', async (req, res, next) => {
   const name = req.params.file;
   if (!r2Enabled() || !/^[0-9a-f-]{36}\.(png|jpg)$/.test(name)) return next();
@@ -52,7 +48,7 @@ app.get('/media/:file', async (req, res, next) => {
   try {
     await fs.access(local);
     return next();
-  } catch { /* no está en disco: se busca en R2 */ }
+  } catch { /* no en disco */ }
   try {
     const buf = await getObject(name);
     if (!buf) return res.status(404).end();
@@ -78,7 +74,6 @@ app.use(
   }),
 );
 
-// Fondos publicados: archivos con nombre UUID, descargables por cualquiera que tenga el enlace.
 app.get('/wallpapers/:file', async (req, res) => {
   if (R2_PUBLIC && r2Enabled() && /^[0-9a-f-]{36}\.(png|jpg|webp)$/.test(req.params.file)) {
     res.set('Cache-Control', 'public, max-age=86400');
@@ -92,11 +87,9 @@ app.get('/wallpapers/:file', async (req, res) => {
   res.send(buf);
 });
 
-// Videos publicados: se entregan en streaming con soporte de rangos (el reproductor pide partes).
 app.get('/videos/:file', async (req, res) => {
   const file = req.params.file;
   if (!/^[0-9a-f-]{36}\.(mp4|webm|mov)$/.test(file)) return res.status(404).end();
-  // Con R2 público, el video sale directo de Cloudflare (no gasta el ancho de banda de Render).
   if (R2_PUBLIC && r2Enabled()) {
     res.set('Cache-Control', 'public, max-age=86400');
     return res.redirect(302, `${R2_PUBLIC}/videos/${file}`);
@@ -122,7 +115,6 @@ app.get('/videos/:file', async (req, res) => {
     return createReadStream(local, { start, end }).pipe(res);
   }
 
-  // Tras un reinicio el video está solo en R2: se reenvía en streaming, sin cargarlo en memoria.
   if (!r2Enabled()) return res.status(404).end();
   try {
     const up = await getObjectStream(`videos/${file}`, req.headers.range || '');
@@ -140,7 +132,6 @@ app.get('/videos/:file', async (req, res) => {
   }
 });
 
-// Sonido de clic publicado por el administrador.
 app.get('/sound/:file', async (req, res) => {
   if (!/^click\.(mp3|wav|ogg|m4a)$/.test(req.params.file)) return res.status(404).end();
   try {
@@ -154,7 +145,6 @@ app.get('/sound/:file', async (req, res) => {
   }
 });
 
-// Música de fondo publicada por el administrador.
 app.get('/music/:file', async (req, res) => {
   if (!/^music\.(mp3|wav|ogg|m4a)$/.test(req.params.file)) return res.status(404).end();
   try {
@@ -170,12 +160,11 @@ app.get('/music/:file', async (req, res) => {
 
 app.use('/api', apiRouter);
 
-// Descargador de Instagram (Reels / posts públicos)
+// ── Instagram: obtener URL del video ──
 app.post('/api/instagram', async (req, res) => {
   try {
     const { url: igUrl } = req.body || {};
     const match = String(igUrl || '').match(/\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
-
     if (!match) {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
@@ -183,7 +172,6 @@ app.post('/api/instagram', async (req, res) => {
     const shortcode = match[1];
     const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
 
-    // fetch nativo de Node (no necesita node-fetch)
     const igRes = await fetch(embedUrl, {
       headers: {
         'User-Agent':
@@ -220,9 +208,57 @@ app.post('/api/instagram', async (req, res) => {
   }
 });
 
+// ── Proxy: sirve el video de fbcdn a través de tu servidor (para que el <video> cargue) ──
+app.get('/api/instagram/proxy', async (req, res) => {
+  try {
+    const raw = String(req.query.url || '');
+    let target;
+    try {
+      target = new URL(raw);
+    } catch {
+      return res.status(400).json({ error: 'URL no válida.' });
+    }
+
+    // Solo dominios de CDN de Instagram/Facebook
+    const host = target.hostname.toLowerCase();
+    const allowed =
+      host.endsWith('fbcdn.net') ||
+      host.endsWith('cdninstagram.com') ||
+      host.includes('scontent') && host.includes('instagram');
+
+    if (!allowed) {
+      return res.status(400).json({ error: 'Dominio no permitido.' });
+    }
+
+    const up = await fetch(target.toString(), {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Referer: 'https://www.instagram.com/',
+        Accept: '*/*',
+      },
+      redirect: 'follow',
+    });
+
+    if (!up.ok || !up.body) {
+      return res.status(502).json({ error: 'No se pudo obtener el video.' });
+    }
+
+    const type = up.headers.get('content-type') || 'video/mp4';
+    res.set('Content-Type', type);
+    res.set('Cache-Control', 'private, max-age=300');
+    const len = up.headers.get('content-length');
+    if (len) res.set('Content-Length', len);
+
+    Readable.fromWeb(up.body).pipe(res);
+  } catch (err) {
+    console.error('[ig-proxy]', err.message || err);
+    if (!res.headersSent) res.status(500).json({ error: 'Error en el proxy de video.' });
+  }
+});
+
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
-// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   if (err.type === 'entity.parse.failed' || err.type === 'entity.too.large') {
     return res.status(400).json({ error: 'Solicitud no válida.' });
