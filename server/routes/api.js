@@ -466,7 +466,7 @@ apiRouter.post('/videos/:id/view', async (req, res) => {
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 
-const axios = require('axios');
+import axios from 'axios';
 
 // Endpoint proxy para hacer streaming del video de Instagram con soporte de Rango
 apiRouter.get('/instagram/download-proxy', async (req, res) => {

@@ -21,7 +21,7 @@ const cfApiToken = process.env.CLOUDFLARE_API_TOKEN || '';
 const steps = Number.parseInt(process.env.CF_STEPS ?? '', 10);
 
 export const config = {
-  rapidApiKey: process.env.RAPIDAPI_KEY || '51711d6c63msh1def0b385eb5834p1aa128jsn51063bb8edd4',
+  
   port: int(process.env.PORT, 3000),
   // Secretos: viven solo en el servidor y jamás se envían al navegador.
   appName: (process.env.APP_NAME || 'JORDVEX').trim().slice(0, 24) || 'JORDVEX',

@@ -8,13 +8,13 @@
 [33mdea04ba[m Posicionar boton de Instagram en el centro exacto de la barra
 [33m662a81d[m Centrar boton de Instagram y ampliar ligeramente vista previa del video
 [33macd6fb0[m Configurar clave de respaldo y endpoint downloadReel
-[33mfdf86af[m Limpiar archivos residuales y leer process.env.RAPIDAPI_KEY
+[33mfdf86af[m Limpiar archivos residuales y leer process.env.
 [33m35f56b4[m Cargar cloudflare:workers dinamicamente para compatibilidad con Node
-[33m55b5e5a[m Leer RAPIDAPI_KEY desde cloudflare:workers env
-[33mdd57302[m Corregir dominio de RapidAPI sin cortes
+[33m55b5e5a[m Leer 
+[33mdd57302[m Corregir dominio de 
 [33mf77e077[m Update api.js
 [33m3d22541[m Create wrangler. toml
-[33md833990[m Reparar host de RapidAPI en api.js
+[33md833990[m Reparar host de 
 [33m7de5315[m Limpiar enlace de Instagram con .at(0)
 [33m491c430[m Usar instancias abiertas de Cobalt para descargar Reels
 [33maf37260[m Usar API externa para evitar bloqueo de IP de Instagram
