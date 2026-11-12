@@ -28,9 +28,8 @@ app.use(
         styleSrc: ["'self'", 'https://fonts.googleapis.com'],
         frameSrc: ["'self'", 'https://www.youtube-nocookie.com', 'https://streamable.com'],
         imgSrc: ["'self'", 'data:', 'https://i.ytimg.com', ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
-        mediaSrc: ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net", ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
+        mediaSrc: ["'self'", ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
         // Permite probar desde el teléfono por http en tu red local.
@@ -169,7 +168,8 @@ app.get('/music/:file', async (req, res) => {
   }
 });
 
-app.use('/api', apiRouter); app.use('/api', apiRouter);
+app.use('/api', apiRouter);
+
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // eslint-disable-next-line no-unused-vars
