@@ -1752,3 +1752,46 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   window.addEventListener('resize', place);
   requestAnimationFrame(place);
 })();
+
+/* ── Monitor pequeño arriba de Fondos: muestra tu último video subido (sin molestar) ── */
+(() => {
+  const pane = document.getElementById('pane-fondos');
+  if (!pane || safeGet('jordvex.showcase') === 'off') return;
+  const build = async () => {
+    try {
+      const { items } = await api.videos();
+      const item = items.find((v) => v.url && !v.youtubeId && !v.streamableId);
+      if (!item || document.querySelector('.showcase')) return;
+      const box = document.createElement('div');
+      box.className = 'showcase';
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.className = 'showcase__close';
+      close.setAttribute('aria-label', 'Ocultar');
+      close.textContent = '×';
+      close.addEventListener('click', () => {
+        safeSet('jordvex.showcase', 'off');
+        box.remove();
+      });
+      const monitor = document.createElement('div');
+      monitor.className = 'showcase__monitor';
+      const video = document.createElement('video');
+      video.src = item.url;
+      video.muted = true;
+      video.loop = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      monitor.append(video);
+      const cap = document.createElement('p');
+      cap.className = 'showcase__cap';
+      cap.textContent = item.title;
+      box.append(close, monitor, cap);
+      pane.prepend(box);
+      video.play().catch(() => {});
+    } catch {
+      /* sin video que mostrar: no pasa nada */
+    }
+  };
+  build();
+})();
