@@ -62,40 +62,31 @@ apiRouter.post('/instagram', async (req, res) => {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
 
-    // Lista de instancias comunitarias abiertas de Cobalt (sin API key)
-    const instances = [
-      'https://kwiatekmiki.com',
-      'https://canine.tools',
-      'https://cobalt.best'
-    ];
-
-    for (const endpoint of instances) {
-      try {
-        const apiRes = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            url: cleanUrl,
-            videoQuality: '1080'
-          })
-        });
-
-        const data = await apiRes.json().catch(() => ({}));
-        if (apiRes.ok && data.url) {
-          return res.json({ videoUrl: data.url });
-        }
-      } catch {}
+    const rapidKey = process.env.RAPIDAPI_KEY || globalThis.RAPIDAPI_KEY;
+    if (!rapidKey) {
+      return res.status(500).json({ error: 'Falta configurar RAPIDAPI_KEY en Cloudflare.' });
     }
 
-    return res.status(404).json({
-      error: 'No se pudo descargar. Prueba con otro Reel público o intenta más tarde.'
+    const apiHost = 'instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com';
+    const apiRes = await fetch(`https://${apiHost}/?url=${encodeURIComponent(cleanUrl)}`, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': rapidKey,
+        'x-rapidapi-host': apiHost
+      }
     });
+
+    const data = await apiRes.json().catch(() => ({}));
+    const videoUrl = data?.media || data?.video_url || data?.result?.at(0)?.url || data?.at(0)?.url;
+
+    if (!apiRes.ok || !videoUrl) {
+      return res.status(404).json({ error: 'No se pudo extraer el video. Verifica que el Reel sea público.' });
+    }
+
+    return res.json({ videoUrl });
   } catch (err) {
     console.error('[instagram]', err);
-    return res.status(500).json({ error: 'Error interno al procesar el enlace.' });
+    return res.status(500).json({ error: 'Error al conectar con RapidAPI.' });
   }
 });
 
