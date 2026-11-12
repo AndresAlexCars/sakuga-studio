@@ -18,12 +18,12 @@ if (!document.querySelector('.nav-ig-center')) {
     igBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
     const placeCenter = () => {
-      const target = nav.querySelector(".nav-tool");
+      const target = nav.querySelector('.nav-tool');
       if (target) nav.insertBefore(igBtn, target);
       else nav.append(igBtn);
     };
     placeCenter();
-    setTimeout(placeCenter, 300);
+    setTimeout(placeCenter, 250);
 
     const dialog = document.createElement('dialog');
     dialog.className = 'ig-dialog';
@@ -34,7 +34,7 @@ if (!document.querySelector('.nav-ig-center')) {
       </div>
       <p class="muted" style="margin-bottom: 12px;">Pega el enlace de un Reel o video público de Instagram.</p>
       <div class="ig-dialog__input-row">
-        <input type="url" id="ig-url" placeholder="https://www.instagram.com/reel/..." autocomplete="off">
+        <input type="url" id="ig-url" placeholder="https://instagram.com..." autocomplete="off">
         <button type="button" class="btn btn--sm" id="ig-paste">Pegar</button>
       </div>
       <button type="button" class="btn btn--primary" id="ig-fetch">Buscar video</button>
@@ -76,9 +76,10 @@ if (!document.querySelector('.nav-ig-center')) {
         const data = await api.instagram(link);
         if (!data.videoUrl) throw new Error('No se pudo obtener el video.');
 
+        const downloadHref = '/api/instagram/download?url=' + encodeURIComponent(data.videoUrl);
         resultBox.innerHTML = `
           <video src="${data.videoUrl}" controls playsinline></video>
-          <a href="${data.videoUrl}" download="jordvex-instagram.mp4" target="_blank" rel="noopener" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
+          <a href="${downloadHref}" download="jordvex-instagram.mp4" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
         `;
         resultBox.hidden = false;
       } catch (err) {
