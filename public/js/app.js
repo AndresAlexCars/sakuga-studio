@@ -1886,16 +1886,29 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     try {
       const res = await fetch('/api/instagram', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ url: link })
       });
-      const data = await res.json();
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await res.json()
+        : { error: 'La API de Instagram no está activa en Cloudflare Pages. Comprueba el despliegue de la carpeta functions.' };
       if (!res.ok || !data.videoUrl) throw new Error(data.error || 'No se pudo obtener el video.');
 
-      resultBox.innerHTML = `
-        <video src="${data.videoUrl}?preview=1" controls playsinline preload="metadata"></video>
-        <a href="${data.videoUrl}" download="jordvex-instagram.mp4" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
-      `;
+      const video = document.createElement('video');
+      video.src = data.videoUrl;
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+
+      const download = document.createElement('a');
+      download.href = `${data.videoUrl}&download=1`;
+      download.className = 'btn btn--primary-soft';
+      download.style.width = '100%';
+      download.textContent = 'Descargar MP4';
+      download.setAttribute('download', 'jordvex-instagram.mp4');
+
+      resultBox.replaceChildren(video, download);
       resultBox.hidden = false;
     } catch (err) {
       toast(err.message);
