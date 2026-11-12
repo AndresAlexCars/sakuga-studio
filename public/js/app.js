@@ -921,6 +921,27 @@ function wallCard(item) {
   const tag = document.createElement('span');
   tag.className = 'wall-card__tag';
   tag.textContent = item.kind === 'pc' ? 'PC · horizontal' : 'Móvil · vertical';
+  // Detecta la resolución real de cada imagen desde sus dimensiones naturales.
+  const quality = document.createElement('span');
+  quality.className = 'wall-card__quality';
+  quality.textContent = 'Detectando calidad…';
+  quality.setAttribute('aria-live', 'polite');
+  const detectImageQuality = () => {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!w || !h) { quality.textContent = 'Calidad no disponible'; return; }
+    const longest = Math.max(w, h);
+    let label = 'SD';
+    if (longest >= 3840) label = '4K';
+    else if (longest >= 2560) label = '2K';
+    else if (longest >= 1920) label = 'Full HD';
+    else if (longest >= 1280) label = 'HD';
+    quality.textContent = `${label} · ${w.toLocaleString('es-ES')} × ${h.toLocaleString('es-ES')} px`;
+    quality.title = `Resolución original: ${w} × ${h} píxeles`;
+  };
+  img.addEventListener('load', detectImageQuality, { once: true });
+  img.addEventListener('error', () => { quality.textContent = 'No se pudo detectar'; }, { once: true });
+  if (img.complete && img.naturalWidth) detectImageQuality();
   const download = document.createElement('a');
   download.className = 'btn btn--primary-soft wall-card__dl';
   download.href = item.url;
@@ -979,7 +1000,7 @@ function wallCard(item) {
   const views = document.createElement('span');
   views.className = 'wall-card__tag';
   views.textContent = `👁 ${item.views ?? 0} vistas`;
-  info.append(title, tag, views, bar, preview, download);
+  info.append(title, tag, quality, views, bar, preview, download);
   if (isOwnerDevice) {
     const del = document.createElement('button');
     del.type = 'button';
