@@ -57,7 +57,7 @@ apiRouter.get('/config', (_req, res) => res.json(publicCatalog()));
 apiRouter.post('/instagram', async (req, res) => {
   try {
     const { url: igUrl } = req.body || {};
-    const cleanUrl = String(igUrl || '').trim().split('?');
+    const cleanUrl = String(igUrl || '').trim().split('?').at(0);
     if (!cleanUrl.includes('instagram.com')) {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
