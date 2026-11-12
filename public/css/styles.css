@@ -1421,3 +1421,35 @@ html[data-motion="reduced"] .wall-card::before, html[data-motion="reduced"] .vid
 
 /* ═══ Aviso de carga de videos ═══ */
 .video-tip { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: rgba(var(--accent-rgb), .08); border: 1px solid rgba(var(--accent-rgb), .25); }
+/* ═══ Descargador de Instagram (Botón flotante + Ventana) ═══ */
+.nav { overflow: visible !important; }
+.nav-ig-center {
+  position: relative; top: -16px; width: 54px; height: 54px; min-height: 54px !important;
+  margin: 0 auto; border: 0; border-radius: 18px !important;
+  background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af) !important;
+  color: #ffffff !important; display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 10px 25px -5px rgba(221, 42, 123, 0.7), 0 0 0 4px var(--bg);
+  z-index: 5; transition: transform 0.2s var(--ease);
+}
+.nav-ig-center svg { width: 26px !important; height: 26px !important; }
+.nav-ig-center:active { transform: scale(0.92) !important; }
+html:not([data-motion="reduced"]) .nav-ig-center { animation: ig-flota 3s ease-in-out infinite; }
+@keyframes ig-flota {
+  0%, 100% { transform: translateY(0); box-shadow: 0 10px 25px -5px rgba(221, 42, 123, 0.7), 0 0 0 4px var(--bg); }
+  50% { transform: translateY(-4px); box-shadow: 0 16px 32px -4px rgba(221, 42, 123, 0.95), 0 0 0 4px var(--bg); }
+}
+.ig-dialog {
+  width: min(92vw, 420px); padding: 22px; border-radius: 24px;
+  background: var(--panel-hi); border: 1px solid rgba(221, 42, 123, 0.4);
+  color: var(--text); box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.85);
+}
+.ig-dialog::backdrop { background: rgba(5, 4, 12, 0.8); backdrop-filter: blur(6px); }
+.ig-dialog__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.ig-dialog__input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.ig-dialog__input-row input {
+  flex: 1; min-width: 0; min-height: 46px; padding: 0 14px; border-radius: 14px;
+  background: var(--bg); border: 1px solid var(--line); color: var(--text); font-size: 14px;
+}
+.ig-dialog__result { margin-top: 14px; text-align: center; }
+.ig-dialog__result video { width: 100%; max-height: 280px; border-radius: 14px; background: #000; margin-bottom: 10px; }
+Añadido de cargador de Instagram 
