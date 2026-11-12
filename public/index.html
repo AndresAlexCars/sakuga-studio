@@ -319,19 +319,41 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
     </div>
   </dialog>
 
-  <dialog id="preview" class="preview-dialog" aria-label="Vista previa del fondo">
+  <dialog id="preview" class="preview-dialog" aria-label="Vista previa premium del fondo">
     <button type="button" class="viewer__close" data-close-preview aria-label="Cerrar">✕</button>
-    <div class="preview-stage">
-      <div class="phone" id="phone-frame">
-        <div class="phone__screen" id="phone-screen">
-          <div class="phone__lock">
-            <p class="phone__date" id="phone-date"></p>
-            <p class="phone__time" id="phone-time"></p>
+    <header class="preview-head">
+      <span class="preview-eyebrow">SAKUGA STUDIO · PREVIEW</span>
+      <h2>Vista previa <span>inmersiva</span></h2>
+      <p>Así se verá tu fondo en cada pantalla.</p>
+    </header>
+    <div class="preview-stage" id="preview-stage">
+      <section class="preview-device preview-device--lock">
+        <div class="preview-device__label"><span class="preview-dot"></span> LOCKSCREEN</div>
+        <div class="phone" id="phone-frame">
+          <div class="phone__screen" id="phone-screen">
+            <div class="phone__lock">
+              <p class="phone__date" id="phone-date"></p>
+              <p class="phone__time" id="phone-time"></p>
+              <div class="phone__lock-widgets"><span>☀ 24°</span><span>◉ Desliza para desbloquear</span></div>
+            </div>
+            <div class="phone__home"><span></span><span></span><span></span><span></span></div>
           </div>
-          <div class="phone__home"><span></span><span></span><span></span><span></span></div>
         </div>
-      </div>
+        <span class="preview-device__caption">Pantalla de bloqueo</span>
+      </section>
+      <section class="preview-device preview-device--home" id="home-preview">
+        <div class="preview-device__label"><span class="preview-dot"></span> HOMESCREEN</div>
+        <div class="phone phone--home">
+          <div class="phone__screen phone__screen--home" id="home-screen">
+            <div class="home-status"><span id="home-time">09:41</span><span>▰ ◉ ▴</span></div>
+            <div class="home-apps"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="home-dock"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <span class="preview-device__caption">Pantalla de inicio</span>
+      </section>
     </div>
+    <div class="preview-footer"><span>✦</span> Simulación visual · Fondo original</div>
   </dialog>
 
   <dialog id="confirm">
