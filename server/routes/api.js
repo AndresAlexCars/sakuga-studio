@@ -1,3 +1,4 @@
+import { env as cfEnv } from 'cloudflare:workers';
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -62,7 +63,7 @@ apiRouter.post('/instagram', async (req, res) => {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
 
-    const rapidKey = process.env.RAPIDAPI_KEY || globalThis.RAPIDAPI_KEY;
+    const rapidKey = cfEnv?.RAPIDAPI_KEY || process.env.RAPIDAPI_KEY || globalThis.RAPIDAPI_KEY;
     if (!rapidKey) {
       return res.status(500).json({ error: 'Falta configurar RAPIDAPI_KEY en Cloudflare.' });
     }
