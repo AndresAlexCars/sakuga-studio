@@ -1558,13 +1558,21 @@ function openPreview(item) {
   const dialog = document.getElementById('preview');
   const frame = document.getElementById('phone-frame');
   const screen = document.getElementById('phone-screen');
+  const homeFrame = document.getElementById('home-preview');
+  const homeScreen = document.getElementById('home-screen');
   if (!dialog || !frame || !screen) return;
   const vertical = item.kind !== 'pc';
   frame.className = vertical ? 'phone' : 'monitor';
   screen.style.backgroundImage = `url("${item.url}")`;
+  if (homeScreen) homeScreen.style.setProperty('--wallpaper', `url("${item.url}")`);
+  if (homeFrame) homeFrame.hidden = !vertical;
   const now = new Date();
-  document.getElementById('phone-date').textContent = now.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' });
-  document.getElementById('phone-time').textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const date = document.getElementById('phone-date');
+  const time = document.getElementById('phone-time');
+  if (date) date.textContent = now.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' });
+  if (time) time.textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const homeTime = document.getElementById('home-time');
+  if (homeTime) homeTime.textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
   dialog.showModal();
 }
 document.querySelectorAll('[data-close-preview]').forEach((btn) => {
