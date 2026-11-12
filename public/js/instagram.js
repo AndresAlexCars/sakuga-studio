@@ -9,6 +9,33 @@ if (!document.querySelector('.nav-ig-center')) {
     setTimeout(() => el.classList.remove('show'), 3200);
   }
 
+  
+  const premiumStyle = document.createElement("style");
+  premiumStyle.textContent = `
+    .nav { overflow: visible !important; }
+    .nav-ig-center {
+      position: relative !important;
+      top: -16px !important;
+      width: 56px !important;
+      height: 56px !important;
+      min-height: 56px !important;
+      margin: 0 auto !important;
+      border-radius: 19px !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      background: linear-gradient(145deg, var(--accent, #7aa8ff), color-mix(in srgb, var(--accent, #3b82f6) 60%, #090d1a)) !important;
+      color: var(--accent-ink, #07101f) !important;
+      display: grid !important;
+      place-items: center !important;
+      cursor: pointer !important;
+      box-shadow: 0 12px 28px -6px color-mix(in srgb, var(--accent, #3b82f6) 70%, transparent), 0 0 0 4px var(--bg, #0d0c15), inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+      z-index: 10 !important;
+      overflow: hidden !important;
+    }
+    .nav-ig-center svg { width: 25px !important; height: 25px !important; }
+    .ig-dialog { border-color: color-mix(in srgb, var(--accent, #7aa8ff) 45%, transparent) !important; }
+  `;
+  document.head.append(premiumStyle);
+
   const nav = document.querySelector('.nav');
   if (nav) {
     const igBtn = document.createElement('button');
