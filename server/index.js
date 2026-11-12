@@ -214,17 +214,10 @@ app.use('/api', apiRouter); app.post('/api/instagram', async (req, res) => {
 });
 
 app.use('/api', apiRouter);
-  
-    const videoUrl = videoMatch[1]
-      .replace(/\\u0026/g, '&')
-      .replace(/\\\//g, '/');
-    
-    return res.json({ videoUrl });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
-  }
-});
+} catch (err) {
+  console.error(err);
+  return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
+}
 
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
