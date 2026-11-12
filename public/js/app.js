@@ -1524,3 +1524,4 @@ vid.upload?.addEventListener('click', async () => {
     }
   });
 })();
+})();
