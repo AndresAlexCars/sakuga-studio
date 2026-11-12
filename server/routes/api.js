@@ -63,7 +63,7 @@ apiRouter.post('/instagram', async (req, res) => {
     }
 
     const cf = await import('cloudflare:workers').catch(() => ({}));
-    const rapidKey = cf?.env?.RAPIDAPI_KEY || process.env.RAPIDAPI_KEY || globalThis.RAPIDAPI_KEY;
+    const rapidKey = (process.env.RAPIDAPI_KEY || config.rapidApiKey || '').trim();
     if (!rapidKey) {
       return res.status(500).json({ error: 'Falta configurar RAPIDAPI_KEY en Cloudflare.' });
     }
