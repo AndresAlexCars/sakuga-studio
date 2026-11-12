@@ -78,9 +78,34 @@ if (!document.querySelector('.nav-ig-center')) {
 
         const downloadHref = '/api/instagram/download?url=' + encodeURIComponent(data.videoUrl);
         resultBox.innerHTML = `
-          <video src="${data.videoUrl}" controls playsinline></video>
+          <div class="ig-orientation-badge" id="ig-badge" style="font-size:12px; color:var(--muted); margin-bottom:8px;">Detectando formato...</div>
+          <video id="ig-preview-video" src="${data.videoUrl}" controls playsinline></video>
           <a href="${downloadHref}" download="jordvex-instagram.mp4" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
         `;
+
+        const vid = resultBox.querySelector('#ig-preview-video');
+        const badge = resultBox.querySelector('#ig-badge');
+
+        vid.addEventListener('loadedmetadata', () => {
+          const w = vid.videoWidth;
+          const h = vid.videoHeight;
+          if (!w || !h) return;
+
+          vid.style.aspectRatio = `${w} / ${h}`;
+          if (h > w) {
+            // Video vertical (Reel / Story)
+            vid.style.width = 'auto';
+            vid.style.maxWidth = '100%';
+            vid.style.maxHeight = '400px';
+            badge.textContent = `Vertical (${w}×${h})`;
+          } else {
+            // Video horizontal o cuadrado
+            vid.style.width = '100%';
+            vid.style.maxHeight = '260px';
+            badge.textContent = w === h ? `Cuadrado (${w}×${h})` : `Horizontal (${w}×${h})`;
+          }
+        });
+
         resultBox.hidden = false;
       } catch (err) {
         showMsg(err.message);
