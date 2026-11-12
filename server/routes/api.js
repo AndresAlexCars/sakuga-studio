@@ -62,33 +62,38 @@ apiRouter.post('/instagram', async (req, res) => {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
 
-    const cf = await import('cloudflare:workers').catch(() => ({}));
     const rapidKey = (process.env.RAPIDAPI_KEY || config.rapidApiKey || '').trim();
-    if (!rapidKey) {
-      return res.status(500).json({ error: 'Falta configurar RAPIDAPI_KEY en Cloudflare.' });
+    const apiHost = 'instagram-reels-downloader-api.p.rapidapi.com';
+
+    // Probar /downloadReel primero y /download como respaldo
+    const endpoints = ['/downloadReel', '/download'];
+    let videoUrl = null;
+    let lastError = 'No se pudo extraer el video.';
+
+    for (const path of endpoints) {
+      const apiRes = await fetch(`https://${apiHost}${path}?url=${encodeURIComponent(cleanUrl)}`, {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-key': rapidKey,
+          'x-rapidapi-host': apiHost
+        }
+      });
+
+      const data = await apiRes.json().catch(() => ({}));
+      videoUrl =
+        data?.data?.medias?.at(0)?.url ||
+        data?.medias?.at(0)?.url ||
+        data?.video_url ||
+        data?.url ||
+        data?.media ||
+        data?.result?.at(0)?.url;
+
+      if (apiRes.ok && videoUrl) break;
+      if (data?.message) lastError = data.message;
     }
 
-    const apiHost = 'instagram-reels-downloader-api.p.rapidapi.com';
-    const apiRes = await fetch(`https://${apiHost}/download?url=${encodeURIComponent(cleanUrl)}`, {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': rapidKey,
-        'x-rapidapi-host': apiHost
-      }
-    });
-
-    const data = await apiRes.json().catch(() => ({}));
-    const videoUrl =
-      data?.data?.medias?.at(0)?.url ||
-      data?.medias?.at(0)?.url ||
-      data?.video_url ||
-      data?.url ||
-      data?.media;
-
-    if (!apiRes.ok || !videoUrl) {
-      return res.status(404).json({
-        error: data?.message || 'No se pudo extraer el video. Verifica que el Reel sea público.'
-      });
+    if (!videoUrl) {
+      return res.status(404).json({ error: lastError });
     }
 
     return res.json({ videoUrl });
