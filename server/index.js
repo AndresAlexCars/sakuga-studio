@@ -169,7 +169,51 @@ app.get('/music/:file', async (req, res) => {
   }
 });
 
-app.use('/api', apiRouter);
+app.use('/api', apiRouter); app.post('/api/instagram', async (req, res) => {
+  try {
+    const { url: igUrl } = req.body;
+    const match = String(igUrl || '').match(/\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
+    
+    if (!match) {
+      return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
+    }
+    
+    const shortcode = match[1];
+    const embedUrl = `https://instagram.com/${shortcode}/embed/captioned/`;
+    
+    const fetch = (await import('node-fetch')).default;
+    const igRes = await fetch(embedUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+      }
+    });
+    
+    if (!igRes.ok) {
+      return res.status(502).json({ error: 'No se pudo conectar con Instagram.' });
+    }
+    
+    const html = await igRes.text();
+    const videoMatch = html.match(/"video_url":"([^"]+)"/) || html.match(/src="(https:\/\/[^"]+\.mp4[^"]*)"/);
+    
+    if (!videoMatch) {
+      return res.status(404).json({
+        error: 'No se encontró video. El perfil debe ser público.'
+      });
+    }
+    
+    const videoUrl = videoMatch[1]
+      .replace(/\\u0026/g, '&')
+      .replace(/\\\//g, '/');
+    
+    return res.json({ videoUrl });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
+  }
+});
+
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // eslint-disable-next-line no-unused-vars
