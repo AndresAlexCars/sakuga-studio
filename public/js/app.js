@@ -909,11 +909,36 @@ wall.code?.addEventListener('input', () => {
 function wallCard(item) {
   const card = document.createElement('article');
   card.className = `wall-card wall-card--${item.kind}`;
+  const media = document.createElement('div');
+  media.className = 'wall-card__media';
   const img = document.createElement('img');
   img.src = item.url;
   img.alt = item.title;
   img.loading = 'lazy';
   img.decoding = 'async';
+  const quality = document.createElement('span');
+  quality.className = 'wall-card__quality';
+  quality.textContent = 'ANALIZANDO';
+  quality.setAttribute('aria-live', 'polite');
+  const detectImageQuality = () => {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!w || !h) { quality.textContent = 'CALIDAD N/D'; quality.dataset.level = 'unknown'; return; }
+    const longest = Math.max(w, h);
+    let label = 'CALIDAD ESTÁNDAR', level = 'standard';
+    if (longest >= 3840) { label = '4K · ULTRA PREMIUM'; level = 'ultra'; }
+    else if (longest >= 2560) { label = '2K · PREMIUM'; level = 'premium'; }
+    else if (longest >= 1920) { label = 'FULL HD'; level = 'high'; }
+    else if (longest >= 1280) { label = 'HD'; level = 'medium'; }
+    else { label = 'CALIDAD BÁSICA'; level = 'basic'; }
+    quality.textContent = label;
+    quality.dataset.level = level;
+    quality.title = label;
+  };
+  img.addEventListener('load', detectImageQuality, { once: true });
+  img.addEventListener('error', () => { quality.textContent = 'CALIDAD N/D'; quality.dataset.level = 'unknown'; }, { once: true });
+  if (img.complete && img.naturalWidth) detectImageQuality();
+  media.append(img, quality);
   const info = document.createElement('div');
   info.className = 'wall-card__info';
   const title = document.createElement('strong');
@@ -921,27 +946,6 @@ function wallCard(item) {
   const tag = document.createElement('span');
   tag.className = 'wall-card__tag';
   tag.textContent = item.kind === 'pc' ? 'PC · horizontal' : 'Móvil · vertical';
-  // Detecta la resolución real de cada imagen desde sus dimensiones naturales.
-  const quality = document.createElement('span');
-  quality.className = 'wall-card__quality';
-  quality.textContent = 'Detectando calidad…';
-  quality.setAttribute('aria-live', 'polite');
-  const detectImageQuality = () => {
-    const w = img.naturalWidth;
-    const h = img.naturalHeight;
-    if (!w || !h) { quality.textContent = 'Calidad no disponible'; return; }
-    const longest = Math.max(w, h);
-    let label = 'SD';
-    if (longest >= 3840) label = '4K';
-    else if (longest >= 2560) label = '2K';
-    else if (longest >= 1920) label = 'Full HD';
-    else if (longest >= 1280) label = 'HD';
-    quality.textContent = `${label} · ${w.toLocaleString('es-ES')} × ${h.toLocaleString('es-ES')} px`;
-    quality.title = `Resolución original: ${w} × ${h} píxeles`;
-  };
-  img.addEventListener('load', detectImageQuality, { once: true });
-  img.addEventListener('error', () => { quality.textContent = 'No se pudo detectar'; }, { once: true });
-  if (img.complete && img.naturalWidth) detectImageQuality();
   const download = document.createElement('a');
   download.className = 'btn btn--primary-soft wall-card__dl';
   download.href = item.url;
@@ -1022,7 +1026,7 @@ function wallCard(item) {
     });
     info.append(del);
   }
-  card.append(img, info);
+  card.append(media, info);
   return card;
 }
 
