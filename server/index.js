@@ -170,9 +170,10 @@ app.get('/music/:file', async (req, res) => {
 
 app.use('/api', apiRouter);
 
+// Descargador de Instagram (Reels / posts públicos)
 app.post('/api/instagram', async (req, res) => {
   try {
-    const { url: igUrl } = req.body;
+    const { url: igUrl } = req.body || {};
     const match = String(igUrl || '').match(/\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
 
     if (!match) {
@@ -180,15 +181,17 @@ app.post('/api/instagram', async (req, res) => {
     }
 
     const shortcode = match[1];
-    const embedUrl = `https://instagram.com/${shortcode}/embed/captioned/`;
+    const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
 
-    const fetch = (await import('node-fetch')).default;
+    // fetch nativo de Node (no necesita node-fetch)
     const igRes = await fetch(embedUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
-      }
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+      },
+      redirect: 'follow',
     });
 
     if (!igRes.ok) {
@@ -196,11 +199,13 @@ app.post('/api/instagram', async (req, res) => {
     }
 
     const html = await igRes.text();
-    const videoMatch = html.match(/"video_url":"([^"]+)"/) || html.match(/src="(https:\/\/[^"]+\.mp4[^"]*)"/);
+    const videoMatch =
+      html.match(/"video_url"\s*:\s*"([^"]+)"/) ||
+      html.match(/src="(https:\/\/[^"]+\.mp4[^"]*)"/i);
 
-    if (!videoMatch) {
+    if (!videoMatch || !videoMatch[1]) {
       return res.status(404).json({
-        error: 'No se encontró video. El perfil debe ser público.'
+        error: 'No se encontró video. El perfil debe ser público.',
       });
     }
 
@@ -210,7 +215,7 @@ app.post('/api/instagram', async (req, res) => {
 
     return res.json({ videoUrl });
   } catch (err) {
-    console.error(err);
+    console.error('[instagram]', err.message || err);
     return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
   }
 });
