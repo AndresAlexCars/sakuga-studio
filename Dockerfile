@@ -31,6 +31,12 @@ COPY . .
 # Final stage for app image
 FROM base
 
+# Instalar extractor propio de Instagram y FFmpeg en la imagen final.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y python3 python3-pip ffmpeg && \
+    pip3 install --break-system-packages --no-cache-dir yt-dlp && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy built application
 COPY --from=build /app /app
 
