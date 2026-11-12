@@ -70,6 +70,7 @@ async function raw(path, { method = 'GET', body, headers = {} } = {}) {
 
 export const api = {
   wallpapers: () => request('/api/wallpapers'),
+  instagram: (url) => request('/api/instagram', { method: 'POST', body: { url } }),
   viewWallpaper: (id) => request(`/api/wallpapers/${encodeURIComponent(id)}/view`, { method: 'POST' }),
   statsCsv: async (adminCode) => {
     const headers = { 'X-Client-Id': clientId(), 'X-Admin-Code': adminCode };
