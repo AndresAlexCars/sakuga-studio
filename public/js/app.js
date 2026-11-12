@@ -1508,8 +1508,364 @@ vid.upload?.addEventListener('click', async () => {
       const code = window.prompt('Código de administrador:');
       if (!code || !code.trim()) return;
       try {
-        const data = await api.instagram(link);
-      if (!data.videoUrl) throw new Error('No se pudo obtener el video.');
+        const res = await fetch('/api/admin/check', {
+          headers: {
+            'X-Admin-Code': code.trim(),
+            'X-Client-Id': safeGet('sakuga.clientId') || '',
+            'X-Access-Code': safeGet('sakuga.accessCode') || '',
+          },
+        });
+        if (!res.ok) throw new Error('incorrecto');
+        safeSet('sakuga.adminCode', code.trim());
+        safeSet('sakuga.owner', '1');
+        location.reload();
+      } catch {
+        toast('Código incorrecto.');
+      }
+    }, 2000);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => brand.addEventListener(ev, cancel));
+})();
+
+/* ── Vista previa: cómo se verá el fondo en el teléfono o en la PC ── */
+function openPreview(item) {
+  api.viewWallpaper(item.id).catch(() => {});
+  const dialog = document.getElementById('preview');
+  const frame = document.getElementById('phone-frame');
+  const screen = document.getElementById('phone-screen');
+  if (!dialog || !frame || !screen) return;
+  const vertical = item.kind !== 'pc';
+  frame.className = vertical ? 'phone' : 'monitor';
+  screen.style.backgroundImage = `url("${item.url}")`;
+  const now = new Date();
+  document.getElementById('phone-date').textContent = now.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' });
+  document.getElementById('phone-time').textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
+  dialog.showModal();
+}
+document.querySelectorAll('[data-close-preview]').forEach((btn) => {
+  btn.addEventListener('click', () => document.getElementById('preview')?.close());
+});
+document.getElementById('preview')?.addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) event.currentTarget.close();
+});
+
+/* ── Música de fondo: la publica el administrador; cada visitante la activa con el botón ── */
+let bgTrack = null;
+let bgWanted = safeGet('sakuga.music') === 'on';
+const musicBtn = document.getElementById('music-toggle');
+function paintMusic() {
+  if (!musicBtn) return;
+  const playing = Boolean(bgTrack && !bgTrack.paused);
+  musicBtn.setAttribute('aria-pressed', String(playing));
+  musicBtn.classList.toggle('is-on', playing);
+}
+function setMusicTrack(url) {
+  if (bgTrack) bgTrack.pause();
+  bgTrack = url ? new Audio(url) : null;
+  if (bgTrack) {
+    bgTrack.loop = true;
+    bgTrack.volume = 0.35;
+    bgTrack.preload = 'auto';
+    bgTrack.addEventListener('play', paintMusic);
+    bgTrack.addEventListener('pause', paintMusic);
+  }
+  if (musicBtn) musicBtn.hidden = !url;
+  if (bgWanted && bgTrack) bgTrack.play().catch(() => {});
+  paintMusic();
+}
+api.music().then((data) => setMusicTrack(data.url)).catch(() => {});
+musicBtn?.addEventListener('click', () => {
+  if (!bgTrack) return;
+  if (bgTrack.paused) {
+    bgWanted = true;
+    bgTrack.play().catch(() => toast('Toca de nuevo para activar la música.'));
+  } else {
+    bgWanted = false;
+    bgTrack.pause();
+  }
+  try { safeSet('sakuga.music', bgWanted ? 'on' : 'off'); } catch { /* sin almacenamiento */ }
+  paintMusic();
+});
+// Los navegadores bloquean el sonido hasta el primer toque: si la música estaba activa, arranca con ese toque.
+document.addEventListener('pointerdown', () => {
+  if (bgWanted && bgTrack && bgTrack.paused) bgTrack.play().catch(() => {});
+}, { once: true, capture: true });
+
+document.getElementById('music-upload')?.addEventListener('click', async () => {
+  const file = document.getElementById('music-file')?.files?.[0];
+  const code = document.getElementById('admin-code')?.value.trim();
+  if (!file) return toast('Elige una canción.');
+  if (!code) return toast('Escribe el código de administrador.');
+  if (file.size > 30 * 1024 * 1024) return toast('La canción pasa de 30 MB.');
+  try {
+    await api.uploadMusic(file, code);
+    const data = await api.music();
+    setMusicTrack(data.url);
+    document.getElementById('music-file').value = '';
+    toast('Música de fondo publicada.');
+  } catch (err) {
+    toast(err.message);
+  }
+});
+
+document.getElementById('stats-download')?.addEventListener('click', async () => {
+  const code = document.getElementById('admin-code')?.value.trim();
+  if (!code) return toast('Escribe el código de administrador.');
+  try {
+    const blob = await api.statsCsv(code);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'jordvex-estadisticas.csv';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (err) {
+    toast(err.message);
+  }
+});
+
+
+/* ── Lupa y # como iconos dentro de la barra inferior ── */
+(() => {
+  const topSearch = document.getElementById('wall-search');
+  const nav = document.querySelector('.nav');
+  if (!topSearch || !nav) return;
+
+  const bar = document.createElement('div');
+  bar.className = 'nav-search';
+  const row = document.createElement('div');
+  row.className = 'nav-search__row';
+  const input = document.createElement('input');
+  input.type = 'search';
+  input.placeholder = 'Buscar: NTE, Zenless Zone Zero…';
+  input.setAttribute('aria-label', 'Buscar fondos');
+  input.autocomplete = 'off';
+  input.enterKeyHint = 'search';
+  row.append(input);
+  const panel = document.createElement('div');
+  panel.className = 'nav-suggest';
+  bar.append(panel, row);
+  document.body.append(bar);
+
+  const setSearch = (text) => {
+    input.value = text;
+    topSearch.value = text;
+    renderWallpapers();
+  };
+  const filterClick = (kind) => document.querySelector(`.wall-filters [data-kind="${kind}"]`)?.click();
+  const atajos = [
+    ['NTE', () => setSearch('NTE')],
+    ['Zenless Zone Zero', () => setSearch('Zenless Zone Zero')],
+    ['Móvil', () => filterClick('movil')],
+    ['PC', () => filterClick('pc')],
+    ['Todos', () => { setSearch(''); filterClick('todos'); }],
+  ];
+  atajos.forEach(([label, action]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.addEventListener('mousedown', (e) => e.preventDefault());
+    b.addEventListener('click', () => {
+      action();
+      bar.classList.remove('is-open');
+      hashBtn.setAttribute('aria-pressed', 'false');
+    });
+    panel.append(b);
+  });
+
+  const ICON_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+  const ICON_HASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/></svg>';
+  const searchBtn = document.createElement('button');
+  searchBtn.type = 'button';
+  searchBtn.className = 'nav-tool';
+  searchBtn.setAttribute('aria-label', 'Buscar fondos');
+  searchBtn.setAttribute('aria-pressed', 'false');
+  searchBtn.innerHTML = ICON_SEARCH + '<span>Buscar</span>';
+  const hashBtn = document.createElement('button');
+  hashBtn.type = 'button';
+  hashBtn.className = 'nav-tool';
+  hashBtn.setAttribute('aria-label', 'Atajos de búsqueda');
+  hashBtn.setAttribute('aria-pressed', 'false');
+  hashBtn.innerHTML = ICON_HASH + '<span>Atajos</span>';
+  nav.append(searchBtn, hashBtn);
+
+  searchBtn.addEventListener('click', () => {
+    const on = !bar.classList.contains('is-search');
+    bar.classList.toggle('is-search', on);
+    bar.classList.remove('is-open');
+    searchBtn.setAttribute('aria-pressed', String(on));
+    hashBtn.setAttribute('aria-pressed', 'false');
+  });
+  hashBtn.addEventListener('click', () => {
+    const on = !bar.classList.contains('is-open');
+    bar.classList.toggle('is-open', on);
+    bar.classList.remove('is-search');
+    hashBtn.setAttribute('aria-pressed', String(on));
+    searchBtn.setAttribute('aria-pressed', 'false');
+  });
+
+  // Al tocar fuera de la barra, se cierran el campo y los atajos
+  document.addEventListener('pointerdown', (event) => {
+    if (bar.contains(event.target) || event.target === searchBtn || event.target === hashBtn) return;
+    if (!bar.classList.contains('is-search') && !bar.classList.contains('is-open')) return;
+    bar.classList.remove('is-search', 'is-open');
+    searchBtn.setAttribute('aria-pressed', 'false');
+    hashBtn.setAttribute('aria-pressed', 'false');
+    input.blur();
+  });
+  input.addEventListener('input', () => setSearch(input.value));
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') input.blur();
+  });
+  topSearch.addEventListener('input', () => {
+    if (input.value !== topSearch.value) input.value = topSearch.value;
+  });
+})();
+
+/* ── Cápsula que se desliza hasta la opción activa de la barra inferior ── */
+(() => {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+  const ind = document.createElement('span');
+  ind.className = 'nav-indicator';
+  nav.prepend(ind);
+  const visibleButtons = () => [...nav.querySelectorAll('button')].filter((b) => b.offsetParent !== null);
+  const place = () => {
+    const btns = visibleButtons();
+    const active = btns.find((b) => b.getAttribute('aria-pressed') === 'true')
+      || btns.find((b) => b.getAttribute('aria-current') === 'page');
+    if (!active) {
+      ind.style.opacity = '0';
+      return;
+    }
+    ind.style.opacity = '1';
+    ind.style.width = `${active.offsetWidth}px`;
+    ind.style.transform = `translateX(${active.offsetLeft}px)`;
+  };
+  new MutationObserver(place).observe(nav, {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['aria-current', 'aria-pressed', 'class'],
+  });
+  window.addEventListener('resize', place);
+  requestAnimationFrame(place);
+})();
+
+/* ── Monitor pequeño arriba de Fondos: muestra tu último video subido (sin molestar) ── */
+(() => {
+  const pane = document.getElementById('pane-fondos');
+  if (!pane || safeGet('jordvex.showcase') === 'off') return;
+  const build = async () => {
+    try {
+      const { items } = await api.videos();
+      const item = items.find((v) => v.url && !v.youtubeId && !v.streamableId);
+      if (!item || document.querySelector('.showcase')) return;
+      const box = document.createElement('div');
+      box.className = 'showcase';
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.className = 'showcase__close';
+      close.setAttribute('aria-label', 'Ocultar');
+      close.textContent = '×';
+      close.addEventListener('click', () => {
+        safeSet('jordvex.showcase', 'off');
+        box.remove();
+      });
+      const monitor = document.createElement('div');
+      monitor.className = 'showcase__monitor';
+      const video = document.createElement('video');
+      video.src = item.url;
+      video.muted = true;
+      video.loop = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      monitor.append(video);
+      const cap = document.createElement('p');
+      cap.className = 'showcase__cap';
+      cap.textContent = item.title;
+      box.append(close, monitor, cap);
+      pane.prepend(box);
+      video.play().catch(() => {});
+    } catch {
+      /* sin video que mostrar: no pasa nada */
+    }
+  };
+  build();
+})();
+
+/* ═══ Descargador de Instagram (Solo añade el botón y la ventana) ═══ */
+(() => {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+
+  const igBtn = document.createElement('button');
+  igBtn.type = 'button';
+  igBtn.className = 'nav-ig-center';
+  igBtn.setAttribute('aria-label', 'Descargar de Instagram');
+  igBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+  // Lo coloca en el centro de tu barra actual sin alterar tus botones
+  const visibleBtns = [...nav.querySelectorAll('button')].filter(b => b.offsetParent !== null);
+  const midIndex = Math.floor(visibleBtns.length / 2);
+  if (visibleBtns[midIndex]) nav.insertBefore(igBtn, visibleBtns[midIndex]);
+  else nav.append(igBtn);
+
+  const dialog = document.createElement('dialog');
+  dialog.className = 'ig-dialog';
+  dialog.innerHTML = `
+    <div class="ig-dialog__head">
+      <h3>Descargar de Instagram</h3>
+      <button type="button" class="btn btn--text" id="ig-close">✕</button>
+    </div>
+    <p class="muted" style="margin-bottom: 12px;">Pega el enlace de un Reel o video público de Instagram.</p>
+    <div class="ig-dialog__input-row">
+      <input type="url" id="ig-url" placeholder="https://instagram.com..." autocomplete="off">
+      <button type="button" class="btn btn--sm" id="ig-paste">Pegar</button>
+    </div>
+    <button type="button" class="btn btn--primary" id="ig-fetch">Buscar video</button>
+    <div class="ig-dialog__result" id="ig-result" hidden></div>
+  `;
+  document.body.append(dialog);
+
+  const urlInput = dialog.querySelector('#ig-url');
+  const resultBox = dialog.querySelector('#ig-result');
+  const fetchBtn = dialog.querySelector('#ig-fetch');
+
+  igBtn.addEventListener('click', () => {
+    resultBox.hidden = true;
+    resultBox.innerHTML = '';
+    dialog.showModal();
+    urlInput.focus();
+  });
+
+  dialog.querySelector('#ig-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+
+  dialog.querySelector('#ig-paste').addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) urlInput.value = text.trim();
+    } catch { toast('Pega el enlace manualmente.'); }
+  });
+
+  fetchBtn.addEventListener('click', async () => {
+    const link = urlInput.value.trim();
+    if (!link.includes('instagram.com')) return toast('Pega un enlace válido de Instagram.');
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = 'Buscando video...';
+    resultBox.hidden = true;
+
+    try {
+      const res = await fetch('/api/instagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: link })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.videoUrl) throw new Error(data.error || 'No se pudo obtener el video.');
 
       resultBox.innerHTML = `
         <video src="${data.videoUrl}" controls playsinline></video>
