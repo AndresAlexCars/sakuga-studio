@@ -62,12 +62,12 @@ apiRouter.post('/instagram', async (req, res) => {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
 
-    const rapidKey = process.env.RAPIDAPI_KEY || globalThis.RAPIDAPI_KEY;
+    const rapidKey = "51711d6c63msh1def0b385eb5834p1aa128jsn51063bb8edd4";
     if (!rapidKey) {
       return res.status(500).json({ error: 'Falta configurar RAPIDAPI_KEY en Cloudflare.' });
     }
 
-    const apiHost = 'instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com';
+    const apiHost = "instagram-reels-downloader-api.p.rapidapi.com";
     const apiRes = await fetch(`https://${apiHost}/?url=${encodeURIComponent(cleanUrl)}`, {
       method: 'GET',
       headers: {
