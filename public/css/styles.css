@@ -1421,6 +1421,7 @@ html[data-motion="reduced"] .wall-card::before, html[data-motion="reduced"] .vid
 
 /* ═══ Aviso de carga de videos ═══ */
 .video-tip { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: rgba(var(--accent-rgb), .08); border: 1px solid rgba(var(--accent-rgb), .25); }
+
 /* ═══ Descargador de Instagram (Botón flotante + Ventana) ═══ */
 .nav { overflow: visible !important; }
 .nav-ig-center {
