@@ -17,11 +17,12 @@ if (!document.querySelector('.nav-ig-center')) {
     igBtn.setAttribute('aria-label', 'Descargar de Instagram');
     igBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
-    // Colocarlo en medio de los botones de la barra inferior
-    const visibleBtns = [...nav.querySelectorAll('button')].filter((b) => b.offsetParent !== null);
-    const midIndex = Math.floor(visibleBtns.length / 2);
-    if (visibleBtns[midIndex]) nav.insertBefore(igBtn, visibleBtns[midIndex]);
-    else nav.append(igBtn);
+    setTimeout(() => {
+      const btns = [...nav.querySelectorAll("button")].filter((b) => b !== igBtn && b.offsetParent !== null);
+      const mid = Math.ceil(btns.length / 2);
+      if (btns[mid]) nav.insertBefore(igBtn, btns[mid]);
+      else nav.append(igBtn);
+    }, 120);
 
     const dialog = document.createElement('dialog');
     dialog.className = 'ig-dialog';
