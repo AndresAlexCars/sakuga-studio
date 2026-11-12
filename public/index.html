@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/pulido.css">
+  <style>.close-symbol{min-width:40px;min-height:40px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;font-size:24px;line-height:1;font-weight:500;border-radius:12px}</style>
   <script type="module" src="/js/app.js"></script>
 </head>
 <body data-view="create">
@@ -232,7 +233,7 @@
   <dialog id="settings" class="sheet" aria-label="Configuración">
     <div class="sheet__head">
       <h3>Configuración</h3>
-      <button type="button" class="btn btn--text" data-close>Cerrar</button>
+      <button type="button" class="btn btn--text close-symbol" data-close aria-label="Cerrar" title="Cerrar">✕</button>
     </div>
     <div class="sheet__body" id="settings-body"></div>
   </dialog>
@@ -250,7 +251,7 @@
           <option value="cloudflare">Cloudflare · Llama 3.1 8B</option>
           <option value="groq">Groq · Llama 3.1 8B</option>
         </select>
-        <button type="button" class="btn btn--text" data-close-chat data-i18n="settings.close">Cerrar</button>
+        <button type="button" class="btn btn--text close-symbol" data-close-chat aria-label="Cerrar" title="Cerrar">✕</button>
       </div>
     </div>
     <div class="chat__log" id="chat-log" aria-live="polite"></div>
@@ -263,7 +264,7 @@
   <dialog id="welcome" class="sheet welcome" aria-label="Novedades">
     <div class="sheet__head">
       <h3>NOVEDADES · CAMBIOS NUEVOS</h3>
-      <button type="button" class="btn btn--text" data-close-welcome>Cerrar</button>
+      <button type="button" class="btn btn--text close-symbol" data-close-welcome aria-label="Cerrar" title="Cerrar">✕</button>
     </div>
     <div class="sheet__body">
       <section class="sheet__section">
