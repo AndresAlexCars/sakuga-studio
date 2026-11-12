@@ -1830,12 +1830,11 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   igBtn.type = 'button';
   igBtn.className = 'nav-ig-center';
   igBtn.setAttribute('aria-label', 'Descargar de Instagram');
-  igBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  // Logo de Instagram y posición exacta entre Buscar y Atajos.
+  igBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>';
 
-  // Lo coloca en el centro de tu barra actual sin alterar tus botones
-  const visibleBtns = [...nav.querySelectorAll('button')].filter(b => b.offsetParent !== null);
-  const midIndex = Math.floor(visibleBtns.length / 2);
-  if (visibleBtns[midIndex]) nav.insertBefore(igBtn, visibleBtns[midIndex]);
+  const shortcutsBtn = nav.querySelector('.nav-tool[aria-label="Atajos de búsqueda"]');
+  if (shortcutsBtn) nav.insertBefore(igBtn, shortcutsBtn);
   else nav.append(igBtn);
 
   const dialog = document.createElement('dialog');
@@ -1886,29 +1885,16 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     try {
       const res = await fetch('/api/instagram', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: link })
       });
-      const contentType = res.headers.get('content-type') || '';
-      const data = contentType.includes('application/json')
-        ? await res.json()
-        : { error: 'La API de Instagram no está activa en Cloudflare Pages. Comprueba el despliegue de la carpeta functions.' };
+      const data = await res.json();
       if (!res.ok || !data.videoUrl) throw new Error(data.error || 'No se pudo obtener el video.');
 
-      const video = document.createElement('video');
-      video.src = data.videoUrl;
-      video.controls = true;
-      video.playsInline = true;
-      video.preload = 'metadata';
-
-      const download = document.createElement('a');
-      download.href = `${data.videoUrl}&download=1`;
-      download.className = 'btn btn--primary-soft';
-      download.style.width = '100%';
-      download.textContent = 'Descargar MP4';
-      download.setAttribute('download', 'jordvex-instagram.mp4');
-
-      resultBox.replaceChildren(video, download);
+      resultBox.innerHTML = `
+        <video src="${data.videoUrl}" controls playsinline></video>
+        <a href="${data.videoUrl}" download="jordvex-instagram.mp4" target="_blank" rel="noopener" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
+      `;
       resultBox.hidden = false;
     } catch (err) {
       toast(err.message);
