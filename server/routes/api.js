@@ -54,6 +54,27 @@ const generateLimiter = rateLimit({
 // Pública: solo describe opciones y si hace falta código. Nunca incluye secretos.
 apiRouter.get('/config', (_req, res) => res.json(publicCatalog()));
 
+apiRouter.get('/instagram/download', async (req, res) => {
+  try {
+    const fileUrl = String(req.query.url || '');
+    if (!fileUrl.startsWith('https://')) {
+      return res.status(400).send('Enlace no válido.');
+    }
+    const upstream = await fetch(fileUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
+    if (!upstream.ok) return res.status(502).send('No se pudo descargar el video.');
+
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Content-Disposition', 'attachment; filename="jordvex-instagram.mp4"');
+    const buf = Buffer.from(await upstream.arrayBuffer());
+    return res.send(buf);
+  } catch (err) {
+    console.error('[instagram-dl]', err);
+    return res.status(500).send('Error al descargar el archivo.');
+  }
+});
+
 apiRouter.post('/instagram', async (req, res) => {
   try {
     const { url: igUrl } = req.body || {};
@@ -100,27 +121,6 @@ apiRouter.post('/instagram', async (req, res) => {
   } catch (err) {
     console.error('[instagram]', err);
     return res.status(500).json({ error: 'Error al conectar con RapidAPI.' });
-  }
-});
-
-apiRouter.get('/instagram/download', async (req, res) => {
-  try {
-    const fileUrl = String(req.query.url || '');
-    if (!fileUrl.startsWith('https://')) {
-      return res.status(400).send('Enlace no válido.');
-    }
-    const upstream = await fetch(fileUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    });
-    if (!upstream.ok) return res.status(502).send('No se pudo descargar el video.');
-
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', 'attachment; filename="jordvex-instagram.mp4"');
-    const buf = Buffer.from(await upstream.arrayBuffer());
-    return res.send(buf);
-  } catch (err) {
-    console.error('[instagram-dl]', err);
-    return res.status(500).send('Error al descargar el archivo.');
   }
 });
 
