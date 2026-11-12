@@ -1893,8 +1893,8 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
       if (!res.ok || !data.videoUrl) throw new Error(data.error || 'No se pudo obtener el video.');
 
       resultBox.innerHTML = `
-        <video src="${data.videoUrl}" controls playsinline></video>
-        <a href="${data.videoUrl}" download="jordvex-instagram.mp4" target="_blank" rel="noopener" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
+        <video src="${data.videoUrl}?preview=1" controls playsinline preload="metadata"></video>
+        <a href="${data.videoUrl}" download="jordvex-instagram.mp4" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
       `;
       resultBox.hidden = false;
     } catch (err) {
