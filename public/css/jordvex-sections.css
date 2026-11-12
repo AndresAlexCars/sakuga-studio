@@ -1,0 +1,35 @@
+/* JORDVEX · orden visual para Fondos, Búsqueda y accesos inferiores */
+:root{--jv-glass-bg:rgba(20,24,43,.58);--jv-glass-border:rgba(180,196,255,.19);--jv-glow:rgba(112,151,255,.16)}
+/* Fondos: jerarquía, espacios y paneles */
+#view-wallpapers{padding:clamp(18px,4vw,30px) clamp(14px,3vw,22px) 110px;}
+#view-wallpapers .history__head{margin:0 2px 18px;}
+#view-wallpapers .history__head h2{font-size:clamp(24px,5vw,30px);font-weight:800;letter-spacing:-.04em;}
+#view-wallpapers .history__head p{max-width:38ch;line-height:1.55;opacity:.72;}
+#view-wallpapers .wall-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;margin:0 0 16px;border:1px solid var(--jv-glass-border);border-radius:18px;background:rgba(12,16,31,.42);backdrop-filter:blur(22px) saturate(145%);-webkit-backdrop-filter:blur(22px) saturate(145%);box-shadow:0 8px 26px rgba(0,0,0,.14),inset 0 1px rgba(255,255,255,.05);}
+#view-wallpapers .wall-tab{min-height:44px;border:1px solid transparent;border-radius:13px;font-weight:700;letter-spacing:.01em;transition:background .2s,border-color .2s,transform .2s;}
+#view-wallpapers .wall-tab[aria-selected="true"]{color:#f4f7ff;background:linear-gradient(135deg,rgba(112,158,255,.88),rgba(130,130,255,.72));border-color:rgba(205,220,255,.28);box-shadow:0 5px 18px rgba(92,133,255,.22),inset 0 1px rgba(255,255,255,.25);}
+#view-wallpapers .wall-tools{display:grid;gap:11px;margin:0 0 17px;padding:12px;border:1px solid var(--jv-glass-border);border-radius:18px;background:var(--jv-glass-bg);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);box-shadow:0 8px 24px rgba(0,0,0,.12);}
+#view-wallpapers .wall-search,#view-history .history__search{width:100%;min-height:46px;padding:0 15px;border:1px solid rgba(180,196,255,.2);border-radius:13px;background:rgba(5,9,22,.34);color:inherit;outline:none;}
+#view-wallpapers .wall-search:focus,#view-history .history__search:focus{border-color:rgba(137,174,255,.68);box-shadow:0 0 0 3px rgba(112,151,255,.12);}
+#view-wallpapers .wall-filters{display:flex;gap:8px;flex-wrap:wrap;}
+#view-wallpapers .wall-filters .chip{min-height:35px;padding:0 15px;border:1px solid rgba(180,196,255,.17);border-radius:999px;background:rgba(255,255,255,.035);font-size:12px;font-weight:650;}
+#view-wallpapers .wall-filters .chip[aria-pressed="true"]{color:#dce7ff;background:rgba(112,151,255,.2);border-color:rgba(137,174,255,.52);box-shadow:inset 0 1px rgba(255,255,255,.08);}
+#view-wallpapers .wall-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;}
+#view-wallpapers .wall-grid>*{min-width:0;overflow:hidden;border:1px solid var(--jv-glass-border)!important;border-radius:19px!important;background:linear-gradient(155deg,rgba(34,39,64,.72),rgba(15,19,35,.76))!important;box-shadow:0 10px 28px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.045);}
+#view-wallpapers .wall-grid button{min-height:40px;border-radius:12px;font-weight:650;}
+#view-wallpapers .wall-admin{margin-top:20px;border:1px solid var(--jv-glass-border);border-radius:16px;background:rgba(20,24,43,.48);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);}
+#view-wallpapers .wall-admin>summary{padding:14px 16px;font-weight:650;}
+#view-wallpapers .wall-admin__body{padding:14px;display:grid;gap:10px;}
+/* Búsqueda del historial */
+#view-history .history__search{margin:4px 0 16px;background:rgba(20,24,43,.52);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+/* Barra inferior: accesos compactos, transparentes y ordenados */
+.nav{position:fixed;z-index:40;left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));display:flex;align-items:stretch;justify-content:space-around;gap:5px;padding:8px 9px;border:1px solid rgba(190,204,255,.2);border-radius:22px;background:rgba(17,21,39,.64);backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(24px) saturate(155%);box-shadow:0 12px 34px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.08);}
+.nav button{flex:1;min-width:0;min-height:53px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:5px 2px;border:1px solid transparent;border-radius:14px;background:transparent;color:rgba(220,226,246,.72);font-size:10.5px;font-weight:650;line-height:1.1;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
+.nav button svg{width:20px;height:20px;flex:0 0 auto;}
+.nav button[aria-current="page"],.nav button.active{color:#e5edff;background:rgba(119,157,255,.19);border-color:rgba(163,190,255,.2);box-shadow:inset 0 1px rgba(255,255,255,.08);}
+.nav button:active{transform:scale(.97);}
+.music-toggle{z-index:41;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);background:rgba(30,42,75,.72);border:1px solid rgba(180,200,255,.24);box-shadow:0 8px 24px rgba(0,0,0,.25);}
+/* Espacio para que la barra no tape tarjetas ni controles */
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+@media(min-width:720px){#view-wallpapers .wall-grid{grid-template-columns:repeat(2,minmax(0,1fr));}#view-wallpapers{max-width:1050px;margin-inline:auto}.nav{left:50%;right:auto;transform:translateX(-50%);width:min(620px,calc(100% - 32px));}}
+@media(prefers-reduced-motion:reduce){#view-wallpapers *, .nav *{transition:none!important;}}
