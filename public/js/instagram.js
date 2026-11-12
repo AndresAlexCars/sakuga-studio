@@ -79,7 +79,7 @@ if (!document.querySelector('.nav-ig-center')) {
         const downloadHref = '/api/instagram/download?url=' + encodeURIComponent(data.videoUrl);
         resultBox.innerHTML = `
           <div class="ig-orientation-badge" id="ig-badge" style="font-size:12px; color:var(--muted); margin-bottom:8px;">Detectando formato...</div>
-          <video id="ig-preview-video" src="${data.videoUrl}" controls playsinline></video>
+          <video id="ig-preview-video" src="${downloadHref}" preload="metadata" controls playsinline></video>
           <a href="${downloadHref}" download="jordvex-instagram.mp4" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
         `;
 
