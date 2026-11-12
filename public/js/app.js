@@ -1858,9 +1858,14 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     fetchBtn.textContent = 'Buscando video...';
     resultBox.hidden = true;
 
-        try {
-      const data = await api.instagram(link);
-      if (!data.videoUrl) throw new Error('No se pudo obtener el video.');
+    try {
+      const res = await fetch('/api/instagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: link })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.videoUrl) throw new Error(data.error || 'No se pudo obtener el video.');
 
       resultBox.innerHTML = `
         <video src="${data.videoUrl}" controls playsinline></video>
@@ -1872,5 +1877,6 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     } finally {
       fetchBtn.disabled = false;
       fetchBtn.textContent = 'Buscar video';
-        }
-    
+    }
+  });
+})();
