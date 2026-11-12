@@ -28,7 +28,7 @@ app.use(
         styleSrc: ["'self'", 'https://fonts.googleapis.com'],
         frameSrc: ["'self'", 'https://www.youtube-nocookie.com', 'https://streamable.com'],
         imgSrc: ["'self'", 'data:', 'https://i.ytimg.com', ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
-        mediaSrc: ["'self'", ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
+        mediaSrc: ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net", ...(process.env.R2_PUBLIC_URL ? [process.env.R2_PUBLIC_URL.replace(/\/$/, '')] : [])],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
 
         connectSrc: ["'self'"],
@@ -169,7 +169,7 @@ app.get('/music/:file', async (req, res) => {
   }
 });
 
-app.use('/api', apiRouter); app.post('/api/instagram', async (req, res) => {
+app.post('/api/instagram', async (req, res) => {
   try {
     const { url: igUrl } = req.body || {};
     const match = String(igUrl || '').match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
@@ -179,8 +179,7 @@ app.use('/api', apiRouter); app.post('/api/instagram', async (req, res) => {
     }
 
     const shortcode = match[1];
-    const embedUrl = `https://instagram.com{shortcode}/embed/captioned/`;
-
+    const embedUrl = `https://instagram.com${shortcode}/embed/captioned/`;
     const igRes = await fetch(embedUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -197,9 +196,7 @@ app.use('/api', apiRouter); app.post('/api/instagram', async (req, res) => {
     const videoMatch = html.match(/"video_url":"([^"]+)"/) || html.match(/src="(https:\/\/[^"]+\.mp4[^"]*)"/);
 
     if (!videoMatch) {
-      return res.status(404).json({
-        error: 'No se encontró video. El perfil debe ser público.'
-      });
+      return res.status(404).json({ error: 'No se encontró video. El perfil debe ser público.' });
     }
 
     const videoUrl = videoMatch[1]
@@ -208,11 +205,12 @@ app.use('/api', apiRouter); app.post('/api/instagram', async (req, res) => {
 
     return res.json({ videoUrl });
   } catch (err) {
-    console.error(err);
+    console.error('[instagram]', err);
     return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
   }
 });
-app.use('/api', apiRouter);
+
+app.use('/api', apiRouter); app.use('/api', apiRouter);
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // eslint-disable-next-line no-unused-vars
