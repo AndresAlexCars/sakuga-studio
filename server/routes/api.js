@@ -58,77 +58,36 @@ apiRouter.post('/instagram', async (req, res) => {
   try {
     const { url: igUrl } = req.body || {};
     const cleanUrl = String(igUrl || '').trim();
-    const match = cleanUrl.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
-
-    if (!match) {
+    if (!cleanUrl.includes('instagram.com')) {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
 
-    const shortcode = match;
-    let videoUrl = null;
+    // Consultar API de extracción (Cobalt) que evita bloqueos de IP de servidores
+    const apiRes = await fetch('https://cobalt.tools', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      body: JSON.stringify({
+        url: cleanUrl,
+        videoQuality: '1080'
+      })
+    });
 
-    // Intento 1: Vista Embed pública de Instagram
-    try {
-      const embedUrl = `https://instagram.com${shortcode}/embed/captioned/`;
-      const igRes = await fetch(embedUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
-        }
+    const data = await apiRes.json().catch(() => ({}));
+
+    if (!apiRes.ok || !data.url) {
+      return res.status(404).json({
+        error: data?.error?.code || 'No se pudo extraer el video. Verifica que el Reel sea público.'
       });
-      if (igRes.ok) {
-        const html = await igRes.text();
-        const videoMatch = html.match(/"video_url":"([^"]+)"/) || html.match(/src="(https:\/\/[^"]+\.mp4[^"]*)"/);
-        if (videoMatch && videoMatch) {
-          videoUrl = videoMatch.replace(/\\u0026/g, '&').replace(/\\\//g, '/');
-        }
-      }
-    } catch {}
-
-    // Intento 2: API GraphQL pública de Instagram si el embed fue bloqueado
-    if (!videoUrl) {
-      try {
-        const gqlBody = new URLSearchParams({
-          av: '0',
-          __d: 'www',
-          __user: '0',
-          __a: '1',
-          __req: '3',
-          dpr: '1',
-          __ccg: 'UNKNOWN',
-          fb_api_caller_class: 'RelayModern',
-          fb_api_req_friendly_name: 'PolarisPostActionLoadPostQueryQuery',
-          variables: JSON.stringify({ shortcode, fetch_comment_count: 0, fetch_related_profile_media_count: 0, parent_comment_count: 0, child_comment_count: 0, fetch_like_count: 0, fetch_tagged_user_count: 0, fetch_preview_comment_count: 0, has_threaded_comments: false, hoisted_comment_id: null, hoisted_reply_id: null }),
-          server_timestamps: 'true',
-          doc_id: '10015901848480474'
-        });
-        const gqlRes = await fetch('https://instagram.com', {
-          method: 'POST',
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-IG-App-ID': '936619743392459',
-            'X-FB-LSD': 'AVqbxe3J_YA',
-            'X-ASBD-ID': '129477'
-          },
-          body: gqlBody.toString()
-        });
-        if (gqlRes.ok) {
-          const json = await gqlRes.json();
-          videoUrl = json?.data?.xdt_shortcode_media?.video_url || null;
-        }
-      } catch {}
     }
 
-    if (!videoUrl) {
-      return res.status(404).json({ error: 'Instagram bloqueó la descarga o el perfil es privado.' });
-    }
-
-    return res.json({ videoUrl });
+    return res.json({ videoUrl: data.url });
   } catch (err) {
     console.error('[instagram]', err);
-    return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
+    return res.status(500).json({ error: 'Error al conectar con el servicio de descarga.' });
   }
 });
 
