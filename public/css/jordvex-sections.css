@@ -33,3 +33,7 @@
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
 @media(min-width:720px){#view-wallpapers .wall-grid{grid-template-columns:repeat(2,minmax(0,1fr));}#view-wallpapers{max-width:1050px;margin-inline:auto}.nav{left:50%;right:auto;transform:translateX(-50%);width:min(620px,calc(100% - 32px));}}
 @media(prefers-reduced-motion:reduce){#view-wallpapers *, .nav *{transition:none!important;}}
+
+
+/* Etiqueta automática de resolución de los fondos */
+.wall-card__quality{display:inline-flex;align-items:center;align-self:flex-start;gap:6px;width:max-content;max-width:100%;margin:7px 0 2px;padding:5px 10px;border:1px solid rgba(139,174,255,.25);border-radius:999px;background:rgba(105,145,255,.12);color:#bcd0ff;font-size:11px;font-weight:750;letter-spacing:.035em;line-height:1.25;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
