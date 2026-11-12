@@ -212,13 +212,7 @@ app.use('/api', apiRouter); app.post('/api/instagram', async (req, res) => {
     return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
   }
 });
-
 app.use('/api', apiRouter);
-} catch (err) {
-  console.error(err);
-  return res.status(500).json({ error: 'Error procesando el enlace de Instagram.' });
-}
-
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // eslint-disable-next-line no-unused-vars
