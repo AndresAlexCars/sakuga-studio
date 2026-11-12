@@ -1,4 +1,7 @@
 import crypto from 'node:crypto';
+import os from 'node:os';
+import { createReadStream } from 'node:fs';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import express, { Router } from 'express';
@@ -54,74 +57,160 @@ const generateLimiter = rateLimit({
 // Pública: solo describe opciones y si hace falta código. Nunca incluye secretos.
 apiRouter.get('/config', (_req, res) => res.json(publicCatalog()));
 
-apiRouter.get('/instagram/download', async (req, res) => {
-  try {
-    const fileUrl = String(req.query.url || '');
-    if (!fileUrl.startsWith('https://')) {
-      return res.status(400).send('Enlace no válido.');
-    }
-    const upstream = await fetch(fileUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    });
-    if (!upstream.ok) return res.status(502).send('No se pudo descargar el video.');
+// Descargador propio de Instagram mediante yt-dlp (solo publicaciones públicas).
+// Los archivos temporales se guardan en el disco efímero del servidor y expiran en 15 min.
+const instagramJobs = new Map();
+const INSTAGRAM_FILE_TTL_MS = 15 * 60 * 1000;
+const INSTAGRAM_MAX_BYTES = 250 * 1024 * 1024;
 
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', 'attachment; filename="jordvex-instagram.mp4"');
-    const buf = Buffer.from(await upstream.arrayBuffer());
-    return res.send(buf);
-  } catch (err) {
-    console.error('[instagram-dl]', err);
-    return res.status(500).send('Error al descargar el archivo.');
+const instagramLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Has realizado demasiadas descargas. Espera unos minutos.' },
+});
+
+function parsePublicInstagramUrl(value) {
+  try {
+    const parsed = new URL(String(value || '').trim());
+    const host = parsed.hostname.toLowerCase();
+    const validHost = host === 'instagram.com' || host.endsWith('.instagram.com');
+    const validPath = /^\/(?:p|reel|tv)\/[A-Za-z0-9_-]+\/?$/.test(parsed.pathname);
+    if (parsed.protocol !== 'https:' || !validHost || !validPath || parsed.username || parsed.password) return null;
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+function runYtDlp(url, outputDir) {
+  return new Promise((resolve, reject) => {
+    const args = [
+      '--no-warnings', '--no-progress', '--no-playlist',
+      '--socket-timeout', '20', '--retries', '1',
+      '--max-filesize', '250M',
+      '--format', 'best[ext=mp4]/best',
+      '--recode-video', 'mp4',
+      '--output', path.join(outputDir, 'instagram.%(ext)s'),
+      url,
+    ];
+
+    const child = spawn('yt-dlp', args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    let stderr = '';
+    let settled = false;
+    const timeout = setTimeout(() => child.kill('SIGKILL'), 150_000);
+
+    child.stderr.on('data', chunk => {
+      if (stderr.length < 12000) stderr += chunk.toString();
+    });
+    child.on('error', error => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.on('close', code => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      if (code === 0) return resolve();
+      reject(new Error(stderr.trim().slice(-1800) || `yt-dlp terminó con código ${code}`));
+    });
+  });
+}
+
+apiRouter.post('/instagram', instagramLimiter, async (req, res) => {
+  let outputDir;
+  try {
+    const publicUrl = parsePublicInstagramUrl(req.body?.url);
+    if (!publicUrl) {
+      return res.status(400).json({ error: 'Introduce un enlace válido de un Reel o publicación pública de Instagram.' });
+    }
+
+    outputDir = await fs.mkdtemp(path.join(os.tmpdir(), 'jordvex-instagram-'));
+    await runYtDlp(publicUrl, outputDir);
+
+    const files = await fs.readdir(outputDir);
+    const filename = files.find(name => /^instagram\.(mp4|mkv|webm)$/i.test(name));
+    if (!filename) throw new Error('Instagram no devolvió un archivo de video compatible.');
+
+    const filePath = path.join(outputDir, filename);
+    const info = await fs.stat(filePath);
+    if (!info.isFile() || info.size <= 0 || info.size > INSTAGRAM_MAX_BYTES) {
+      throw new Error('El video está vacío o supera el límite de 250 MB.');
+    }
+
+    const id = crypto.randomUUID();
+    const timer = setTimeout(() => {
+      const job = instagramJobs.get(id);
+      instagramJobs.delete(id);
+      if (job) fs.rm(job.directory, { recursive: true, force: true }).catch(() => {});
+    }, INSTAGRAM_FILE_TTL_MS);
+    timer.unref?.();
+    instagramJobs.set(id, { directory: outputDir, filePath, size: info.size, filename });
+    outputDir = null; // La carpeta queda disponible hasta que expire el enlace.
+
+    return res.json({
+      ok: true,
+      videoUrl: `/api/instagram/download/${id}`,
+      expiresIn: INSTAGRAM_FILE_TTL_MS / 1000,
+    });
+  } catch (error) {
+    console.error('[instagram-yt-dlp]', error.message);
+    const unavailable = error.code === 'ENOENT'
+      ? 'El extractor yt-dlp no está instalado en el servidor.'
+      : 'No se pudo descargar el video. Comprueba que la publicación sea pública e inténtalo más tarde.';
+    return res.status(502).json({ error: unavailable });
+  } finally {
+    if (outputDir) await fs.rm(outputDir, { recursive: true, force: true }).catch(() => {});
   }
 });
 
-apiRouter.post('/instagram', async (req, res) => {
-  try {
-    const { url: igUrl } = req.body || {};
-    const cleanUrl = String(igUrl || '').trim().split('?').at(0);
-    if (!cleanUrl.includes('instagram.com')) {
-      return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
+apiRouter.get('/instagram/download/:id', (req, res) => {
+  const job = instagramJobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: 'El enlace de descarga expiró. Vuelve a buscar el video.' });
+
+  const range = req.headers.range;
+  let start = 0;
+  let end = job.size - 1;
+  if (range) {
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+    if (!match || (!match[1] && !match[2])) {
+      res.set('Content-Range', `bytes */${job.size}`);
+      return res.status(416).end();
     }
-
-    const rapidKey = (process.env.RAPIDAPI_KEY || config.rapidApiKey || '').trim();
-    const apiHost = 'instagram-reels-downloader-api.p.rapidapi.com';
-
-    // Probar /downloadReel primero y /download como respaldo
-    const endpoints = ['/downloadReel', '/download'];
-    let videoUrl = null;
-    let lastError = 'No se pudo extraer el video.';
-
-    for (const path of endpoints) {
-      const apiRes = await fetch(`https://${apiHost}${path}?url=${encodeURIComponent(cleanUrl)}`, {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-key': rapidKey,
-          'x-rapidapi-host': apiHost
-        }
-      });
-
-      const data = await apiRes.json().catch(() => ({}));
-      videoUrl =
-        data?.data?.medias?.at(0)?.url ||
-        data?.medias?.at(0)?.url ||
-        data?.video_url ||
-        data?.url ||
-        data?.media ||
-        data?.result?.at(0)?.url;
-
-      if (apiRes.ok && videoUrl) break;
-      if (data?.message) lastError = data.message;
+    if (!match[1]) {
+      const suffix = Number(match[2]);
+      start = Math.max(0, job.size - suffix);
+    } else {
+      start = Number(match[1]);
+      if (match[2]) end = Math.min(end, Number(match[2]));
     }
-
-    if (!videoUrl) {
-      return res.status(404).json({ error: lastError });
+    if (start >= job.size || end < start) {
+      res.set('Content-Range', `bytes */${job.size}`);
+      return res.status(416).end();
     }
-
-    return res.json({ videoUrl });
-  } catch (err) {
-    console.error('[instagram]', err);
-    return res.status(500).json({ error: 'Error al conectar con RapidAPI.' });
+    res.status(206);
+    res.set('Content-Range', `bytes ${start}-${end}/${job.size}`);
   }
+
+  const preview = req.query.preview === '1';
+  res.set({
+    'Content-Type': 'video/mp4',
+    'Content-Length': String(end - start + 1),
+    'Accept-Ranges': 'bytes',
+    'Content-Disposition': `${preview ? 'inline' : 'attachment'}; filename="jordvex-instagram.mp4"`,
+    'Cache-Control': 'private, no-store',
+    'X-Content-Type-Options': 'nosniff',
+  });
+  createReadStream(job.filePath, { start, end }).on('error', error => {
+    console.error('[instagram-file]', error.message);
+    if (!res.headersSent) res.status(500).end();
+    else res.destroy(error);
+  }).pipe(res);
 });
 
 apiRouter.use(requireClient, requireAccess);
@@ -466,32 +555,3 @@ apiRouter.post('/videos/:id/view', async (req, res) => {
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 
-import axios from 'axios';
-
-// Endpoint proxy para hacer streaming del video de Instagram con soporte de Rango
-apiRouter.get('/instagram/download-proxy', async (req, res) => {
-    try {
-        const videoUrl = req.query.url;
-        if (!videoUrl) return res.status(400).json({ error: 'URL requerida' });
-
-        const response = await axios({
-            method: 'get',
-            url: videoUrl,
-            responseType: 'stream',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Range': req.headers.range || 'bytes=0-'
-            }
-        });
-
-        res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
-        if (response.headers['content-range']) res.setHeader('Content-Range', response.headers['content-range']);
-        if (response.headers['accept-ranges']) res.setHeader('Accept-Ranges', response.headers['accept-ranges']);
-        if (response.headers['content-length']) res.setHeader('Content-Length', response.headers['content-length']);
-        
-        res.status(response.status);
-        response.data.pipe(res);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al transmitir el video' });
-    }
-});
