@@ -1,0 +1,384 @@
+[33m319bad6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mjordvex[m[33m, [m[1;31morigin/jordvex[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add files via upload
+[33m71ad54e[m Add files via upload
+[33mf76e57f[m Add files via upload
+[33m4d9cf34[m Aplicar estilo premium con colores del tema sin cache
+[33m97cb623[m Aplicar estilo premium con colores del tema JORDVEX al boton de Instagram
+[33m979b67c[m Detectar automaticamente orientacion vertical u horizontal del video
+[33m84a4bf0[m Descarga directa MP4 al telefono y centrar boton flotante
+[33mdea04ba[m Posicionar boton de Instagram en el centro exacto de la barra
+[33m662a81d[m Centrar boton de Instagram y ampliar ligeramente vista previa del video
+[33macd6fb0[m Configurar clave de respaldo y endpoint downloadReel
+[33mfdf86af[m Limpiar archivos residuales y leer process.env.RAPIDAPI_KEY
+[33m35f56b4[m Cargar cloudflare:workers dinamicamente para compatibilidad con Node
+[33m55b5e5a[m Leer RAPIDAPI_KEY desde cloudflare:workers env
+[33mdd57302[m Corregir dominio de RapidAPI sin cortes
+[33mf77e077[m Update api.js
+[33m3d22541[m Create wrangler. toml
+[33md833990[m Reparar host de RapidAPI en api.js
+[33m7de5315[m Limpiar enlace de Instagram con .at(0)
+[33m491c430[m Usar instancias abiertas de Cobalt para descargar Reels
+[33maf37260[m Usar API externa para evitar bloqueo de IP de Instagram
+[33me03c901[m Corregir shortcode y agregar GraphQL de respaldo para Instagram
+[33mc3f98d8[m Mover ruta /instagram antes de requireClient en api.js
+[33m9023812[m Evitar boton duplicado y colocar /api/instagram antes de apiRouter
+[33mfc6c374[m Restaurar app.js original y separar modulo de Instagram
+[33m51d88a3[m Corregir cierre de sintaxis en app
+[33m7569a5d[m Conectar api.instagram en app.js
+[33m0ff99e1[m Corregir cierre de sintaxis en app
+[33m7a7d9ac[m Conectar api.instagram en app.js
+[33m3ab9d84[m Add files via upload
+[33m28e7f45[m Update app.js
+[33md1ded00[m Update index.js
+[33m72cb193[m Update index.js
+[33m10c8e39[m Update styles.css
+[33m9dd6dc6[m Update api.js
+[33mb6ec2b2[m Update index.js
+[33ma3db8f7[m Update index.js
+[33md75899f[m Update app.js
+[33m6b9db51[m Update styles.css
+[33mcbb6be6[m Update styles.css
+[33m42178f3[m Update styles.css
+[33mb2f30e6[m Update manifest.webmanifest
+[33m60730f0[m Add files via upload
+[33medc74e1[m Add files via upload
+[33m8ecc71a[m Add files via upload
+[33m354385b[m Add files via upload
+[33m0c5c902[m Add files via upload
+[33m6b1b223[m Add files via upload
+[33m7f7a9ec[m Add files via upload
+[33m091e147[m Add files via upload
+[33md80ddae[m Add files via upload
+[33m391aed9[m Add files via upload
+[33m7fa213a[m Add files via upload
+[33m9ed92b9[m Add files via upload
+[33m71436e5[m Add files via upload
+[33m055ff35[m Add files via upload
+[33md4158ca[m Update espera.html
+[33m6aaac8f[m Create .gitkeep
+[33m7bdf7a5[m Add files via upload
+[33m928671e[m Add files via upload
+[33mde3ddd4[m Add files via upload
+[33mffcaee4[m Add files via upload
+[33m4e2f868[m Add files via upload
+[33mb759606[m Add files via upload
+[33m428b484[m Add files via upload
+[33m388dda8[m Add files via upload
+[33md465ad5[m Add files via upload
+[33mcfd617e[m Add files via upload
+[33mab802e5[m Add files via upload
+[33md2afe23[m Delete publicpublic/index.html
+[33m4a599e8[m Add files via upload
+[33maef112d[m Add files via upload
+[33m3c879b2[m Delete public/espera.html
+[33ma0317dd[m Add files via upload
+[33md520731[m Create espera.html
+[33m6bb17c1[m Delete public/espera.html
+[33mb8ebe08[m Add files via upload
+[33mdde85d0[m Update espera.html
+[33m9baa346[m Add files via upload
+[33m904a326[m Add files via upload
+[33mb4c7429[m Update espera.html
+[33m4672e2b[m Create espera.html
+[33m77407be[m Add files via upload
+[33m03353f7[m Create index.html
+[33m620cfe2[m Delete index.html
+[33m76b5086[m Rename index-activo.html to index.html
+[33m300529a[m Update index.html
+[33m3c0ecef[m Rename pausa.html to index.html
+[33mdba30fe[m Rename public/index.html to index-activo.html
+[33m9db9a5c[m Update pausa.html
+[33mf23ab6d[m Create pausa.html
+[33md05065e[m Add files via upload
+[33m5468435[m Add files via upload
+[33m38833e8[m Add files via upload
+[33mae16a75[m Add files via upload
+[33m3f5045a[m Add files via upload
+[33md3c8cb6[m Add files via upload
+[33m694f08e[m Add files via upload
+[33m5ace786[m Add files via upload
+[33m845b826[m Add files via upload
+[33m07df7b4[m Add files via upload
+[33mec8ea4d[m Add files via upload
+[33m1dc3ad3[m Add files via upload
+[33mb775977[m Add files via upload
+[33m539140c[m Add files via upload
+[33mccad2d8[m Add files via upload
+[33m747e8bf[m Add files via upload
+[33m88d4501[m Add files via upload
+[33m8641167[m Add files via upload
+[33m0e5439c[m Add files via upload
+[33m1f5918d[m Add files via upload
+[33m8dd1e72[m Add files via upload
+[33mb750757[m Add files via upload
+[33m83b5cea[m Add files via upload
+[33m1862e14[m Add files via upload
+[33m8307248[m Add files via upload
+[33m5b0a5e3[m Add files via upload
+[33mcec2f9e[m Add files via upload
+[33mf7296df[m Add files via upload
+[33m69eb0a8[m Add files via upload
+[33ma3aa3cd[m Add files via upload
+[33m5f2f87f[m Add files via upload
+[33m649148f[m Add files via upload
+[33m9a71b0d[m Add files via upload
+[33me414b0d[m Add files via upload
+[33m58dd98c[m Add files via upload
+[33mc245224[m Add files via upload
+[33m6bacd84[m Add files via upload
+[33md29b62a[m Add files via upload
+[33mde71a87[m Add files via upload
+[33m0bda54e[m Add files via upload
+[33m0547af0[m Add files via upload
+[33me8a6f33[m Add files via upload
+[33md5c8a46[m Add files via upload
+[33mefb8697[m Add files via upload
+[33m9e4e060[m Add files via upload
+[33m0f75087[m Add files via upload
+[33m7c0f15f[m Add files via upload
+[33mb565c4c[m Add files via upload
+[33m40349de[m Add files via upload
+[33m5c1f825[m Add files via upload
+[33m347ea26[m Add files via upload
+[33mefbdfa0[m Add files via upload
+[33m6fc7bb1[m Add files via upload
+[33ma52928a[m Add files via upload
+[33mdff6980[m Create sitemap.xml
+[33m0043645[m Create robots.txt
+[33m319f800[m Add files via upload
+[33ma0bac8e[m Add files via upload
+[33m2440e2c[m Create pulido.css
+[33meffbd3c[m Add files via upload
+[33me8adc17[m Add files via upload
+[33me5da4a6[m Add files via upload
+[33mdd73990[m Add files via upload
+[33m6936dc7[m Add files via upload
+[33mc78ec2f[m Add files via upload
+[33m29dca42[m Add files via upload
+[33m8b83473[m Add files via upload
+[33ma25030d[m Add files via upload
+[33mf8eedfe[m Add files via upload
+[33md82c0d5[m Add files via upload
+[33m5ce8f66[m Add files via upload
+[33mb49d220[m Add files via upload
+[33m59ca30a[m Add files via upload
+[33m4da822c[m Add files via upload
+[33m57775b1[m Merge pull request #1 from AndresAlexCars/flyio-new-files
+[33m4c52e83[m[33m ([m[1;31morigin/flyio-new-files[m[33m)[m New files from Fly.io Launch
+[33m9933a1c[m Add files via upload
+[33m58159dc[m Add files via upload
+[33mbb5c06b[m Add files via upload
+[33m07f20df[m Add files via upload
+[33m097d414[m Add files via upload
+[33md23bd87[m Add files via upload
+[33m5bca1dd[m Add files via upload
+[33mbd673b5[m Add files via upload
+[33m50a9452[m Add files via upload
+[33m6ed40ad[m Add files via upload
+[33mc0fbac0[m Add files via upload
+[33ma5b5474[m Add files via upload
+[33mb06d47f[m Add files via upload
+[33m8a058fd[m Add files via upload
+[33m661bfc1[m Add files via upload
+[33mfda02f4[m Add files via upload
+[33m0a4a847[m Add files via upload
+[33m4b25615[m Add files via upload
+[33md957572[m Add files via upload
+[33m2b36198[m Add files via upload
+[33m70bcea2[m Add files via upload
+[33m98a63b2[m Add files via upload
+[33m336df19[m Add files via upload
+[33meb190e2[m Delete public/css/style.css
+[33md6f65d2[m Update styles.css
+[33m8f0fceb[m Update index.html
+[33m9d5cbfc[m Update index.html
+[33m58f66ca[m Update index.html
+[33mf943597[m Update index.html
+[33m9755b24[m Update index.html
+[33md97510d[m Update index.html
+[33m5f33de6[m Update config.js
+[33m7f4b1b7[m Add files via upload
+[33m87df4e3[m Add files via upload
+[33m64b7254[m Add files via upload
+[33m7a27db1[m Add files via upload
+[33me9d4789[m Add files via upload
+[33me8016da[m Add files via upload
+[33m2a2d92d[m Add files via upload
+[33m5e2cc18[m Add files via upload
+[33m70e0f59[m Delete public/js/config.js
+[33m420d64f[m Delete public/js/catalog.js
+[33m7605618[m Rename config (3).js to config.js
+[33m6f75ccb[m Delete public/js/config.js
+[33m51cbebd[m Add files via upload
+[33m882e875[m Create catalog.js
+[33ma699e9f[m Create config.js
+[33mddefe3b[m Delete public/config.js
+[33mffa6f94[m Delete public/catalog.js
+[33mc375d3a[m Delete public/config (3).js
+[33m9284836[m Add files via upload
+[33m670ff83[m Create config.js
+[33m675351b[m Create catalog.js
+[33mf9d6dcb[m Add files via upload
+[33m3f29560[m Add files via upload
+[33m8cedea7[m Add files via upload
+[33m1cd14b1[m Add files via upload
+[33m41fd3ea[m Add files via upload
+[33m20fe5b1[m Add files via upload
+[33mebe8fc9[m Add files via upload
+[33mcd9ca95[m Add files via upload
+[33m3a9ea93[m Add files via upload
+[33m1b4316c[m Add files via upload
+[33m012f7c0[m Add files via upload
+[33m47b9648[m Add files via upload
+[33m2b79473[m Add files via upload
+[33m2a51d55[m Add files via upload
+[33m866f00a[m Add files via upload
+[33maa6d55e[m Add files via upload
+[33m9b13ac9[m Add files via upload
+[33m6d2f670[m Add files via upload
+[33mdfe9c77[m Add files via upload
+[33m09c68c0[m Add files via upload
+[33m50dc303[m Add files via upload
+[33m2f9279e[m Add files via upload
+[33mee73773[m Add files via upload
+[33m9702cc3[m Add files via upload
+[33mf5a7bc9[m Add files via upload
+[33mdec2c19[m Add files via upload
+[33mb4840d2[m Add files via upload
+[33mddaadab[m Add files via upload
+[33md64f05d[m Add files via upload
+[33m90b91be[m Add files via upload
+[33m765d5c5[m Add files via upload
+[33mfc55252[m Add files via upload
+[33m8debd5c[m Add files via upload
+[33m579a9f7[m Add files via upload
+[33m85b810b[m Add files via upload
+[33m7ae6891[m Add files via upload
+[33me9bdaae[m Add files via upload
+[33ma608d40[m Add files via upload
+[33md773141[m Add files via upload
+[33me8a867b[m Add files via upload
+[33m17ac0a8[m Create videos.js
+[33m031942d[m Add files via upload
+[33me915d7a[m Add files via upload
+[33m3686319[m Add files via upload
+[33mb64f6ee[m Add files via upload
+[33m5e40502[m Add files via upload
+[33m8d75dc1[m Add files via upload
+[33m2514b42[m Add files via upload
+[33m5151235[m Add files via upload
+[33md80c618[m Add files via upload
+[33m0856b5d[m Add files via upload
+[33m91833ca[m Add files via upload
+[33m6d45f54[m Add files via upload
+[33md2ec1e5[m Add files via upload
+[33m2211c5a[m Add files via upload
+[33m9423126[m Add files via upload
+[33m273fd0e[m Add files via upload
+[33m9b4c1fb[m Add files via upload
+[33m71c50a5[m Add files via upload
+[33me546e4f[m Add files via upload
+[33m7670c0e[m Add files via upload
+[33m56fb0a0[m Add files via upload
+[33m25332d9[m Add files via upload
+[33mbcf5849[m Create r2.js
+[33medd7c78[m Add files via upload
+[33m6f45db6[m Add files via upload
+[33m86f1f62[m Add files via upload
+[33m6483646[m Add files via upload
+[33m7feb97a[m Add files via upload
+[33m029a86a[m Add files via upload
+[33mde8d427[m Add files via upload
+[33md5008d5[m Create wallpapers.js
+[33m8497417[m Add files via upload
+[33m3e08ff2[m Add files via upload
+[33m565f5d1[m Add files via upload
+[33m95d6eb6[m Add files via upload
+[33m39544f9[m Add files via upload
+[33ma0634b2[m Add files via upload
+[33mb4e8345[m Add files via upload
+[33m355f862[m Add files via upload
+[33mdf81cef[m Add files via upload
+[33ma93d2c0[m Add files via upload
+[33m1a84a42[m Add files via upload
+[33mc754944[m Add files via upload
+[33m817cd7f[m Add files via upload
+[33m59a0434[m Add files via upload
+[33m20212cd[m Add files via upload
+[33m32de0f9[m Add files via upload
+[33m6456386[m Add files via upload
+[33m746684e[m Add files via upload
+[33m7666a7f[m Add files via upload
+[33m9005a72[m Add files via upload
+[33m43694ed[m Create pollinations.js
+[33m97148cd[m Delete server/pollinations.js
+[33m07b09b6[m Add files via upload
+[33mc4feae5[m Add files via upload
+[33md5a5bac[m Add files via upload
+[33ma8faecf[m Create pollinations.js
+[33meb08998[m Add files via upload
+[33m358a84a[m Add files via upload
+[33m6d14a36[m Add files via upload
+[33m5370e8b[m Delete public/js/config.js
+[33m8eb0495[m Delete public/js/chat.js
+[33m6f5ed91[m Delete public/js/catalog.js
+[33mb3b7ced[m Add files via upload
+[33m9bc5a54[m Add files via upload
+[33ma3921c1[m Add files via upload
+[33m3ee428f[m Add files via upload
+[33m0542728[m Add files via upload
+[33m02013ee[m Update i18n.js
+[33mf12a7d6[m Add files via upload
+[33m9b5575f[m Add files via upload
+[33m8614afa[m Add files via upload
+[33m3bfa2d4[m Add files via upload
+[33m6c2691a[m Add files via upload
+[33me534daf[m Add files via upload
+[33m1d3461d[m Create chat.js
+[33m9251dcb[m Add files via upload
+[33m325890b[m Add files via upload
+[33maed3f72[m Add files via upload
+[33m779814f[m Add files via upload
+[33mabff505[m Add files via upload
+[33md1cc131[m Add files via upload
+[33m530eba2[m Add files via upload
+[33m79010a0[m Add files via upload
+[33m7c03bee[m Add files via upload
+[33mc84b8d1[m Add files via upload
+[33m66a1efa[m Add files via upload
+[33m523d369[m Add files via upload
+[33m569e0a7[m Add files via upload
+[33m6c65052[m Add files via upload
+[33m2479ff1[m Add files via upload
+[33m391e355[m Add files via upload
+[33m280564b[m Add files via upload
+[33m8599c8a[m Add files via upload
+[33m38ad7fd[m Add files via upload
+[33m3e2dd39[m Add files via upload
+[33md70f37e[m Add files via upload
+[33m6bc5688[m Add files via upload
+[33mb87765f[m Update styles.css
+[33ma0807af[m Update i18n.js
+[33m59bb94c[m Update index.html
+[33m7d5592a[m Update app.js
+[33mc7a5a9a[m Update history.js
+[33m29ca113[m Update styles.css
+[33mb429682[m Update i18n.js
+[33m7107bca[m Update index.html
+[33mf7bdf3d[m Update app.js
+[33md5daea5[m Create history.js
+[33m99d70ed[m Update styles.css
+[33m2d67009[m Update styles.css
+[33me036e86[m Archivo CSS completo con diseño
+[33m2e55f6f[m Add files via upload
+[33mfce7171[m Update styles.css
+[33m2d64d4b[m Update style.css
+[33m252d904[m Update style.css
+[33ma610435[m Update generator.js
+[33m556fdac[m Create translate.js
+[33m7fb1b67[m Update app.js
+[33m1f370af[m Update app.js
+[33m38490a2[m JORDVEX: diseño, ajustes y nombre
+[33m3bb00be[m Configurar Cloudflare y cambiar nombre a JORDVEX
+[33m31986e0[m Etapa 1: Tema, ajustes e idioma
+[33ma6d5312[m respaldo antes de etapa1
+[33m987798b[m Primera versión de Sakuga Studio

@@ -465,3 +465,33 @@ apiRouter.post('/videos/:id/view', async (req, res) => {
 });
 
 apiRouter.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
+
+const axios = require('axios');
+
+// Endpoint proxy para hacer streaming del video de Instagram con soporte de Rango
+apiRouter.get('/instagram/download-proxy', async (req, res) => {
+    try {
+        const videoUrl = req.query.url;
+        if (!videoUrl) return res.status(400).json({ error: 'URL requerida' });
+
+        const response = await axios({
+            method: 'get',
+            url: videoUrl,
+            responseType: 'stream',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Range': req.headers.range || 'bytes=0-'
+            }
+        });
+
+        res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
+        if (response.headers['content-range']) res.setHeader('Content-Range', response.headers['content-range']);
+        if (response.headers['accept-ranges']) res.setHeader('Accept-Ranges', response.headers['accept-ranges']);
+        if (response.headers['content-length']) res.setHeader('Content-Length', response.headers['content-length']);
+        
+        res.status(response.status);
+        response.data.pipe(res);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al transmitir el video' });
+    }
+});
