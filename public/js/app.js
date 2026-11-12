@@ -1807,6 +1807,7 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   igBtn.setAttribute('aria-label', 'Descargar de Instagram');
   igBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
+  // Lo coloca en el centro de tu barra actual sin alterar tus botones
   const visibleBtns = [...nav.querySelectorAll('button')].filter(b => b.offsetParent !== null);
   const midIndex = Math.floor(visibleBtns.length / 2);
   if (visibleBtns[midIndex]) nav.insertBefore(igBtn, visibleBtns[midIndex]);
@@ -1866,12 +1867,9 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
       const data = await res.json();
       if (!res.ok || !data.videoUrl) throw new Error(data.error || 'No se pudo obtener el video.');
 
-      // Proxy: el video pasa por tu servidor para que el reproductor sí cargue
-      const proxySrc = '/api/instagram/proxy?url=' + encodeURIComponent(data.videoUrl);
-
       resultBox.innerHTML = `
-        <video src="${proxySrc}" controls playsinline style="width:100%;border-radius:12px;background:#000;"></video>
-        <a href="${proxySrc}" download="jordvex-instagram.mp4" class="btn btn--primary-soft" style="width:100%;margin-top:10px;">Descargar MP4</a>
+        <video src="${data.videoUrl}" controls playsinline></video>
+        <a href="${data.videoUrl}" download="jordvex-instagram.mp4" target="_blank" rel="noopener" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
       `;
       resultBox.hidden = false;
     } catch (err) {
