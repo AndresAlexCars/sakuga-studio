@@ -57,37 +57,45 @@ apiRouter.get('/config', (_req, res) => res.json(publicCatalog()));
 apiRouter.post('/instagram', async (req, res) => {
   try {
     const { url: igUrl } = req.body || {};
-    const cleanUrl = String(igUrl || '').trim();
+    const cleanUrl = String(igUrl || '').trim().split('?');
     if (!cleanUrl.includes('instagram.com')) {
       return res.status(400).json({ error: 'Enlace de Instagram no válido.' });
     }
 
-    // Consultar API de extracción (Cobalt) que evita bloqueos de IP de servidores
-    const apiRes = await fetch('https://cobalt.tools', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      body: JSON.stringify({
-        url: cleanUrl,
-        videoQuality: '1080'
-      })
-    });
+    // Lista de instancias comunitarias abiertas de Cobalt (sin API key)
+    const instances = [
+      'https://kwiatekmiki.com',
+      'https://canine.tools',
+      'https://cobalt.best'
+    ];
 
-    const data = await apiRes.json().catch(() => ({}));
+    for (const endpoint of instances) {
+      try {
+        const apiRes = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            url: cleanUrl,
+            videoQuality: '1080'
+          })
+        });
 
-    if (!apiRes.ok || !data.url) {
-      return res.status(404).json({
-        error: data?.error?.code || 'No se pudo extraer el video. Verifica que el Reel sea público.'
-      });
+        const data = await apiRes.json().catch(() => ({}));
+        if (apiRes.ok && data.url) {
+          return res.json({ videoUrl: data.url });
+        }
+      } catch {}
     }
 
-    return res.json({ videoUrl: data.url });
+    return res.status(404).json({
+      error: 'No se pudo descargar. Prueba con otro Reel público o intenta más tarde.'
+    });
   } catch (err) {
     console.error('[instagram]', err);
-    return res.status(500).json({ error: 'Error al conectar con el servicio de descarga.' });
+    return res.status(500).json({ error: 'Error interno al procesar el enlace.' });
   }
 });
 
