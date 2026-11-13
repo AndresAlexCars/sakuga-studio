@@ -909,36 +909,11 @@ wall.code?.addEventListener('input', () => {
 function wallCard(item) {
   const card = document.createElement('article');
   card.className = `wall-card wall-card--${item.kind}`;
-  const media = document.createElement('div');
-  media.className = 'wall-card__media';
   const img = document.createElement('img');
   img.src = item.url;
   img.alt = item.title;
   img.loading = 'lazy';
   img.decoding = 'async';
-  const quality = document.createElement('span');
-  quality.className = 'wall-card__quality';
-  quality.textContent = 'ANALIZANDO';
-  quality.setAttribute('aria-live', 'polite');
-  const detectImageQuality = () => {
-    const w = img.naturalWidth;
-    const h = img.naturalHeight;
-    if (!w || !h) { quality.textContent = 'CALIDAD N/D'; quality.dataset.level = 'unknown'; return; }
-    const longest = Math.max(w, h);
-    let label = 'CALIDAD ESTÁNDAR', level = 'standard';
-    if (longest >= 3840) { label = '4K · ULTRA PREMIUM'; level = 'ultra'; }
-    else if (longest >= 2560) { label = '2K · PREMIUM'; level = 'premium'; }
-    else if (longest >= 1920) { label = 'FULL HD'; level = 'high'; }
-    else if (longest >= 1280) { label = 'HD'; level = 'medium'; }
-    else { label = 'CALIDAD BÁSICA'; level = 'basic'; }
-    quality.textContent = label;
-    quality.dataset.level = level;
-    quality.title = label;
-  };
-  img.addEventListener('load', detectImageQuality, { once: true });
-  img.addEventListener('error', () => { quality.textContent = 'CALIDAD N/D'; quality.dataset.level = 'unknown'; }, { once: true });
-  if (img.complete && img.naturalWidth) detectImageQuality();
-  media.append(img, quality);
   const info = document.createElement('div');
   info.className = 'wall-card__info';
   const title = document.createElement('strong');
@@ -1004,7 +979,7 @@ function wallCard(item) {
   const views = document.createElement('span');
   views.className = 'wall-card__tag';
   views.textContent = `👁 ${item.views ?? 0} vistas`;
-  info.append(title, tag, quality, views, bar, preview, download);
+  info.append(title, tag, views, bar, preview, download);
   if (isOwnerDevice) {
     const del = document.createElement('button');
     del.type = 'button';
@@ -1026,51 +1001,67 @@ function wallCard(item) {
     });
     info.append(del);
   }
-  card.append(media, info);
+  card.append(img, info);
   return card;
 }
 
 let wallAll = [];
 let wallKind = 'todos';
-let wallVisible = 36;
-let wallFiltered = [];
-let wallMoreObserver = null;
 const normalizeText = (text) => String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-function renderWallpapers() {
+const WALL_BATCH = 36;
+let wallShown = WALL_BATCH;
+let wallFiltered = [];
+let wallSentinel = null;
+let wallObserver = null;
+
+function renderWallpapers(reset = true) {
   if (!wall.grid) return;
+  if (reset) wallShown = WALL_BATCH;
   const query = normalizeText(document.getElementById('wall-search')?.value.trim() || '');
   wallFiltered = wallAll.filter((item) =>
     (wallKind === 'todos' || item.kind === wallKind) &&
     (!query || normalizeText(item.title).includes(query)));
-  wallVisible = 36;
-  wall.grid.replaceChildren(...wallFiltered.slice(0, wallVisible).map(wallCard));
-  // Carga progresiva: agrega tarjetas al acercarse al final, sin recargar la página.
-  if (wallMoreObserver) wallMoreObserver.disconnect();
-  let sentinel = document.getElementById('wall-load-more');
-  if (!sentinel) {
-    sentinel = document.createElement('div');
-    sentinel.id = 'wall-load-more';
-    sentinel.className = 'wall-load-more';
-    sentinel.setAttribute('aria-hidden', 'true');
-    wall.grid.after(sentinel);
-  }
-  sentinel.hidden = wallVisible >= wallFiltered.length;
-  wallMoreObserver = new IntersectionObserver((entries) => {
-    if (!entries.some((entry) => entry.isIntersecting)) return;
-    const next = wallFiltered.slice(wallVisible, wallVisible + 36);
-    if (!next.length) { sentinel.hidden = true; return; }
-    wall.grid.append(...next.map(wallCard));
-    wallVisible += next.length;
-    sentinel.hidden = wallVisible >= wallFiltered.length;
-  }, { rootMargin: '700px 0px' });
-  if (!sentinel.hidden) wallMoreObserver.observe(sentinel);
-  const count = document.getElementById('wall-count');
-  if (count) count.textContent = `${wallAll.length.toLocaleString('es')} ${wallAll.length === 1 ? 'fondo disponible' : 'fondos disponibles'}`;
+  paintWallGrid();
+}
+
+// Dibuja solo el bloque visible y deja un sentinel que carga el siguiente al llegar abajo
+function paintWallGrid() {
+  const visible = wallFiltered.slice(0, wallShown);
+  wall.grid.replaceChildren(...visible.map(wallCard));
+  [...wall.grid.children].forEach((el, i) => {
+    if (visible[i]) el.dataset.id = visible[i].id;
+  });
   if (wall.empty) {
-    wall.empty.hidden = wallAll.length > 0;
+    wall.empty.hidden = wallFiltered.length > 0;
     wall.empty.textContent = wallAll.length ? 'Ningún fondo coincide con tu búsqueda.' : 'Todavía no hay fondos publicados.';
   }
+  ensureWallSentinel();
+}
+
+function ensureWallSentinel() {
+  if (wallShown >= wallFiltered.length) {
+    wallSentinel?.remove();
+    wallSentinel = null;
+    wallObserver?.disconnect();
+    return;
+  }
+  if (!wallSentinel) {
+    wallSentinel = document.createElement('div');
+    wallSentinel.className = 'wall-more';
+    wallSentinel.textContent = 'Cargando más fondos…';
+  }
+  wall.grid.after(wallSentinel);
+  if (!wallObserver) {
+    wallObserver = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        wallShown += WALL_BATCH;
+        paintWallGrid();
+      }
+    }, { rootMargin: '400px' });
+  }
+  wallObserver.disconnect();
+  wallObserver.observe(wallSentinel);
 }
 
 async function loadWallpapers() {
@@ -1847,86 +1838,114 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   build();
 })();
 
-/* ═══ Descargador de Instagram (Solo añade el botón y la ventana) ═══ */
+/* ── Página de cada fondo (#fondo=ID): imagen grande, descargar, favorito, compartir, relacionados ── */
 (() => {
-  const nav = document.querySelector('.nav');
-  if (!nav) return;
+  const FAV_KEY = 'jordvex.favs';
+  const readFavs = () => { try { return JSON.parse(safeGet(FAV_KEY) || '[]'); } catch { return []; } };
+  const writeFavs = (list) => safeSet(FAV_KEY, JSON.stringify(list));
+  const KIND = { pc: 'PC · Horizontal', movil: 'Móvil · Vertical' };
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+  let dlg = null;
 
-  const igBtn = document.createElement('button');
-  igBtn.type = 'button';
-  igBtn.className = 'nav-ig-center';
-  igBtn.setAttribute('aria-label', 'Descargar de Instagram');
-  // Logo de Instagram y posición exacta entre Buscar y Atajos.
-  igBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>';
+  const clearHash = () => {
+    if (location.hash.startsWith('#fondo=')) history.replaceState(null, '', location.pathname + location.search);
+  };
 
-  const shortcutsBtn = nav.querySelector('.nav-tool[aria-label="Atajos de búsqueda"]');
-  if (shortcutsBtn) nav.insertBefore(igBtn, shortcutsBtn);
-  else nav.append(igBtn);
-
-  const dialog = document.createElement('dialog');
-  dialog.className = 'ig-dialog';
-  dialog.innerHTML = `
-    <div class="ig-dialog__head">
-      <h3>Descargar de Instagram</h3>
-      <button type="button" class="btn btn--text" id="ig-close">✕</button>
-    </div>
-    <p class="muted" style="margin-bottom: 12px;">Pega el enlace de un Reel o video público de Instagram.</p>
-    <div class="ig-dialog__input-row">
-      <input type="url" id="ig-url" placeholder="https://instagram.com..." autocomplete="off">
-      <button type="button" class="btn btn--sm" id="ig-paste">Pegar</button>
-    </div>
-    <button type="button" class="btn btn--primary" id="ig-fetch">Buscar video</button>
-    <div class="ig-dialog__result" id="ig-result" hidden></div>
-  `;
-  document.body.append(dialog);
-
-  const urlInput = dialog.querySelector('#ig-url');
-  const resultBox = dialog.querySelector('#ig-result');
-  const fetchBtn = dialog.querySelector('#ig-fetch');
-
-  igBtn.addEventListener('click', () => {
-    resultBox.hidden = true;
-    resultBox.innerHTML = '';
-    dialog.showModal();
-    urlInput.focus();
-  });
-
-  dialog.querySelector('#ig-close').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
-
-  dialog.querySelector('#ig-paste').addEventListener('click', async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) urlInput.value = text.trim();
-    } catch { toast('Pega el enlace manualmente.'); }
-  });
-
-  fetchBtn.addEventListener('click', async () => {
-    const link = urlInput.value.trim();
-    if (!link.includes('instagram.com')) return toast('Pega un enlace válido de Instagram.');
-    fetchBtn.disabled = true;
-    fetchBtn.textContent = 'Buscando video...';
-    resultBox.hidden = true;
-
-    try {
-      const res = await fetch('/api/instagram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: link })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.videoUrl) throw new Error(data.error || 'No se pudo obtener el video.');
-
-      resultBox.innerHTML = `
-        <video src="${data.videoUrl}" controls playsinline></video>
-        <a href="${data.videoUrl}" download="jordvex-instagram.mp4" target="_blank" rel="noopener" class="btn btn--primary-soft" style="width:100%;">Descargar MP4</a>
-      `;
-      resultBox.hidden = false;
-    } catch (err) {
-      toast(err.message);
-    } finally {
-      fetchBtn.disabled = false;
-      fetchBtn.textContent = 'Buscar video';
+  const show = (item) => {
+    if (!dlg) {
+      dlg = el('dialog', 'sheet wall-detail');
+      dlg.addEventListener('close', clearHash);
+      document.body.append(dlg);
     }
+    const isFav = readFavs().includes(item.id);
+    const related = wallAll
+      .filter((w) => w.id !== item.id && w.kind === item.kind)
+      .sort((x, y) => (y.views || 0) - (x.views || 0))
+      .slice(0, 6);
+
+    const close = el('button', 'wall-detail__close', '×');
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Cerrar');
+    close.addEventListener('click', () => dlg.close());
+
+    const img = el('img', 'wall-detail__img');
+    img.src = item.url;
+    img.alt = item.title;
+
+    const title = el('h2', 'wall-detail__title', item.title);
+    const meta = el('p', 'wall-detail__meta', `${KIND[item.kind] || item.kind} · ${item.views || 0} vistas`);
+
+    const actions = el('div', 'wall-detail__actions');
+    const dl = el('a', 'btn btn--primary', 'Descargar original');
+    dl.href = item.url;
+    dl.download = item.downloadName || '';
+    const fav = el('button', 'btn', isFav ? '♥ Quitar de favoritos' : '♡ Guardar en favoritos');
+    fav.type = 'button';
+    fav.addEventListener('click', () => {
+      const favs = readFavs();
+      const on = favs.includes(item.id);
+      writeFavs(on ? favs.filter((x) => x !== item.id) : [...favs, item.id]);
+      fav.textContent = on ? '♡ Guardar en favoritos' : '♥ Quitar de favoritos';
+    });
+    const share = el('button', 'btn', 'Compartir');
+    share.type = 'button';
+    share.addEventListener('click', () => {
+      const link = `${location.origin}/#fondo=${item.id}`;
+      if (navigator.share) navigator.share({ title: item.title, url: link }).catch(() => {});
+      else navigator.clipboard?.writeText(link).then(() => toast('Enlace copiado.')).catch(() => toast(link));
+    });
+    actions.append(dl, fav, share);
+
+    const relTitle = el('h3', 'wall-detail__rel-title', 'Fondos relacionados');
+    const relGrid = el('div', 'wall-detail__rel');
+    related.forEach((r) => {
+      const b = el('button', 'wall-detail__rel-item');
+      b.type = 'button';
+      const t = el('img');
+      t.src = r.thumb || r.url;
+      t.alt = r.title;
+      t.loading = 'lazy';
+      b.append(t);
+      b.addEventListener('click', () => openById(r.id));
+      relGrid.append(b);
+    });
+
+    dlg.replaceChildren(close, img, title, meta, actions);
+    if (related.length) dlg.append(relTitle, relGrid);
+    dlg.showModal();
+  };
+
+  const openById = (id) => {
+    const item = wallAll.find((w) => w.id === id);
+    if (!item) return;
+    show(item);
+    history.replaceState(null, '', `#fondo=${id}`);
+  };
+
+  // Tocar la imagen de un fondo en la galería abre su página
+  wall.grid?.addEventListener('click', (e) => {
+    if (e.target.closest('button, a, input, select')) return;
+    const card = e.target.closest('[data-id]');
+    if (!card || !e.target.closest('img')) return;
+    openById(card.dataset.id);
   });
+
+  const openFromHash = () => {
+    const m = location.hash.match(/^#fondo=([A-Za-z0-9-]+)$/);
+    if (m) openById(m[1]);
+  };
+  window.addEventListener('hashchange', openFromHash);
+  let tries = 0;
+  const boot = setInterval(() => {
+    tries += 1;
+    if (wallAll.length || tries > 40) {
+      clearInterval(boot);
+      openFromHash();
+    }
+  }, 300);
 })();
