@@ -1037,10 +1037,16 @@ let wallFiltered = [];
 let wallMoreObserver = null;
 const normalizeText = (text) => String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
+let wallFavOnly = false;
+function favIdsNow() {
+  try { return JSON.parse(safeGet('jordvex.favs') || '[]'); } catch { return []; }
+}
+
 function renderWallpapers() {
   if (!wall.grid) return;
   const query = normalizeText(document.getElementById('wall-search')?.value.trim() || '');
   wallFiltered = wallAll.filter((item) =>
+    (!wallFavOnly || favIdsNow().includes(item.id)) &&
     (wallKind === 'todos' || item.kind === wallKind) &&
     (!query || normalizeText(item.title).includes(query)));
   wallVisible = 36;
@@ -2043,48 +2049,20 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   }, 300);
 })();
 
-/* ── Corazón de favoritos visible en cada tarjeta de la galería ── */
+/* ── Botón Favoritos (marcador) en la barra inferior: muestra solo tus favoritos ── */
 (() => {
-  const FAV_KEY = 'jordvex.favs';
-  const readFavs = () => { try { return JSON.parse(safeGet(FAV_KEY) || '[]'); } catch { return []; } };
-  const isFav = (id) => readFavs().includes(id);
-  const toggleFav = (id) => {
-    const list = readFavs();
-    const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
-    safeSet(FAV_KEY, JSON.stringify(next));
-    return next.includes(id);
-  };
-
-  const paint = (btn, on) => {
-    btn.textContent = on ? '♥' : '♡';
-    btn.setAttribute('aria-pressed', String(on));
-    btn.setAttribute('aria-label', on ? 'Quitar de favoritos' : 'Guardar en favoritos');
-    btn.classList.toggle('is-on', on);
-  };
-
-  const decorate = () => {
-    if (!wall.grid) return;
-    [...wall.grid.children].forEach((card) => {
-      if (card.querySelector('.wall-fav')) return;
-      const img = card.querySelector('img');
-      const item = img && wallAll.find((w) => w.url && img.getAttribute('src') === w.url);
-      if (!item) return;
-      card.dataset.id = item.id;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'wall-fav';
-      paint(btn, isFav(item.id));
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        paint(btn, toggleFav(item.id));
-      });
-      card.append(btn);
-    });
-  };
-
-  if (wall.grid) {
-    new MutationObserver(decorate).observe(wall.grid, { childList: true });
-    decorate();
-  }
-  setInterval(decorate, 800);
+  const nav = document.querySelector('.nav');
+  if (!nav || !wall.grid) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'nav-tool nav-fav-tool';
+  btn.setAttribute('aria-label', 'Ver mis favoritos');
+  btn.setAttribute('aria-pressed', 'false');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>Favoritos</span>';
+  btn.addEventListener('click', () => {
+    wallFavOnly = !wallFavOnly;
+    btn.setAttribute('aria-pressed', String(wallFavOnly));
+    renderWallpapers();
+  });
+  nav.append(btn);
 })();
