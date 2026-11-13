@@ -1041,6 +1041,8 @@ function renderWallpapers() {
     (wallKind === 'todos' || item.kind === wallKind) &&
     (!query || normalizeText(item.title).includes(query)));
   wall.grid.replaceChildren(...items.map(wallCard));
+  const count = document.getElementById('wall-count');
+  if (count) count.textContent = `${wallAll.length.toLocaleString('es')} ${wallAll.length === 1 ? 'fondo disponible' : 'fondos disponibles'}`;
   if (wall.empty) {
     wall.empty.hidden = items.length > 0;
     wall.empty.textContent = wallAll.length ? 'Ningún fondo coincide con tu búsqueda.' : 'Todavía no hay fondos publicados.';
@@ -1558,21 +1560,13 @@ function openPreview(item) {
   const dialog = document.getElementById('preview');
   const frame = document.getElementById('phone-frame');
   const screen = document.getElementById('phone-screen');
-  const homeFrame = document.getElementById('home-preview');
-  const homeScreen = document.getElementById('home-screen');
   if (!dialog || !frame || !screen) return;
   const vertical = item.kind !== 'pc';
   frame.className = vertical ? 'phone' : 'monitor';
   screen.style.backgroundImage = `url("${item.url}")`;
-  if (homeScreen) homeScreen.style.setProperty('--wallpaper', `url("${item.url}")`);
-  if (homeFrame) homeFrame.hidden = !vertical;
   const now = new Date();
-  const date = document.getElementById('phone-date');
-  const time = document.getElementById('phone-time');
-  if (date) date.textContent = now.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' });
-  if (time) time.textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
-  const homeTime = document.getElementById('home-time');
-  if (homeTime) homeTime.textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('phone-date').textContent = now.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' });
+  document.getElementById('phone-time').textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
   dialog.showModal();
 }
 document.querySelectorAll('[data-close-preview]').forEach((btn) => {
