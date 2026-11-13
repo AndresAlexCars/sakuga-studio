@@ -2068,3 +2068,17 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   });
   nav.append(btn);
 })();
+
+/* ── Al cambiar de pestaña se apagan favoritos y las herramientas; la barra sigue la vista ── */
+(() => {
+  const resetTools = () => {
+    const wasFav = wallFavOnly;
+    wallFavOnly = false;
+    document.querySelectorAll('.nav-tool').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    document.querySelector('.nav-search')?.classList.remove('is-search', 'is-open');
+    if (wasFav) renderWallpapers();
+  };
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-view-target], .wall-tab')) resetTools();
+  });
+})();
