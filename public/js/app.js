@@ -1068,7 +1068,7 @@ function renderWallpapers() {
   const count = document.getElementById('wall-count');
   if (count) count.textContent = `${wallAll.length.toLocaleString('es')} ${wallAll.length === 1 ? 'fondo disponible' : 'fondos disponibles'}`;
   if (wall.empty) {
-    wall.empty.hidden = items.length > 0;
+    wall.empty.hidden = wallAll.length > 0;
     wall.empty.textContent = wallAll.length ? 'Ningún fondo coincide con tu búsqueda.' : 'Todavía no hay fondos publicados.';
   }
 }
