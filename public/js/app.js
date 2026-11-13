@@ -298,7 +298,7 @@ async function generate() {
   els.actions.hidden = true;
   setFrameState('loading');
   startProgress();
-  setView('create');
+  setView('wallpapers');
   scrollToTop();
 
   try {
@@ -370,7 +370,7 @@ function thumbButton(item) {
 
   button.addEventListener('click', () => {
     showResult(item);
-    setView('create');
+    setView('wallpapers');
     scrollToTop();
   });
   return button;
@@ -668,7 +668,7 @@ $('#use-prompt')?.addEventListener('click', () => {
   if (!state.current) return;
   els.prompt.value = state.current.prompt;
   updateCount();
-  setView('create');
+  setView('wallpapers');
   scrollToTop();
   toast(t('toast.promptUsed'));
 });
