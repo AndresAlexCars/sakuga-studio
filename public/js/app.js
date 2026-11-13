@@ -2042,3 +2042,49 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     }
   }, 300);
 })();
+
+/* ── Corazón de favoritos visible en cada tarjeta de la galería ── */
+(() => {
+  const FAV_KEY = 'jordvex.favs';
+  const readFavs = () => { try { return JSON.parse(safeGet(FAV_KEY) || '[]'); } catch { return []; } };
+  const isFav = (id) => readFavs().includes(id);
+  const toggleFav = (id) => {
+    const list = readFavs();
+    const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+    safeSet(FAV_KEY, JSON.stringify(next));
+    return next.includes(id);
+  };
+
+  const paint = (btn, on) => {
+    btn.textContent = on ? '♥' : '♡';
+    btn.setAttribute('aria-pressed', String(on));
+    btn.setAttribute('aria-label', on ? 'Quitar de favoritos' : 'Guardar en favoritos');
+    btn.classList.toggle('is-on', on);
+  };
+
+  const decorate = () => {
+    if (!wall.grid) return;
+    [...wall.grid.children].forEach((card) => {
+      if (card.querySelector('.wall-fav')) return;
+      const img = card.querySelector('img');
+      const item = img && wallAll.find((w) => w.url && img.getAttribute('src') === w.url);
+      if (!item) return;
+      card.dataset.id = item.id;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'wall-fav';
+      paint(btn, isFav(item.id));
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        paint(btn, toggleFav(item.id));
+      });
+      card.append(btn);
+    });
+  };
+
+  if (wall.grid) {
+    new MutationObserver(decorate).observe(wall.grid, { childList: true });
+    decorate();
+  }
+  setInterval(decorate, 800);
+})();
