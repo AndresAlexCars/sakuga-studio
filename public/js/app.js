@@ -1032,15 +1032,39 @@ function wallCard(item) {
 
 let wallAll = [];
 let wallKind = 'todos';
+let wallVisible = 36;
+let wallFiltered = [];
+let wallMoreObserver = null;
 const normalizeText = (text) => String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 function renderWallpapers() {
   if (!wall.grid) return;
   const query = normalizeText(document.getElementById('wall-search')?.value.trim() || '');
-  const items = wallAll.filter((item) =>
+  wallFiltered = wallAll.filter((item) =>
     (wallKind === 'todos' || item.kind === wallKind) &&
     (!query || normalizeText(item.title).includes(query)));
-  wall.grid.replaceChildren(...items.map(wallCard));
+  wallVisible = 36;
+  wall.grid.replaceChildren(...wallFiltered.slice(0, wallVisible).map(wallCard));
+  // Carga progresiva: agrega tarjetas al acercarse al final, sin recargar la página.
+  if (wallMoreObserver) wallMoreObserver.disconnect();
+  let sentinel = document.getElementById('wall-load-more');
+  if (!sentinel) {
+    sentinel = document.createElement('div');
+    sentinel.id = 'wall-load-more';
+    sentinel.className = 'wall-load-more';
+    sentinel.setAttribute('aria-hidden', 'true');
+    wall.grid.after(sentinel);
+  }
+  sentinel.hidden = wallVisible >= wallFiltered.length;
+  wallMoreObserver = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    const next = wallFiltered.slice(wallVisible, wallVisible + 36);
+    if (!next.length) { sentinel.hidden = true; return; }
+    wall.grid.append(...next.map(wallCard));
+    wallVisible += next.length;
+    sentinel.hidden = wallVisible >= wallFiltered.length;
+  }, { rootMargin: '700px 0px' });
+  if (!sentinel.hidden) wallMoreObserver.observe(sentinel);
   const count = document.getElementById('wall-count');
   if (count) count.textContent = `${wallAll.length.toLocaleString('es')} ${wallAll.length === 1 ? 'fondo disponible' : 'fondos disponibles'}`;
   if (wall.empty) {
