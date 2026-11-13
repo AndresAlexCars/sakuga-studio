@@ -401,14 +401,7 @@ html[data-motion="reduced"] .nav-indicator { transition: none; }
   cursor: pointer;
 }
 
-/* ═══ Galería por bloques y página de cada fondo ═══ */
-.wall-more {
-  text-align: center;
-  padding: 18px 0 110px;
-  color: var(--muted);
-  font-size: 13px;
-  letter-spacing: .04em;
-}
+/* ═══ Página de cada fondo ═══ */
 .wall-detail {
   width: min(96vw, 620px);
   max-height: 92vh;
