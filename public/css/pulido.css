@@ -488,3 +488,12 @@ html[data-theme] .btn--primary,
 .nav-tool[aria-pressed="true"] { color: #ffffff; }
 .nav-indicator { background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
 .nav-suggest button:hover { border-color: rgba(255, 255, 255, .6); }
+
+/* ═══ Solo fondos: se ocultan generador, historial y asistente ═══ */
+#view-create,
+#view-history,
+#chat,
+#nav-chat,
+[data-view-target="create"],
+[data-view-target="history"],
+[data-open-chat] { display: none !important; }
