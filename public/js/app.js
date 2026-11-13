@@ -1713,8 +1713,10 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   };
   const filterClick = (kind) => document.querySelector(`.wall-filters [data-kind="${kind}"]`)?.click();
   const atajos = [
-    ['NTE', () => setSearch('NTE')],
-    ['Zenless Zone Zero', () => setSearch('Zenless Zone Zero')],
+    ['Zenless Zone Zero', () => setSearch('zenless')],
+    ['Anime girl', () => setSearch('anime girl')],
+    ['Gamer', () => setSearch('gamer')],
+    ['NTE', () => setSearch('nte')],
     ['Móvil', () => filterClick('movil')],
     ['PC', () => filterClick('pc')],
     ['Todos', () => { setSearch(''); filterClick('todos'); }],
