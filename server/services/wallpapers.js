@@ -61,6 +61,7 @@ export function formatWallpaper(item, clientId = '') {
     id: item.id,
     title: item.title,
     kind: item.kind,
+    category: item.category || '',
     createdAt: item.createdAt,
     url: `${(process.env.R2_PUBLIC_URL || '').replace(/\/$/, '')}/wallpapers/${item.file}`,
     downloadName: `jordvex-${item.kind}-${item.id.slice(0, 8)}.${item.file.split('.').pop()}`,
@@ -87,7 +88,7 @@ export async function reactWallpaper(id, clientId, emoji) {
   return formatWallpaper(item, clientId);
 }
 
-export async function addWallpaper({ buffer, title, kind }) {
+export async function addWallpaper({ buffer, title, kind, category = '' }) {
   const info = detectImage(buffer);
   if (!info) throw new Error('formato no válido');
   const data = await load();
@@ -97,7 +98,7 @@ export async function addWallpaper({ buffer, title, kind }) {
   if (r2Enabled()) {
     await putObject(`wallpapers/${file}`, buffer, info.type).catch((err) => console.error('[wallpapers] R2:', err.message));
   }
-  const item = { id, file, title: title.slice(0, 60), kind, createdAt: new Date().toISOString() };
+  const item = { id, file, title: title.slice(0, 60), kind, category: category.slice(0, 40), createdAt: new Date().toISOString() };
   data.items.unshift(item);
   await persist();
   return item;
