@@ -2047,7 +2047,7 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
     const img = e.target.closest('img');
     if (!img) return;
     const item = wallAll.find((w) => w.url && img.getAttribute('src') === w.url);
-    if (item) openById(item.id);
+    if (item) window.open(`${location.origin}/#fondo=${item.id}`, '_blank', 'noopener');
   });
 
   const openFromHash = () => {
@@ -2095,4 +2095,24 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-view-target], .wall-tab')) resetTools();
   });
+})();
+
+/* ── Tarjetas limpias: sin Vista previa ni Descargar; la barra sin restos del generador ── */
+(() => {
+  const prune = () => {
+    if (wall.grid) {
+      [...wall.grid.children].forEach((card) => {
+        card.querySelectorAll('button').forEach((b) => {
+          const t = b.textContent.trim();
+          if (t === 'Vista previa' || t === 'Descargar') b.remove();
+        });
+      });
+    }
+    document.querySelectorAll('.nav button').forEach((b) => {
+      if (/^(Inicio|Historial|Me gusta|Chat)$/.test(b.textContent.trim())) b.remove();
+    });
+  };
+  if (wall.grid) new MutationObserver(prune).observe(wall.grid, { childList: true });
+  prune();
+  setTimeout(prune, 1500);
 })();
