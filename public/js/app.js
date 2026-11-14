@@ -1038,6 +1038,8 @@ let wallMoreObserver = null;
 const normalizeText = (text) => String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 let wallFavOnly = false;
+let wallCat = '';
+const WALL_CATALOG = ['Zenless Zone Zero', 'Anime girl', 'Gamer', 'NTE'];
 function favIdsNow() {
   try { return JSON.parse(safeGet('jordvex.favs') || '[]'); } catch { return []; }
 }
@@ -1046,6 +1048,7 @@ function renderWallpapers() {
   if (!wall.grid) return;
   const query = normalizeText(document.getElementById('wall-search')?.value.trim() || '');
   wallFiltered = wallAll.filter((item) =>
+    (!wallCat || item.category === wallCat) &&
     (!wallFavOnly || favIdsNow().includes(item.id)) &&
     (wallKind === 'todos' || item.kind === wallKind) &&
     (!query || normalizeText(item.title).includes(query)));
@@ -1102,14 +1105,14 @@ document.querySelectorAll('.wall-filters [data-kind]').forEach((btn) => {
 if (wall.file) wall.file.multiple = true;
 
 // Sube la lista de archivos con los nombres ya editados
-async function publishWallpapers(files, titles, code) {
+async function publishWallpapers(files, titles, code, category = '') {
   wall.upload.disabled = true;
   let ok = 0;
   let fail = 0;
   for (let i = 0; i < files.length; i++) {
     toast(`Subiendo ${i + 1} de ${files.length}…`);
     try {
-      await api.uploadWallpaper(files[i], wall.kind.value, titles[i] || files[i].name.replace(/\.[^.]+$/, ''), code);
+      await api.uploadWallpaper(files[i], wall.kind.value, titles[i] || files[i].name.replace(/\.[^.]+$/, ''), code, category);
       ok += 1;
     } catch (err) {
       fail += 1;
@@ -1154,6 +1157,20 @@ function openTitleEditor(files, defaults, onConfirm) {
     body.append(row);
     return input;
   });
+  const catLabel = document.createElement('label');
+  catLabel.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin:4px 0 12px;';
+  catLabel.textContent = 'Catálogo';
+  const catSel = document.createElement('select');
+  catSel.style.cssText = 'min-height:44px;padding:0 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font:inherit;';
+  for (const name of ['', ...WALL_CATALOG]) {
+    const o = document.createElement('option');
+    o.value = name;
+    o.textContent = name || 'Sin catálogo';
+    catSel.append(o);
+  }
+  catSel.value = wallCat;
+  catLabel.append(catSel);
+  body.append(catLabel);
   const actions = document.createElement('div');
   actions.className = 'dialog__actions';
   const cancel = document.createElement('button');
@@ -1168,7 +1185,7 @@ function openTitleEditor(files, defaults, onConfirm) {
   go.addEventListener('click', () => {
     const titles = inputs.map((inp) => inp.value.trim());
     dlg.close();
-    onConfirm(titles);
+    onConfirm(titles, catSel.value);
   });
   dlg.addEventListener('close', () => dlg.remove());
   actions.append(cancel, go);
@@ -1186,7 +1203,7 @@ wall.upload?.addEventListener('click', () => {
   if (big) return toast(`"${big.name}" pasa de 25 MB.`);
   const typedTitle = wall.title.value.trim();
   const defaults = files.map((f) => (files.length === 1 && typedTitle ? typedTitle : f.name.replace(/\.[^.]+$/, '').slice(0, 60)));
-  openTitleEditor(files, defaults, (titles) => publishWallpapers(files, titles, code));
+  openTitleEditor(files, defaults, (titles, cat) => publishWallpapers(files, titles, code, cat));
 });
 
 /* ── Videos: pestaña junto a Fondos, con calidad original ── */
@@ -1713,13 +1730,10 @@ document.getElementById('stats-download')?.addEventListener('click', async () =>
   };
   const filterClick = (kind) => document.querySelector(`.wall-filters [data-kind="${kind}"]`)?.click();
   const atajos = [
-    ['Zenless Zone Zero', () => setSearch('zenless')],
-    ['Anime girl', () => setSearch('anime girl')],
-    ['Gamer', () => setSearch('gamer')],
-    ['NTE', () => setSearch('nte')],
+    ...WALL_CATALOG.map((name) => [name, () => { wallCat = name; setSearch(''); }]),
     ['Móvil', () => filterClick('movil')],
     ['PC', () => filterClick('pc')],
-    ['Todos', () => { setSearch(''); filterClick('todos'); }],
+    ['Todos', () => { wallCat = ''; setSearch(''); filterClick('todos'); }],
   ];
   atajos.forEach(([label, action]) => {
     const b = document.createElement('button');

@@ -70,7 +70,6 @@ async function raw(path, { method = 'GET', body, headers = {} } = {}) {
 
 export const api = {
   wallpapers: () => request('/api/wallpapers'),
-  instagram: (url) => request('/api/instagram', { method: 'POST', body: { url } }),
   viewWallpaper: (id) => request(`/api/wallpapers/${encodeURIComponent(id)}/view`, { method: 'POST' }),
   statsCsv: async (adminCode) => {
     const headers = { 'X-Client-Id': clientId(), 'X-Admin-Code': adminCode };
@@ -135,11 +134,11 @@ export const api = {
   deleteVideo: (id, adminCode) => raw(`/api/videos/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'X-Admin-Code': adminCode } }),
   reactWallpaper: (id, emoji) => request(`/api/wallpapers/${encodeURIComponent(id)}/react`, { method: 'POST', body: { emoji } }),
   deleteWallpaper: (id, adminCode) => raw(`/api/wallpapers/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'X-Admin-Code': adminCode } }),
-  uploadWallpaper: (blob, kind, title, adminCode) =>
+  uploadWallpaper: (blob, kind, title, adminCode, category = '') =>
     raw('/api/wallpapers', {
       method: 'POST',
       body: blob,
-      headers: { 'Content-Type': blob.type, 'X-Kind': kind, 'X-Title': encodeURIComponent(title), 'X-Admin-Code': adminCode },
+      headers: { 'Content-Type': blob.type, 'X-Kind': kind, 'X-Title': encodeURIComponent(title), 'X-Category': encodeURIComponent(category), 'X-Admin-Code': adminCode },
     }),
   config: () => request('/api/config'),
   chat: (messages, provider) => request('/api/chat', { method: 'POST', body: { messages, provider } }),
