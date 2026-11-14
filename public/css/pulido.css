@@ -489,11 +489,48 @@ html[data-theme] .btn--primary,
 .nav-indicator { background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
 .nav-suggest button:hover { border-color: rgba(255, 255, 255, .6); }
 
-/* ═══ Solo fondos: se ocultan generador, historial y asistente ═══ */
-#view-create,
-#view-history,
-#chat,
-#nav-chat,
-[data-view-target="create"],
-[data-view-target="history"],
-[data-open-chat] { display: none !important; }
+/* ═══ Galería más compacta en móvil: 2 columnas, imágenes completas ═══ */
+.wall-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+.wall-card { min-width: 0; }
+.wall-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  background: #0b0c10;
+}
+.wall-card h3, .wall-card strong { font-size: 14px !important; line-height: 1.3; }
+.wall-card .quality-chips, .wall-card p { font-size: 11px; }
+
+/* ═══ Características (abajo de la página) ═══ */
+.features {
+  max-width: 980px;
+  margin: 40px auto 120px;
+  padding: 0 14px;
+}
+.features h2 {
+  font-size: 22px;
+  margin: 0 0 14px;
+  color: #f5f5f5;
+}
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.features article {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .03);
+}
+.features h3 { margin: 0 0 6px; font-size: 14px; color: #f5f5f5; }
+.features p { margin: 0; font-size: 12px; line-height: 1.5; color: #9aa0a6; }
+@media (min-width: 900px) {
+  .wall-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .features__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
